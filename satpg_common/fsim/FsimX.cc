@@ -44,6 +44,22 @@ END_NAMESPACE_YM_SATPG
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
+BEGIN_NONAMESPACE
+
+// 0/1 を PackedVal2/3 に変換する．
+inline
+FSIM_VALTYPE
+int2pval(int val)
+{
+#if FSIM_VAL2
+  return val ? kPvAll1 : kPvAll0;
+#elif FSIM_VAL3
+  return val ? PackedVal3(kPvAll1) : PackedVal3(kPvAll0);
+#endif
+}
+
+END_NONAMESPACE
+
 //////////////////////////////////////////////////////////////////////
 // FsimX
 //////////////////////////////////////////////////////////////////////
@@ -465,15 +481,6 @@ FSIM_CLASSNAME::_sa_set_sp(const NodeValList& assign_list)
     SimNode* simnode = mInputArray[i];
     simnode->set_val(kPvAll0);
   }
-
-  ymuint n = assign_list.size();
-  for (ymuint i = 0; i < n; ++ i) {
-    NodeVal nv = assign_list[i];
-    if ( nv.val() ) {
-      SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_val(kPvAll1);
-    }
-  }
 #elif FSIM_VAL3
   // デフォルトで X にする．
   ymuint npi = mInputArray.size();
@@ -481,19 +488,15 @@ FSIM_CLASSNAME::_sa_set_sp(const NodeValList& assign_list)
     SimNode* simnode = mInputArray[i];
     simnode->set_val(PackedVal3(kPvAll0, kPvAll0));
   }
+#endif
 
   ymuint n = assign_list.size();
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = assign_list[i];
+    FSIM_VALTYPE pval = int2pval(nv.val());
     SimNode* simnode = mInputArray[nv.node()->input_id()];
-    if ( nv.val() ) {
-      simnode->set_val(PackedVal3(kPvAll1));
-    }
-    else {
-      simnode->set_val(PackedVal3(kPvAll0));
-    }
+    simnode->set_val(pval);
   }
-#endif
 }
 
 // @brief 複数のパタンを設定する．
