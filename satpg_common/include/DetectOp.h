@@ -54,12 +54,19 @@ DetectOp*
 new_DopDrop(TpgFaultMgr& fmgr,
 	    Fsim& fsim);
 
-/// @brief 'tvlist' タイプを生成する．
+/// @brief 'tvlist-sa' タイプを生成する．
 /// @param[in] tvmgr テストベクタのマネージャ
 /// @param[in] tvlist テストベクタのリスト
 DetectOp*
-new_DopTvList(TvMgr& tvmgr,
-	      vector<const TestVector*>& tvlist);
+new_DopTvListSa(TvMgr& tvmgr,
+		vector<const TestVector*>& tvlist);
+
+/// @brief 'tvlist-td' タイプを生成する．
+/// @param[in] tvmgr テストベクタのマネージャ
+/// @param[in] tvlist テストベクタのリスト
+DetectOp*
+new_DopTvListTd(TvMgr& tvmgr,
+		vector<const TestVector*>& tvlist);
 
 /// @brief 'verify' タイプを生成する．
 /// @param[in] fsim 故障シミュレータ

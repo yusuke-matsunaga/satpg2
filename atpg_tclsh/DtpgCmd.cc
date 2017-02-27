@@ -202,7 +202,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   UopList uop_list;
 
   if ( !mPoptNoPat->is_specified() ) {
-    dop_list.add(new_DopTvList(_tv_mgr(), _sa_tv_list()));
+    dop_list.add(new_DopTvListSa(_tv_mgr(), _sa_tv_list()));
   }
   dop_list.add(new_DopBase(_fault_mgr()));
   uop_list.add(new_UopBase(_fault_mgr()));

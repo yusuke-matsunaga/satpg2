@@ -13,14 +13,24 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-// @brief 'base' タイプを生成する．
+// @brief 'tvlist-sa' タイプを生成する．
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
 DetectOp*
-new_DopTvList(TvMgr& tvmgr,
-	      vector<const TestVector*>& tvlist)
+new_DopTvListSa(TvMgr& tvmgr,
+		vector<const TestVector*>& tvlist)
 {
-  return new DopTvList(tvmgr, tvlist);
+  return new DopTvList(tvmgr, tvlist, false);
+}
+
+// @brief 'tvlist-td' タイプを生成する．
+// @param[in] tvmgr テストベクタのマネージャ
+// @param[in] tvlist テストベクタのリスト
+DetectOp*
+new_DopTvListTd(TvMgr& tvmgr,
+		vector<const TestVector*>& tvlist)
+{
+  return new DopTvList(tvmgr, tvlist, true);
 }
 
 
@@ -31,10 +41,13 @@ new_DopTvList(TvMgr& tvmgr,
 // @brief コンストラクタ
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
+// @param[in] td_mode TDモードの時 true にするフラグ
 DopTvList::DopTvList(TvMgr& tvmgr,
-		     vector<const TestVector*>& tvlist) :
+		     vector<const TestVector*>& tvlist,
+		     bool td_mode) :
   mTvMgr(tvmgr),
-  mTvList(tvlist)
+  mTvList(tvlist),
+  mTdMode(td_mode)
 {
 }
 
@@ -50,7 +63,7 @@ void
 DopTvList::operator()(const TpgFault* f,
 		      const NodeValList& assign_list)
 {
-  TestVector* tv = mTvMgr.new_sa_vector();
+  TestVector* tv = mTdMode ? mTvMgr.new_td_vector() : mTvMgr.new_sa_vector();
   tv->set_from_assign_list(assign_list);
   mTvList.push_back(tv);
 }
