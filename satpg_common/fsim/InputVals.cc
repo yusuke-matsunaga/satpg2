@@ -106,6 +106,116 @@ TvInputVals::set_val2(FSIM_CLASSNAME& fsim) const
   }
 }
 
+//////////////////////////////////////////////////////////////////////
+// クラス Tv2InputVals
+//////////////////////////////////////////////////////////////////////
+
+// @brief コンストラクタ
+// @param[in] pat_map パタンのセットされているビットに1を立てたビットマップ
+// @param[in] pat_array パタンの配列(サイズは kPvBitLen の固定長)
+Tv2InputVals::Tv2InputVals(PackedVal pat_map,
+			   const TestVector* pat_array[]) :
+  mPatMap(pat_map)
+{
+  mPatFirstBit = kPvBitLen;
+  for (ymuint i = 0; i < kPvBitLen; ++ i) {
+    if ( mPatMap & (1ULL << i) ) {
+      mPatArray[i] = pat_array[i];
+      if ( mPatFirstBit > i ) {
+	mPatFirstBit = i;
+      }
+    }
+    else {
+      mPatArray[i] = nullptr;
+    }
+  }
+}
+
+// @brief デストラクタ
+Tv2InputVals::~Tv2InputVals()
+{
+}
+
+// @brief 1時刻目の値を設定する．
+// @param[in] fsim 故障シミュレータ
+void
+Tv2InputVals::set_val1(FSIM_CLASSNAME& fsim) const
+{
+  // 設定されていないビットはどこか他の設定されているビットをコピーする．
+  ymuint npi = fsim.ppi_num();
+  for (ymuint i = 0; i < npi; ++ i) {
+    SimNode* simnode = fsim.ppi(i);
+#if FSIM_VAL2
+    PackedVal val = kPvAll0;
+#elif FSIM_VAL3
+    PackedVal val0 = kPvAll0;
+    PackedVal val1 = kPvAll0;
+#endif
+    PackedVal bit = 1ULL;
+    for (ymuint j = 0; j < kPvBitLen; ++ j, bit <<= 1) {
+      ymuint pos = (mPatMap & bit) ? j : mPatFirstBit;
+      Val3 ival = mPatArray[pos]->ppi_val(i);
+#if FSIM_VAL2
+      if ( ival == kVal1 ) {
+	val |= bit;
+      }
+#elif FSIM_VAL3
+      if ( ival == kVal1 ) {
+	val1 |= bit;
+      }
+      else if ( ival == kVal0 ) {
+	val0 |= bit;
+      }
+#endif
+    }
+#if FSIM_VAL2
+    simnode->set_val(val);
+#elif FSIM_VAL3
+    simnode->set_val(PackedVal3(val0, val1));
+#endif
+  }
+}
+
+// @brief 2時刻目の値を設定する．
+// @param[in] fsim 故障シミュレータ
+void
+Tv2InputVals::set_val2(FSIM_CLASSNAME& fsim) const
+{
+  // 設定されていないビットはどこか他の設定されているビットをコピーする．
+  ymuint ni = fsim.input_num();
+  for (ymuint i = 0; i < ni; ++ i) {
+    SimNode* simnode = fsim.ppi(i);
+#if FSIM_VAL2
+    PackedVal val = kPvAll0;
+#elif FSIM_VAL3
+    PackedVal val0 = kPvAll0;
+    PackedVal val1 = kPvAll0;
+#endif
+    PackedVal bit = 1ULL;
+    for (ymuint j = 0; j < kPvBitLen; ++ j, bit <<= 1) {
+      ymuint pos = (mPatMap & bit) ? j : mPatFirstBit;
+      Val3 ival = mPatArray[pos]->aux_input_val(i);
+#if FSIM_VAL2
+      if ( ival == kVal1 ) {
+	val |= bit;
+      }
+#elif FSIM_VAL3
+      if ( ival == kVal1 ) {
+	val1 |= bit;
+      }
+      else if ( ival == kVal0 ) {
+	val0 |= bit;
+      }
+#endif
+    }
+#if FSIM_VAL2
+    simnode->set_val(val);
+#elif FSIM_VAL3
+    simnode->set_val(PackedVal3(val0, val1));
+#endif
+  }
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // クラス NvlInputVals

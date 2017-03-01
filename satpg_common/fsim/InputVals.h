@@ -63,7 +63,7 @@ private:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class TvInputVals TvInputVals.h "TvInputVals.h"
+/// @class TvInputVals InputVals.h "InputVals.h"
 /// @brief TestVector を用いた InputVals の実装
 //////////////////////////////////////////////////////////////////////
 class TvInputVals :
@@ -116,7 +116,69 @@ private:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class NvlInputVals NvlInputVals.h "NvlInputVals.h"
+/// @class Tv2InputVals InputVals.h "InputVals.h"
+/// @brief 複数の TestVector を用いた InputVals の実装
+//////////////////////////////////////////////////////////////////////
+class Tv2InputVals :
+  public InputVals
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] pat_map パタンのセットされているビットに1を立てたビットマップ
+  /// @param[in] pat_array パタンの配列(サイズは kPvBitLen の固定長)
+  Tv2InputVals(PackedVal pat_map,
+	       const TestVector* pat_array[]);
+
+  /// @brief デストラクタ
+  virtual
+  ~Tv2InputVals();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 1時刻目の値を設定する．
+  /// @param[in] fsim 故障シミュレータ
+  virtual
+  void
+  set_val1(FSIM_CLASSNAME& fsim) const;
+
+  /// @brief 2時刻目の値を設定する．
+  /// @param[in] fsim 故障シミュレータ
+  virtual
+  void
+  set_val2(FSIM_CLASSNAME& fsim) const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // セットされているパタンを表すビットマップ
+  PackedVal mPatMap;
+
+  // mPatMap の最初の1のビット位置
+  // 全て０の場合には kPvBitLen が入る．
+  ymuint mPatFirstBit;
+
+  // テストベクタの配列
+  const TestVector* mPatArray[kPvBitLen];
+
+};
+
+
+//////////////////////////////////////////////////////////////////////
+/// @class NvlInputVals InputVals.h "InputVals.h"
 /// @brief NodeValList を用いた InputVals の実装
 //////////////////////////////////////////////////////////////////////
 class NvlInputVals :

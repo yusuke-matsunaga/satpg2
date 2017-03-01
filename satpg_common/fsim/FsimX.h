@@ -24,6 +24,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 class SimFFR;
 class SimNode;
 class InputVals;
+class FaultProp;
 
 //////////////////////////////////////////////////////////////////////
 /// @class FSIM_CLASSNAME FsimX.h "FsimX.h"
@@ -34,6 +35,9 @@ class InputVals;
 class FSIM_CLASSNAME :
   public Fsim
 {
+  friend class SaFaultProp;
+  friend class TdFaultProp;
+
 public:
 
   /// @brief コンストラクタ
@@ -259,43 +263,29 @@ private:
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 1時刻目の複数のパタンを設定する．
-  void
-  _set_pp1();
-
-  /// @brief 2時刻目の複数のパタンを設定する．
-  void
-  _set_pp2();
-
   /// @brief SPSFP故障シミュレーションの本体
-  /// @param[in] input_vals 入力パタン
   /// @param[in] f 対象の故障
+  /// @param[in] fault_prop 故障伝搬を行うファンクタ
   /// @retval true 故障の検出が行えた．
   /// @retval false 故障の検出が行えなかった．
   bool
-  _sa_spsfp(const InputVals& input_vals,
-	    const TpgFault* f);
+  _spsfp(const TpgFault* f,
+	 FaultProp& fault_prop);
 
   /// @brief SPPFP故障シミュレーションの本体
-  /// @param[in] input_vals 入力パタン
+  /// @param[in] fault_prop 故障伝搬を行うファンクタ
   /// @return 検出された故障数を返す．
   ymuint
-  _sa_sppfp(const InputVals& input_vals);
+  _sppfp(FaultProp& fault_prop);
 
-  /// @brief SPSFP故障シミュレーションの本体
-  /// @param[in] input_vals 入力パタン
-  /// @param[in] f 対象の故障
-  /// @retval true 故障の検出が行えた．
-  /// @retval false 故障の検出が行えなかった．
-  bool
-  _td_spsfp(const InputVals& input_vals,
-	    const TpgFault* f);
-
-  /// @brief SPPFP故障シミュレーションの本体
-  /// @param[in] input_vals 入力パタン
+  /// @brief PPSFP故障シミュレーションの本体
+  /// @param[in] fault_prop 故障伝搬を行うファンクタ
   /// @return 検出された故障数を返す．
+  ///
+  /// 検出された故障は det_fault() で取得する．<br>
+  /// 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
   ymuint
-  _td_sppfp(const InputVals& input_vals);
+  _ppsfp(FaultProp& fault_prop);
 
   /// @brief 正常値の計算を行う．(縮退故障用)
   /// @param[in] input_vals 入力値
@@ -312,10 +302,6 @@ private:
   /// 入力ノードに値の設定は済んでいるものとする．
   void
   _calc_val();
-
-  /// @brief 1時刻シフトする．
-  void
-  _shift_clock();
 
   /// @brief FFR の根から故障伝搬シミュレーションを行う．
   /// @param[in] root FFRの根のノード
@@ -337,20 +323,18 @@ private:
   PackedVal
   _sa_fault_prop(SimFault* fault);
 
-  /// @brief FFR内の故障シミュレーションを行う．(縮退故障用)
-  /// @param[in] fault_list 故障のリスト
-  PackedVal
-  _sa_fault_prop(const vector<SimFault*>& fault_list);
-
   /// @brief FFR内の故障シミュレーションを行う．(遷移故障用)
   /// @param[in] fault 対象の故障
   PackedVal
   _td_fault_prop(SimFault* fault);
 
-  /// @brief FFR内の故障シミュレーションを行う．(遷移故障用)
+  /// @brief 個々の故障に FaultProp を適用する．
   /// @param[in] fault_list 故障のリスト
+  /// @param[in] 故障伝搬を行うファンクタ
+  /// @return 全ての故障の伝搬結果のORを返す．
   PackedVal
-  _td_fault_prop(const vector<SimFault*>& fault_list);
+  _foreach_faults(const vector<SimFault*>& fault_list,
+		  FaultProp& fault_prop);
 
   /// @brief 故障の活性化条件を求める．
   /// @param[in] fault 対象の故障
@@ -480,6 +464,33 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief 外部入力数を返す．
+inline
+ymuint
+FSIM_CLASSNAME::input_num() const
+{
+  return mInputNum;
+}
+
+// @brief PPI数を返す．
+inline
+ymuint
+FSIM_CLASSNAME::ppi_num() const
+{
+  return mPPIArray.size();
+}
+
+// @brief PPI のノードを返す．
+// @param[in] id PPI番号 ( 0 <= id < ppi_num() )
+inline
+SimNode*
+FSIM_CLASSNAME::ppi(ymuint id) const
+{
+  ASSERT_COND( id < ppi_num() );
+
+  return mPPIArray[id];
+}
 
 BEGIN_NONAMESPACE
 
