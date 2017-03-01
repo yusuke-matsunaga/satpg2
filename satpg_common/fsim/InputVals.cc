@@ -141,6 +141,9 @@ Tv2InputVals::~Tv2InputVals()
 void
 Tv2InputVals::set_val1(FSIM_CLASSNAME& fsim) const
 {
+#warning "TODO: なるべく #if を使わないコードにする．"
+#warning "TODO: set_val1 と set_val2 のコードを共通にする．"
+
   // 設定されていないビットはどこか他の設定されているビットをコピーする．
   ymuint npi = fsim.ppi_num();
   for (ymuint i = 0; i < npi; ++ i) {
@@ -181,6 +184,9 @@ Tv2InputVals::set_val1(FSIM_CLASSNAME& fsim) const
 void
 Tv2InputVals::set_val2(FSIM_CLASSNAME& fsim) const
 {
+#warning "TODO: なるべく #if を使わないコードにする．"
+#warning "TODO: set_val1 と set_val2 のコードを共通にする．"
+
   // 設定されていないビットはどこか他の設定されているビットをコピーする．
   ymuint ni = fsim.input_num();
   for (ymuint i = 0; i < ni; ++ i) {
