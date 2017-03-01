@@ -107,6 +107,10 @@ public:
   bool
   is_ffr_root() const;
 
+  /// @brief FFR の根のノードを返す．
+  SimNode*
+  ffr_root();
+
   /// @brief レベルを得る．
   ymuint
   level() const;
@@ -314,6 +318,19 @@ bool
 SimNode::is_ffr_root() const
 {
   return static_cast<bool>((mFanoutNum >> 1) & 1U);
+}
+
+// @brief FFR の根のノードを返す．
+inline
+SimNode*
+SimNode::ffr_root()
+{
+  SimNode* root = this;
+  while ( !root->is_ffr_root() ) {
+    root = root->fanout_top();
+  }
+
+  return root;
 }
 
 // @brief レベルを得る．
