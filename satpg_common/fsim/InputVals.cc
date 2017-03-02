@@ -102,10 +102,10 @@ TvInputVals::~TvInputVals()
 void
 TvInputVals::set_val1(FSIM_CLASSNAME& fsim) const
 {
-  ymuint npi = mTestVector->ppi_num();
+  ymuint npi = fsim.ppi_num();
   for (ymuint i = 0; i < npi; ++ i) {
-    Val3 val3 = mTestVector->ppi_val(i);
     SimNode* simnode = fsim.ppi(i);
+    Val3 val3 = mTestVector->ppi_val(i);
     simnode->set_val(val3_to_packedval(val3));
   }
 }
@@ -115,10 +115,10 @@ TvInputVals::set_val1(FSIM_CLASSNAME& fsim) const
 void
 TvInputVals::set_val2(FSIM_CLASSNAME& fsim) const
 {
-  ymuint ni = mTestVector->input_num();
+  ymuint ni = fsim.input_num();
   for (ymuint i = 0; i < ni; ++ i) {
-    Val3 val3 = mTestVector->aux_input_val(i);
     SimNode* simnode = fsim.ppi(i);
+    Val3 val3 = mTestVector->aux_input_val(i);
     simnode->set_val(val3_to_packedval(val3));
   }
 }

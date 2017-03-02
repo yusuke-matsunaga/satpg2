@@ -79,22 +79,22 @@ public:
 
   /// @brief PPIの値を得る．
   /// @param[in] pos PPI の位置番号 ( 0 <= pos < ppi_num() )
-  ///
-  /// is_sa_mode() == true の時のみ有効
   Val3
   ppi_val(ymuint pos) const;
 
   /// @brief 1時刻目の外部入力の値を得る．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   ///
-  /// is_td_mode() == true の時のみ有効
+  /// is_td_mode() == true の時のみ有効<br>
+  /// 実は ppi_val(pos) と同じ．
   Val3
   input_val(ymuint pos) const;
 
   /// @brief 1時刻目のDFFの値を得る．
   /// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
   ///
-  /// is_td_mode() == true の時のみ有効
+  /// is_td_mode() == true の時のみ有効<br>
+  /// 実は ppi_val(pos + input_num()) と同じ．
   Val3
   dff_val(ymuint pos) const;
 
@@ -448,13 +448,10 @@ TestVector::vect_len() const
 
 // @brief PPIの値を得る．
 // @param[in] pos PPI の位置番号 ( 0 <= pos < ppi_num() )
-//
-// is_sa_mode() == true の時のみ有効
 inline
 Val3
 TestVector::ppi_val(ymuint pos) const
 {
-  ASSERT_COND( is_sa_mode() );
   ASSERT_COND( pos < ppi_num() );
 
   return _val(pos);
