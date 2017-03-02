@@ -46,12 +46,22 @@ BtSimple::run(const TpgNode* fnode,
 {
   pi_assign_list.clear();
 
-  // output_list のファンインに含まれる入力ノードに印をつける．
+  // 故障の影響が伝搬している output_list のファンインに含まれる入力ノードに印をつける．
   mMark.clear();
   mMark.resize(mMaxId, false);
   for (vector<const TpgNode*>::const_iterator p = output_list.begin();
        p != output_list.end(); ++ p) {
     const TpgNode* node = *p;
+    if ( val_map.gval(node) != val_map.fval(node) ) {
+      tfi_recur(node, val_map, pi_assign_list);
+    }
+  }
+
+  // 念のため assign_list に含まれるノードの正当化を行っておく．
+  // たぶんすでに処理済みのマークがついているので実質オーバーヘッドはない．
+  for (ymuint i = 0; i < assign_list.size(); ++ i) {
+    NodeVal nv = assign_list[i];
+    const TpgNode* node = nv.node();
     tfi_recur(node, val_map, pi_assign_list);
   }
 }

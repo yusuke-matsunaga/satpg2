@@ -52,28 +52,4 @@ ValMap::~ValMap()
 {
 }
 
-// @brief ノードの1時刻前の正常値を返す．
-// @param[in] node 対象のノード
-Val3
-ValMap::hval(const TpgNode* node) const
-{
-  return bool3_to_val3(mModel[mHvarMap(node).val()]);
-}
-
-// @brief ノードの正常値を返す．
-// @param[in] node 対象のノード
-Val3
-ValMap::gval(const TpgNode* node) const
-{
-  return bool3_to_val3(mModel[mGvarMap(node).val()]);
-}
-
-// @brief ノードの故障値を返す．
-// @param[in] node 対象のノード
-Val3
-ValMap::fval(const TpgNode* node) const
-{
-  return bool3_to_val3(mModel[mFvarMap(node).val()]);
-}
-
 END_NAMESPACE_YM_SATPG

@@ -28,17 +28,36 @@ BtJust1::~BtJust1()
 }
 
 // @brief バックトレースを行なう．
-// @param[in] fnode 故障のあるノード
+// @param[in] ffr_root 故障のあるFFRの根のノード
+// @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
-// @param[in] val_map ノードの値の割当を保持するクラス
-// @param[out] assign_list 値の割当リスト
+// @param[in] val_map ノードの値を保持するクラス
+// @param[out] pi_assign_list 外部入力上の値の割当リスト
+//
+// assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
+// を入れる．
+// val_map には ffr_root のファンアウトコーン上の故障値と関係する
+// 回路全体の正常値が入っている．
 void
-BtJust1::run(const TpgNode* fnode,
+BtJust1::run(const TpgNode* ffr_root,
+	     const NodeValList& assign_list,
 	     const vector<const TpgNode*>& output_list,
 	     const ValMap& val_map,
-	     NodeValList& assign_list)
+	     NodeValList& pi_assign_list)
 {
-  assign_list.clear();
+  pi_assign_list.clear();
+
+  // assign_list の値を正当化する．
+  for (ymuint i = 0; i < assign_list.size(); ++ i) {
+    NodeVal nv = assign_list[i];
+    const TpgNode* node = nv.node();
+    if ( nv.time() == 0 ) {
+      justify0(node, val_map, pi_assign_list);
+    }
+    else {
+      justify(node, val_map, pi_assign_list);
+    }
+  }
 
   // 故障差の伝搬している外部出力を選ぶ．
   const TpgNode* onode = nullptr;
@@ -53,7 +72,11 @@ BtJust1::run(const TpgNode* fnode,
   ASSERT_COND( onode != nullptr );
 
   // 正当化を行う．
-  justify(onode, val_map, assign_list);
+  justify(onode, val_map, pi_assign_list);
+
+  // 1時刻前の故障ノードの値も正当化する．
+  // ここでは ffr_root を正当化しているが，故障の影響が伝搬するためには
+  justify0(ffr_root, val_map, pi_assign_list);
 
   // 一連の処理でつけたマークを消す．
   clear_justified();
@@ -77,7 +100,7 @@ BtJust1::justify(const TpgNode* node,
 
   if ( node->is_primary_input() ) {
     // val を記録
-    record_value(node, val_map, assign_list);
+    record_value(node, val_map, 1, assign_list);
     return;
   }
 
@@ -228,13 +251,13 @@ BtJust1::justify0(const TpgNode* node,
   }
   set_justified0(node);
 
-  if ( node->is_primary_input() ) {
+  if ( node->is_ppi() ) {
     // val を記録
-    record_value0(node, val_map, assign_list);
+    record_value(node, val_map, 0, assign_list);
     return;
   }
 
-  Val3 gval = val_map.hval(node);
+  Val3 gval = val_map.gval(node, 0);
 
   switch ( node->gate_type() ) {
   case kGateBUFF:
@@ -329,7 +352,7 @@ BtJust1::just0_sub2(const TpgNode* node,
   ymuint ni = node->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
-    Val3 igval = val_map.hval(inode);
+    Val3 igval = val_map.gval(inode, 0);
     if ( igval == val ) {
       justify0(inode, val_map, assign_list);
       break;

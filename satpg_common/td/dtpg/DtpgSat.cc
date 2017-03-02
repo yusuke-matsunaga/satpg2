@@ -181,7 +181,8 @@ DtpgSat::solve(SatSolver& solver,
     ValMap val_map(hvar_map, gvar_map, fvar_map, model);
 
     // バックトレースを行う．
-    mBackTracer(root, output_list, val_map, mLastAssign);
+    NodeValList assign_list;
+    mBackTracer(root, assign_list, output_list, val_map, mLastAssign);
 
     // パタンの登録などを行う．
     mDetectOp(fault, mLastAssign);

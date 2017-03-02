@@ -87,7 +87,7 @@ Extractor::operator()(const TpgFault* fault,
   record_sensitized_node(spo, assign_list);
 
   // １時刻前は故障値になっているはず．
-  bool val0 = (mValMap.hval(fnode) == kVal1);
+  bool val0 = (mValMap.gval(fnode, 0) == kVal1);
   assign_list.add(fnode, 0, val0);
 
   assign_list.sort();

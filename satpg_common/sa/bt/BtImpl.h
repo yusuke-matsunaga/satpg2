@@ -99,11 +99,9 @@ BtImpl::record_value(const TpgNode* node,
 		     NodeValList& assign_list)
 {
   Val3 v = val_map.gval(node);
-  if ( v == kVal0 ) {
-    assign_list.add(node, 0, false);
-  }
-  else if ( v == kVal1 ) {
-    assign_list.add(node, 0, true);
+  if ( v != kValX ) {
+    bool bval = (v == kVal1);
+    assign_list.add(node, 0, bval);
   }
 }
 
