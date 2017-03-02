@@ -19,6 +19,17 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 const char* argv0 = "";
+bool verbose = false;
+
+// 故障を検出したときの出力
+void
+print_fault(const TpgFault* f,
+	    ymuint tv_id)
+{
+  if ( verbose ) {
+    cout << setw(7) << tv_id << ": " << f->str() << endl;
+  }
+}
 
 // SPSFP のテスト
 pair<ymuint, ymuint>
@@ -43,6 +54,7 @@ spsfp_test(const TpgNetwork& network,
 	++ det_num;
 	detect = true;
 	mark[f->id()] = true;
+	print_fault(f, i);
       }
     }
     if ( detect ) {
@@ -70,6 +82,7 @@ sppfp_test(Fsim& fsim,
       for (ymuint j = 0; j < n; ++ j) {
 	const TpgFault* f = fsim.det_fault(j);
 	fsim.set_skip(f);
+	print_fault(f, i);
       }
     }
   }
@@ -111,6 +124,7 @@ ppsfp_test(Fsim& fsim,
 	}
 	ASSERT_COND( first < nb );
 	dpat_all |= (1ULL << first);
+	print_fault(f, i - wpos + first + 1);
       }
       for (ymuint i = 0; i < nb; ++ i) {
 	if ( dpat_all & (1ULL << i) ) {
@@ -140,6 +154,7 @@ ppsfp_test(Fsim& fsim,
       }
       ASSERT_COND( first < nb );
       dpat_all |= (1ULL << first);
+      print_fault(f, nv - wpos + first + 1);
     }
     for (ymuint i = 0; i < nb; ++ i) {
       if ( dpat_all & (1ULL << i) ) {
@@ -250,6 +265,9 @@ fsim2test(int argc,
 	}
 	iscas89 = true;
       }
+      else if ( strcmp(argv[pos], "--verbose") == 0 ) {
+	verbose = true;
+      }
       else {
 	cerr << argv[pos] << ": illegal option" << endl;
 	usage();
@@ -318,7 +336,7 @@ fsim2test(int argc,
   fsim->set_network(network);
 
   TvMgr tvmgr;
-  tvmgr.init(network.ppi_num(), 0);
+  tvmgr.init(network.input_num(), network.dff_num());
 
   RandGen rg;
   vector<const TestVector*> tv_list;
@@ -348,8 +366,9 @@ fsim2test(int argc,
   timer.stop();
   USTime time = timer.time();
 
-  cout << "# of inputs             = " << network.ppi_num() << endl
-       << "# of outputs            = " << network.ppo_num() << endl
+  cout << "# of inputs             = " << network.input_num() << endl
+       << "# of outputs            = " << network.output_num() << endl
+       << "# of DFFs               = " << network.dff_num() << endl
        << "# of logic gates        = " << network.node_num() << endl
        << "# of MFFCs              = " << network.mffc_num() << endl
        << "# of FFRs               = " << network.ffr_num() << endl
