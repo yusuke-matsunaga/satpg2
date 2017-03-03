@@ -10,7 +10,8 @@
 /// All rights reserved.
 
 
-#include "sa/sa_nsdef.h"
+#include "td/td_nsdef.h"
+
 #include "TpgNetwork.h"
 #include "TpgNode.h"
 #include "DtpgStats.h"
@@ -26,7 +27,7 @@
 #include "VidMap.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG_TD
 
 //////////////////////////////////////////////////////////////////////
 /// @class DtpgImpl DtpgImpl.h "DtpgImpl.h"
@@ -114,6 +115,11 @@ protected:
   SatSolver&
   solver();
 
+  /// @brief 1時刻前の正常値の変数を返す．
+  /// @param[in] node 対象のノード
+  SatVarId
+  hvar(const TpgNode* node);
+
   /// @brief 正常値の変数を返す．
   /// @param[in] node 対象のノード
   SatVarId
@@ -128,6 +134,13 @@ protected:
   /// @param[in] node 対象のノード
   SatVarId
   dvar(const TpgNode* node);
+
+  /// @brief 1時刻前の正常値の変数を設定する．
+  /// @param[in] node 対象のノード
+  /// @param[in] var 設定する変数
+  void
+  set_hvar(const TpgNode* node,
+	   SatVarId var);
 
   /// @brief 正常値の変数を設定する．
   /// @param[in] node 対象のノード
@@ -149,6 +162,10 @@ protected:
   void
   set_dvar(const TpgNode* node,
 	   SatVarId var);
+
+  /// @brief 1時刻前の正常値の変数マップを返す．
+  const VidMap&
+  hvar_map() const;
 
   /// @brief 正常値の変数マップを返す．
   const VidMap&
@@ -222,6 +239,18 @@ private:
   void
   set_tfi_mark(const TpgNode* node);
 
+  /// @brief TFI2 マークを調べる．
+  /// @param[in] node 対象のノード
+  bool
+  tfi2_mark(const TpgNode* node) const;
+
+  /// @brief TFI2 マークをつける．
+  /// @param[in] node 対象のノード
+  ///
+  /// と同時に mNodeList に入れる．
+  void
+  set_tfi2_mark(const TpgNode* node);
+
   /// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
   /// @param[in] node 対象のノード
   bool
@@ -256,12 +285,21 @@ private:
   // 関係するノードを入れておくリスト
   vector<const TpgNode*> mNodeList;
 
+  // TFI に含まれる DFF 入れておくリスト
+  vector<const TpgDff*> mDffList;
+
+  // 1時刻前関係するノードを入れておくリスト
+  vector<const TpgNode*> mNodeList2;
+
   // 関係する出力ノードを入れておくリスト
   vector<const TpgNode*> mOutputList;
 
   // 作業用のマークを入れておく配列
   // サイズは mMaxNodeId
   vector<ymuint8> mMarkArray;
+
+  // 1時刻前の正常値を表す変数のマップ
+  VidMap mHvarMap;
 
   // 正常値を表す変数のマップ
   VidMap mGvarMap;
@@ -320,6 +358,17 @@ DtpgImpl::root_node() const
   return mRoot;
 }
 
+// @brief 1時刻前の正常値の変数を返す．
+// @param[in] node 対象のノード
+inline
+SatVarId
+DtpgImpl::hvar(const TpgNode* node)
+{
+  ASSERT_COND( mHvarMap(node) != kSatVarIdIllegal );
+
+  return mHvarMap(node);
+}
+
 // @brief 正常値の変数を返す．
 // @param[in] node 対象のノード
 inline
@@ -345,6 +394,17 @@ SatVarId
 DtpgImpl::dvar(const TpgNode* node)
 {
   return mDvarMap(node);
+}
+
+// @brief 1時刻前の正常値の変数を設定する．
+// @param[in] node 対象のノード
+// @param[in] var 設定する変数
+inline
+void
+DtpgImpl::set_hvar(const TpgNode* node,
+		   SatVarId var)
+{
+  mHvarMap.set_vid(node, var);
 }
 
 // @brief 正常値の変数を設定する．
@@ -378,6 +438,14 @@ DtpgImpl::set_dvar(const TpgNode* node,
 		   SatVarId var)
 {
   mDvarMap.set_vid(node, var);
+}
+
+// @brief 1時刻前の正常値の変数マップを返す．
+inline
+const VidMap&
+DtpgImpl::hvar_map() const
+{
+  return mHvarMap;
 }
 
 // @brief 正常値の変数マップを返す．
@@ -436,6 +504,29 @@ DtpgImpl::set_tfi_mark(const TpgNode* node)
   if ( mMarkArray[id] == 0U ) {
     mMarkArray[node->id()] = 2U;
     mNodeList.push_back(node);
+    if ( node->is_dff_output() ) {
+      mDffList.push_back(node->dff());
+    }
+  }
+}
+
+// @brief TFI2 マークを調べる．
+inline
+bool
+DtpgImpl::tfi2_mark(const TpgNode* node) const
+{
+  return static_cast<bool>((mMarkArray[node->id()] >> 2) & 1U);
+}
+
+// @brief TFI2 マークをつける．
+inline
+void
+DtpgImpl::set_tfi2_mark(const TpgNode* node)
+{
+  ymuint id = node->id();
+  if ( (mMarkArray[id] & 4U) == 0U ) {
+    mMarkArray[node->id()] |= 4U;
+    mNodeList2.push_back(node);
   }
 }
 
@@ -450,6 +541,6 @@ DtpgImpl::mark(const TpgNode* node)
   return false;
 }
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG_TD
 
 #endif // DTPGIMPL_H

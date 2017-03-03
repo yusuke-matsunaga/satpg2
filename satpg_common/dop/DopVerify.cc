@@ -52,7 +52,6 @@ DopVerify::operator()(const TpgFault* f,
     cout << "Error: " << f->str() << " is not detected with "
 	 << assign_list << endl;
   }
-  ASSERT_COND( detect );
 }
 
 END_NAMESPACE_YM_SATPG

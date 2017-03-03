@@ -13,7 +13,7 @@
 #include "TpgNetwork.h"
 #include "TpgMFFC.h"
 #include "TpgFaultMgr.h"
-#include "sa/DtpgStats.h"
+#include "DtpgStats.h"
 #include "sa/Dtpg.h"
 #include "Fsim.h"
 #include "NodeValList.h"
@@ -32,7 +32,7 @@ run_single(nsSa::Dtpg& dtpg,
 	   TpgFaultMgr& fmgr,
 	   DetectOp& dop,
 	   UntestOp& uop,
-	   nsSa::DtpgStats& stats)
+	   DtpgStats& stats)
 {
   ymuint nf = network.rep_fault_num();
   for (ymuint i = 0; i < nf; ++ i) {
@@ -58,7 +58,7 @@ run_mffc(nsSa::Dtpg& dtpg,
 	 TpgFaultMgr& fmgr,
 	 DetectOp& dop,
 	 UntestOp& uop,
-	 nsSa::DtpgStats& stats)
+	 DtpgStats& stats)
 {
   ymuint n = network.mffc_num();
   for (ymuint i = 0; i < n; ++ i) {
@@ -236,7 +236,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 
   nsSa::Dtpg dtpg(sat_type, sat_option, outp, bt);
 
-  nsSa::DtpgStats stats;
+  DtpgStats stats;
   if ( engine_type == "single" ) {
     run_single(dtpg, _network(), _fault_mgr(), dop_list, uop_list, stats);
   }

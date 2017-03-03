@@ -13,7 +13,7 @@
 #include "TpgNetwork.h"
 #include "TpgFault.h"
 
-#include "sa/BackTracer.h"
+#include "td/BackTracer.h"
 #include "ValMap.h"
 
 #include "ym/SatSolver.h"
@@ -23,7 +23,7 @@
 #include "GateLitMap_vid.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG_TD
 
 // @brief コンストラクタ
 // @param[in] sat_type SATソルバの種類を表す文字列
@@ -42,6 +42,7 @@ DtpgImpl::DtpgImpl(const string& sat_type,
   mNetwork(network),
   mRoot(root),
   mMarkArray(mNetwork.node_num(), 0U),
+  mHvarMap(network.node_num()),
   mGvarMap(network.node_num()),
   mFvarMap(network.node_num()),
   mDvarMap(network.node_num()),
@@ -158,6 +159,23 @@ DtpgImpl::gen_cnf_base()
   }
   ymuint tfi_num = mNodeList.size();
 
+  // TFI に含まれる DFF のさらに TFI を mNodeList2 に入れる．
+  set_tfi2_mark(mRoot);
+  for (ymuint i = 0; i < mDffList.size(); ++ i) {
+    const TpgDff* dff = mDffList[i];
+    const TpgNode* node = dff->input();
+    mNodeList2.push_back(node);
+  }
+  for (ymuint rpos = 0; rpos < mNodeList2.size(); ++ rpos) {
+    const TpgNode* node = mNodeList2[rpos];
+    ymuint ni = node->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      const TpgNode* inode = node->fanin(i);
+      set_tfi2_mark(inode);
+    }
+  }
+  ymuint tfi2_num = mNodeList2.size();
+
   // TFO の部分に変数を割り当てる．
   for (ymuint rpos = 0; rpos < tfo_num; ++ rpos) {
     const TpgNode* node = mNodeList[rpos];
@@ -190,6 +208,18 @@ DtpgImpl::gen_cnf_base()
 #endif
   }
 
+  // TFI2 の部分に変数を割り当てる．
+  for (ymuint rpos = 0; rpos < tfi2_num; ++ rpos) {
+    const TpgNode* node = mNodeList2[rpos];
+    SatVarId hvar = mSolver.new_var();
+
+    mHvarMap.set_vid(node, hvar);
+
+#if DEBUG_DTPG
+    cout << "hvar(Node#" << node->id() << ") = " << hvar << endl;
+#endif
+  }
+
 
   //////////////////////////////////////////////////////////////////////
   // 正常回路の CNF を生成
@@ -209,6 +239,24 @@ DtpgImpl::gen_cnf_base()
     cout << ")" << endl;
 #endif
   }
+
+#if 1
+  for (ymuint i = 0; i < tfi2_num; ++ i) {
+    const TpgNode* node = mNodeList2[i];
+    node->make_cnf(mSolver, GateLitMap_vid(node, mHvarMap));
+
+#if DEBUG_DTPG
+    cout << "Node#" << node->id() << ": hvar("
+	 << hvar(node) << ") := " << node->gate_type()
+	 << "(";
+    for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+      const TpgNode* inode = node->fanin(j);
+      cout << " " << hvar(inode);
+    }
+    cout << ")" << endl;
+#endif
+  }
+#endif
 
 
   //////////////////////////////////////////////////////////////////////
@@ -341,7 +389,10 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   const TpgNode* inode = fault->tpg_inode();
   // 0 縮退故障の時に 1 にする．
   bool val = (fault->val() == 0);
-  assign_list.add(inode, 0, val);
+  assign_list.add(inode, 1, val);
+
+  // 1時刻前の値が逆の値である条件を作る．
+  assign_list.add(inode, 0, !val);
 
   // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
   if ( fault->is_branch_fault() ) {
@@ -353,7 +404,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* inode1 = onode->fanin(i);
 	if ( inode1 != inode ) {
-	  assign_list.add(inode1, 0, val);
+	  assign_list.add(inode1, 1, val);
 
 #if DEBUG_DTPG
 	  cout << "  Node#" << inode1->id() << ": ";
@@ -385,7 +436,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode1 = fonode->fanin(i);
       if ( inode1 != node ) {
-	assign_list.add(inode1, 0, val);
+	assign_list.add(inode1, 1, val);
 
 #if DEBUG_DTPG
 	cout << "  Node#" << inode1->id() << ": ";
@@ -435,7 +486,8 @@ DtpgImpl::solve(const TpgFault* fault,
     NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
     bool inv = !nv.val();
-    assumptions1[i] = SatLiteral(gvar(node), inv);
+    SatVarId vid = (nv.time() == 0) ? hvar(node) : gvar(node);
+    assumptions1[i] = SatLiteral(vid, inv);
   }
   for (ymuint i = 0; i < n0; ++ i) {
     assumptions1[i + n] = assumptions[i];
@@ -456,7 +508,7 @@ DtpgImpl::solve(const TpgFault* fault,
     timer.start();
 
     // パタンが求まった．
-    ValMap val_map(mGvarMap, mFvarMap, model);
+    ValMap val_map(mHvarMap, mGvarMap, mFvarMap, model);
 
     // バックトレースを行う．
     const TpgNode* start_node = fault->tpg_onode()->ffr_root();
@@ -479,4 +531,4 @@ DtpgImpl::solve(const TpgFault* fault,
   return ans;
 }
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG_TD

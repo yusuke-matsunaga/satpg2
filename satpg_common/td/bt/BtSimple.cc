@@ -55,6 +55,8 @@ BtSimple::run(const TpgNode* ffr_root,
   // output_list のファンインに含まれる入力ノードに印をつける．
   mMark.clear();
   mMark.resize(mMaxId, false);
+  mMark2.clear();
+  mMark2.resize(mMaxId, false);
   for (vector<const TpgNode*>::const_iterator p = output_list.begin();
        p != output_list.end(); ++ p) {
     const TpgNode* node = *p;

@@ -11,7 +11,7 @@
 
 
 #include "sa/sa_nsdef.h"
-#include "sa/DtpgStats.h"
+#include "DtpgStats.h"
 #include "FaultStatus.h"
 #include "ym/SatBool3.h"
 

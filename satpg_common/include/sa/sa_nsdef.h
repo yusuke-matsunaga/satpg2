@@ -39,7 +39,6 @@ class FoCone;
 class StructSat;
 class BackTracer;
 class Dtpg;
-class DtpgStats;
 class Rtpg;
 class RtpgStats;
 class MinPat;

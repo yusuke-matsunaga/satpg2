@@ -6,19 +6,20 @@
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "sa/sa_nsdef.h"
+#include "satpg.h"
+
 #include "ym/USTime.h"
 #include "ym/SatStats.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class DtpgStats DtpgStats.h "sa/DtpgStats.h"
+/// @class DtpgStats DtpgStats.h "DtpgStats.h"
 /// @brief DTPG の統計情報を表すクラス
 //////////////////////////////////////////////////////////////////////
 struct DtpgStats
@@ -199,6 +200,6 @@ DtpgStats::update_abort(const SatStats& sat_stats,
   mAbortTime += time;
 }
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG
 
 #endif // DTPGSTATS_H

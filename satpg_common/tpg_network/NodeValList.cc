@@ -174,11 +174,14 @@ operator<<(ostream& s,
 	   const NodeValList& src_list)
 {
   ymuint n = src_list.size();
+  const char* comma = "";
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = src_list[i];
-    s << " Node#" << nv.node()->id();
+    s << comma;
+    comma = ", ";
+    print_node(s, nv.node());
     if( nv.time() == 1 ) {
-      s << "[1]";
+      s << "@1";
     }
     s << ":" << nv.val();
   }

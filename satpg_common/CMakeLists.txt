@@ -117,8 +117,9 @@ set (td_SOURCES
   td/bt/BtJustBase.cc
   td/bt/BtSimple.cc
 
-  td/dtpg/DtpgSat.cc
-  td/dtpg/DtpgSatS.cc
+  td/dtpg/Dtpg.cc
+  td/dtpg/DtpgImpl.cc
+  td/dtpg/DtpgImplM.cc
 
   td/rtpg/FopRtpg.cc
   td/rtpg/RtpgP1.cc

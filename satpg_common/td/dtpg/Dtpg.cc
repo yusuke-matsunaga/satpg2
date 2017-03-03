@@ -7,7 +7,7 @@
 /// All rights reserved.
 
 
-#include "sa/Dtpg.h"
+#include "td/Dtpg.h"
 
 #include "DtpgImpl.h"
 #include "DtpgImplM.h"
@@ -16,7 +16,7 @@
 #include "TpgFFR.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG_TD
 
 // @brief コンストラクタ
 Dtpg::Dtpg(const string& sat_type,
@@ -105,4 +105,4 @@ Dtpg::dtpg(const TpgFault* fault,
   return ans;
 }
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG_TD

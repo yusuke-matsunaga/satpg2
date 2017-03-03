@@ -206,7 +206,7 @@ inline
 const TpgNode*
 NodeVal::node() const
 {
-  return reinterpret_cast<const TpgNode*>(mPackVal & ~1UL);
+  return reinterpret_cast<const TpgNode*>(mPackVal & ~3UL);
 }
 
 // @brief 時刻を返す．
