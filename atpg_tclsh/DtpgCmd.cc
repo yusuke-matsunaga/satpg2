@@ -218,7 +218,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     dop_list.add(new_DopDrop(_fault_mgr(), _fsim3()));
   }
   if ( mPoptVerify->is_specified() ) {
-    dop_list.add(new_DopVerify(_fsim3()));
+    dop_list.add(new_DopSaVerify(_fsim3()));
   }
 
   bool timer_enable = true;

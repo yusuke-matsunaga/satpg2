@@ -68,10 +68,15 @@ DetectOp*
 new_DopTvListTd(TvMgr& tvmgr,
 		vector<const TestVector*>& tvlist);
 
-/// @brief 'verify' タイプを生成する．
+/// @brief 'sa-verify' タイプを生成する．
 /// @param[in] fsim 故障シミュレータ
 DetectOp*
-new_DopVerify(Fsim& fsim);
+new_DopSaVerify(Fsim& fsim);
+
+/// @brief 'td-verify' タイプを生成する．
+/// @param[in] fsim 故障シミュレータ
+DetectOp*
+new_DopTdVerify(Fsim& fsim);
 
 /// @brief 'dummy' タイプを生成する．
 DetectOp*

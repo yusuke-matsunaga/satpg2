@@ -277,7 +277,7 @@ dtpg_test(int argc,
   if ( verify ) {
     fsim = new_Fsim3();
     fsim->set_network(network);
-    dop_list.add(new_DopVerify(*fsim));
+    dop_list.add(new_DopSaVerify(*fsim));
   }
 
   TpgFaultMgr fmgr(network);

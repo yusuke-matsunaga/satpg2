@@ -391,8 +391,30 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   bool val = (fault->val() == 0);
   assign_list.add(inode, 1, val);
 
+#if DEBUG_DTPG
+  print_node(cout, inode);
+  cout << "@1: ";
+  if ( val ) {
+    cout << "1" << endl;
+  }
+  else {
+    cout << "0" << endl;
+  }
+#endif
+
   // 1時刻前の値が逆の値である条件を作る．
   assign_list.add(inode, 0, !val);
+
+#if DEBUG_DTPG
+  print_node(cout, inode);
+  cout << "@0: ";
+  if ( val ) {
+    cout << "0" << endl;
+  }
+  else {
+    cout << "1" << endl;
+  }
+#endif
 
   // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
   if ( fault->is_branch_fault() ) {
@@ -407,7 +429,8 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
 	  assign_list.add(inode1, 1, val);
 
 #if DEBUG_DTPG
-	  cout << "  Node#" << inode1->id() << ": ";
+	  print_node(cout, inode1);
+	  cout << "@1: ";
 	  if ( val ) {
 	    cout << "1" << endl;
 	  }
@@ -439,7 +462,8 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
 	assign_list.add(inode1, 1, val);
 
 #if DEBUG_DTPG
-	cout << "  Node#" << inode1->id() << ": ";
+	print_node(cout, inode1);
+	cout << "@1: ";
 	if ( val ) {
 	  cout << "1" << endl;
 	}

@@ -1,8 +1,8 @@
-﻿#ifndef DOPVERIFY_H
-#define DOPVERIFY_H
+﻿#ifndef DOPSAVERIFY_H
+#define DOPSAVERIFY_H
 
-/// @file DopVerify.h
-/// @brief DopVerify のヘッダファイル
+/// @file DopSaVerify.h
+/// @brief DopSaVerify のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2017 Yusuke Matsunaga
@@ -15,21 +15,21 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class DopVerify DopVerify.h "DopVerify.h"
+/// @class DopSaVerify DopSaVerify.h "DopSaVerify.h"
 /// @brief 故障シミュレーションを行なった故障ドロップを行なうクラス
 //////////////////////////////////////////////////////////////////////
-class DopVerify :
+class DopSaVerify :
   public DetectOp
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] fsim 故障シミュレータ
-  DopVerify(Fsim& fsim);
+  DopSaVerify(Fsim& fsim);
 
   /// @brief デストラクタ
   virtual
-  ~DopVerify();
+  ~DopSaVerify();
 
 
 public:
@@ -58,4 +58,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // DOPVERIFY_H
+#endif // DOPSAVERIFY_H
