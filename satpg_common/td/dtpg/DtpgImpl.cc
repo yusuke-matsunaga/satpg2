@@ -7,6 +7,7 @@
 /// All rights reserved.
 
 #define DEBUG_DTPG 0
+#define DEBUG_OUT cout
 
 #include "DtpgImpl.h"
 
@@ -188,9 +189,9 @@ DtpgImpl::gen_cnf_base()
     mDvarMap.set_vid(node, dvar);
 
 #if DEBUG_DTPG
-    cout << "gvar(Node#" << node->id() << ") = " << gvar << endl
-	 << "fvar(Node#" << node->id() << ") = " << fvar << endl
-	 << "dvar(Node#" << node->id() << ") = " << dvar << endl;
+    DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << gvar << endl
+	      << "fvar(Node#" << node->id() << ") = " << fvar << endl
+	      << "dvar(Node#" << node->id() << ") = " << dvar << endl;
 #endif
   }
 
@@ -203,8 +204,8 @@ DtpgImpl::gen_cnf_base()
     mFvarMap.set_vid(node, gvar);
 
 #if DEBUG_DTPG
-    cout << "gvar(Node#" << node->id() << ") = " << gvar << endl
-	 << "fvar(Node#" << node->id() << ") = " << gvar << endl;
+    DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << gvar << endl
+	      << "fvar(Node#" << node->id() << ") = " << gvar << endl;
 #endif
   }
 
@@ -216,7 +217,7 @@ DtpgImpl::gen_cnf_base()
     mHvarMap.set_vid(node, hvar);
 
 #if DEBUG_DTPG
-    cout << "hvar(Node#" << node->id() << ") = " << hvar << endl;
+    DEBUG_OUT << "hvar(Node#" << node->id() << ") = " << hvar << endl;
 #endif
   }
 
@@ -229,34 +230,42 @@ DtpgImpl::gen_cnf_base()
     node->make_cnf(mSolver, GateLitMap_vid(node, mGvarMap));
 
 #if DEBUG_DTPG
-    cout << "Node#" << node->id() << ": gvar("
-	 << gvar(node) << ") := " << node->gate_type()
-	 << "(";
+    DEBUG_OUT << "Node#" << node->id() << ": gvar("
+	      << gvar(node) << ") := " << node->gate_type()
+	      << "(";
     for (ymuint j = 0; j < node->fanin_num(); ++ j) {
       const TpgNode* inode = node->fanin(j);
-      cout << " " << gvar(inode);
+      DEBUG_OUT << " " << gvar(inode);
     }
-    cout << ")" << endl;
+    DEBUG_OUT << ")" << endl;
 #endif
   }
 
-#if 1
+  for (ymuint i = 0; i < mDffList.size(); ++ i) {
+    const TpgDff* dff = mDffList[i];
+    const TpgNode* onode = dff->output();
+    const TpgNode* inode = dff->input();
+    // DFF の入力の1時刻前の値と出力の値が等しい．
+    SatLiteral olit(gvar(onode));
+    SatLiteral ilit(hvar(inode));
+    mSolver.add_eq_rel(olit, ilit);
+  }
+
   for (ymuint i = 0; i < tfi2_num; ++ i) {
     const TpgNode* node = mNodeList2[i];
     node->make_cnf(mSolver, GateLitMap_vid(node, mHvarMap));
 
 #if DEBUG_DTPG
-    cout << "Node#" << node->id() << ": hvar("
-	 << hvar(node) << ") := " << node->gate_type()
-	 << "(";
+    DEBUG_OUT << "Node#" << node->id() << ": hvar("
+	      << hvar(node) << ") := " << node->gate_type()
+	      << "(";
     for (ymuint j = 0; j < node->fanin_num(); ++ j) {
       const TpgNode* inode = node->fanin(j);
-      cout << " " << hvar(inode);
+      DEBUG_OUT << " " << hvar(inode);
     }
-    cout << ")" << endl;
+    DEBUG_OUT << ")" << endl;
 #endif
   }
-#endif
 
 
   //////////////////////////////////////////////////////////////////////
@@ -268,14 +277,15 @@ DtpgImpl::gen_cnf_base()
       node->make_cnf(mSolver, GateLitMap_vid(node, mFvarMap));
 
 #if DEBUG_DTPG
-    cout << "Node#" << node->id() << ": fvar("
-	 << fvar(node) << ") := " << node->gate_type()
-	 << "(";
-    for (ymuint j = 0; j < node->fanin_num(); ++ j) {
-      const TpgNode* inode = node->fanin(j);
-      cout << " " << fvar(inode);
-    }
-    cout << ")" << endl;
+      DEBUG_OUT << "Node#" << node->id() << ": fvar("
+		<< fvar(node) << ") := " << node->gate_type()
+		<< "(";
+      for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+	const TpgNode* inode = node->fanin(j);
+	DEBUG_OUT << " " << fvar(inode);
+      }
+
+      DEBUG_OUT << ")" << endl;
 #endif
     }
     make_dchain_cnf(node);
@@ -315,8 +325,8 @@ DtpgImpl::make_dchain_cnf(const TpgNode* node)
   mSolver.add_clause( glit,  flit, ~dlit);
 
 #if DEBUG_DTPG
-  cout << "dvar(Node#" << node->id() << ") -> "
-       << glit << " XOR " << flit << endl;
+  DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
+	    << glit << " XOR " << flit << endl;
 #endif
 
   if ( node->is_ppo() ) {
@@ -324,15 +334,15 @@ DtpgImpl::make_dchain_cnf(const TpgNode* node)
     mSolver.add_clause( glit, ~flit,  dlit);
 
 #if DEBUG_DTPG
-    cout << "!dvar(Node#" << node->id() << ") -> "
-	 << glit << " = " << flit << endl;
+    DEBUG_OUT << "!dvar(Node#" << node->id() << ") -> "
+	      << glit << " = " << flit << endl;
 #endif
   }
   else {
     // dlit -> ファンアウト先のノードの dlit の一つが 1
 
 #if DEBUG_DTPG
-    cout << "dvar(Node#" << node->id() << ") -> ";
+    DEBUG_OUT << "dvar(Node#" << node->id() << ") -> ";
 #endif
     ymuint nfo = node->fanout_num();
     if ( nfo == 1 ) {
@@ -340,7 +350,7 @@ DtpgImpl::make_dchain_cnf(const TpgNode* node)
       mSolver.add_clause(~dlit, odlit);
 
 #if DEBUG_DTPG
-      cout << odlit << endl;
+      DEBUG_OUT << odlit << endl;
 #endif
     }
     else {
@@ -350,12 +360,12 @@ DtpgImpl::make_dchain_cnf(const TpgNode* node)
 	tmp_lits[i] = SatLiteral(mDvarMap(onode));
 
 #if DEBUG_DTPG
-	cout << " " << mDvarMap(onode);
+	DEBUG_OUT << " " << mDvarMap(onode);
 #endif
       }
 
 #if DEBUG_DTPG
-      cout << endl;
+      DEBUG_OUT << endl;
 #endif
       tmp_lits[nfo] = ~dlit;
       mSolver.add_clause(tmp_lits);
@@ -366,8 +376,8 @@ DtpgImpl::make_dchain_cnf(const TpgNode* node)
 	mSolver.add_clause(~dlit, odlit);
 
 #if DEBUG_DTPG
-	cout << "dvar(Node#" << node->id() << ") -> "
-	     << odlit << endl;
+	DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
+		  << odlit << endl;
 #endif
       }
     }
@@ -382,7 +392,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
 			     NodeValList& assign_list)
 {
 #if DEBUG_DTPG
-  cout << "make_ffr_condition" << endl;
+  DEBUG_OUT << "make_ffr_condition" << endl;
 #endif
 
   // 故障の活性化条件を作る．
@@ -392,13 +402,13 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   assign_list.add(inode, 1, val);
 
 #if DEBUG_DTPG
-  print_node(cout, inode);
-  cout << "@1: ";
+  print_node(DEBUG_OUT, inode);
+  DEBUG_OUT << "@1: ";
   if ( val ) {
-    cout << "1" << endl;
+    DEBUG_OUT << "1" << endl;
   }
   else {
-    cout << "0" << endl;
+    DEBUG_OUT << "0" << endl;
   }
 #endif
 
@@ -406,13 +416,13 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   assign_list.add(inode, 0, !val);
 
 #if DEBUG_DTPG
-  print_node(cout, inode);
-  cout << "@0: ";
+  print_node(DEBUG_OUT, inode);
+  DEBUG_OUT << "@0: ";
   if ( val ) {
-    cout << "0" << endl;
+    DEBUG_OUT << "0" << endl;
   }
   else {
-    cout << "1" << endl;
+    DEBUG_OUT << "1" << endl;
   }
 #endif
 
@@ -429,13 +439,13 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
 	  assign_list.add(inode1, 1, val);
 
 #if DEBUG_DTPG
-	  print_node(cout, inode1);
-	  cout << "@1: ";
+	  print_node(DEBUG_OUT, inode1);
+	  DEBUG_OUT << "@1: ";
 	  if ( val ) {
-	    cout << "1" << endl;
+	    DEBUG_OUT << "1" << endl;
 	  }
 	  else {
-	    cout << "0" << endl;
+	    DEBUG_OUT << "0" << endl;
 	  }
 #endif
 	}
@@ -462,13 +472,13 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
 	assign_list.add(inode1, 1, val);
 
 #if DEBUG_DTPG
-	print_node(cout, inode1);
-	cout << "@1: ";
+	print_node(DEBUG_OUT, inode1);
+	DEBUG_OUT << "@1: ";
 	if ( val ) {
-	  cout << "1" << endl;
+	  DEBUG_OUT << "1" << endl;
 	}
 	else {
-	  cout << "0" << endl;
+	  DEBUG_OUT << "0" << endl;
 	}
 #endif
       }
@@ -476,7 +486,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   }
 
 #if DEBUG_DTPG
-  cout << endl;
+  DEBUG_OUT << endl;
 #endif
 }
 

@@ -180,10 +180,8 @@ operator<<(ostream& s,
     s << comma;
     comma = ", ";
     print_node(s, nv.node());
-    if( nv.time() == 1 ) {
-      s << "@1";
-    }
-    s << ":" << nv.val();
+    s << "@" << nv.time()
+      << " = " << nv.val();
   }
   return s;
 }

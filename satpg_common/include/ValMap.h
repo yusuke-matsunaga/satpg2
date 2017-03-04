@@ -108,6 +108,7 @@ ValMap::gval(const TpgNode* node,
 	     int time) const
 {
   SatVarId vid = (time == 0) ? mHvarMap(node) : mGvarMap(node);
+  ASSERT_COND( vid != kSatVarIdIllegal );
   return val(vid);
 }
 
@@ -118,6 +119,7 @@ Val3
 ValMap::fval(const TpgNode* node) const
 {
   SatVarId vid = mFvarMap(node);
+  ASSERT_COND( vid != kSatVarIdIllegal );
   return val(vid);
 }
 

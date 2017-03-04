@@ -7,6 +7,7 @@
 /// All rights reserved.
 
 #define DEBUG_DTPGM 0
+#define DEBUG_OUT cout
 
 #include "DtpgImplM.h"
 
@@ -111,7 +112,7 @@ DtpgImplM::make_mffc_condition()
     mElemVarArray[i] = solver().new_var();
 
 #if DEBUG_DTPGM
-    cout << "cvar(Elem#" << i << ") = " << mElemVarArray[i] << endl;
+    DEBUG_OUT << "cvar(Elem#" << i << ") = " << mElemVarArray[i] << endl;
 #endif
   }
 
@@ -134,7 +135,7 @@ DtpgImplM::make_mffc_condition()
 	node_list.push_back(onode);
 
 #if DEBUG_DTPGM
-	cout << "fvar(Node#" << onode->id() << ") = " << var << endl;
+	DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
 #endif
       }
     }
@@ -153,7 +154,7 @@ DtpgImplM::make_mffc_condition()
 	node_list.push_back(onode);
 
 #if DEBUG_DTPGM
-	cout << "fvar(Node#" << onode->id() << ") = " << var << endl;
+	DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
 #endif
       }
     }
@@ -197,13 +198,13 @@ DtpgImplM::make_mffc_condition()
     node->make_cnf(solver(), GateLitMap_vect(ivars, ovar));
 
 #if DEBUG_DTPGM
-    cout << "Node#" << node->id() << ": ofvar("
-	 << ovar << ") := " << node->gate_type()
-	 << "(";
+    DEBUG_OUT << "Node#" << node->id() << ": ofvar("
+	      << ovar << ") := " << node->gate_type()
+	      << "(";
     for (ymuint i = 0; i < ni; ++ i) {
-      cout << " " << ivars[i];
+      DEBUG_OUT << " " << ivars[i];
     }
-    cout << ")" << endl;
+    DEBUG_OUT << ")" << endl;
 #endif
   }
 }
@@ -223,8 +224,8 @@ DtpgImplM::inject_fault(ymuint elem_pos,
   solver().add_xorgate_rel(lit1, lit2, olit);
 
 #if DEBUG_DTPGM
-  cout << "inject fault: " << ovar << " -> " << fvar(node)
-       << " with cvar = " << mElemVarArray[elem_pos] << endl;
+  DEBUG_OUT << "inject fault: " << ovar << " -> " << fvar(node)
+	    << " with cvar = " << mElemVarArray[elem_pos] << endl;
 #endif
 }
 

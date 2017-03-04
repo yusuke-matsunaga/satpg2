@@ -501,8 +501,8 @@ void
 DtpgImpl::set_tfi_mark(const TpgNode* node)
 {
   ymuint id = node->id();
-  if ( mMarkArray[id] == 0U ) {
-    mMarkArray[node->id()] = 2U;
+  if ( (mMarkArray[id] & 2U) == 0U ) {
+    mMarkArray[id] |= 2U;
     mNodeList.push_back(node);
     if ( node->is_dff_output() ) {
       mDffList.push_back(node->dff());
@@ -525,7 +525,7 @@ DtpgImpl::set_tfi2_mark(const TpgNode* node)
 {
   ymuint id = node->id();
   if ( (mMarkArray[id] & 4U) == 0U ) {
-    mMarkArray[node->id()] |= 4U;
+    mMarkArray[id] |= 4U;
     mNodeList2.push_back(node);
   }
 }
