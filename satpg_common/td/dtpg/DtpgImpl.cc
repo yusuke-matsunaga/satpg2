@@ -74,11 +74,11 @@ DtpgImpl::gen_cnf(DtpgStats& stats)
   cnf_end(stats);
 }
 
-/// @brief テスト生成を行なう．
-/// @param[in] fault 対象の故障
-/// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
-/// @param[inout] stats DTPGの統計情報
-/// @return 結果を返す．
+// @brief テスト生成を行なう．
+// @param[in] fault 対象の故障
+// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
+// @param[inout] stats DTPGの統計情報
+// @return 結果を返す．
 SatBool3
 DtpgImpl::dtpg(const TpgFault* fault,
 	       NodeValList& nodeval_list,

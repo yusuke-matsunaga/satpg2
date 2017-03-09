@@ -196,11 +196,6 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief TFO マークを調べる．
-  /// @param[in] node 対象のノード
-  bool
-  tfo_mark(const TpgNode* node) const;
-
   /// @brief TFO マークをつける．
   /// @param[in] node 対象のノード
   ///
@@ -210,22 +205,12 @@ private:
   void
   set_tfo_mark(const TpgNode* node);
 
-  /// @brief TFI マークを調べる．
-  /// @param[in] node 対象のノード
-  bool
-  tfi_mark(const TpgNode* node) const;
-
   /// @brief TFI マークをつける．
   /// @param[in] node 対象のノード
   ///
   /// と同時に mNodeList に入れる．
   void
   set_tfi_mark(const TpgNode* node);
-
-  /// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
-  /// @param[in] node 対象のノード
-  bool
-  mark(const TpgNode* node);
 
 
 private:
@@ -396,14 +381,6 @@ DtpgImpl::fvar_map() const
   return mFvarMap;
 }
 
-// @brief TFO マークを調べる．
-inline
-bool
-DtpgImpl::tfo_mark(const TpgNode* node) const
-{
-  return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
-}
-
 // @brief TFO マークをつける．
 inline
 void
@@ -419,14 +396,6 @@ DtpgImpl::set_tfo_mark(const TpgNode* node)
   }
 }
 
-// @brief TFI マークを調べる．
-inline
-bool
-DtpgImpl::tfi_mark(const TpgNode* node) const
-{
-  return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
-}
-
 // @brief TFI マークをつける．
 inline
 void
@@ -437,17 +406,6 @@ DtpgImpl::set_tfi_mark(const TpgNode* node)
     mMarkArray[node->id()] = 2U;
     mNodeList.push_back(node);
   }
-}
-
-// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
-inline
-bool
-DtpgImpl::mark(const TpgNode* node)
-{
-  if ( mMarkArray[node->id()] ) {
-    return true;
-  }
-  return false;
 }
 
 END_NAMESPACE_YM_SATPG_SA
