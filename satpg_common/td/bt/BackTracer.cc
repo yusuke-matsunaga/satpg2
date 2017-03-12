@@ -22,21 +22,15 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 // @brief コンストラクタ
 // @param[in] max_id ID番号の最大値
 BackTracer::BackTracer(ymuint xmode,
-		       ymuint max_id)
+		       ymuint max_id) :
+  mXmode(xmode),
+  mMaxId(max_id)
 {
-  switch ( xmode ) {
-  case 0:  mImpl = new BtSimple(); break;
-  case 1:  mImpl = new BtJust1(); break;
-  case 2:  mImpl = new BtJust2(); break;
-  default: mImpl = new BtJust2(); break;
-  }
-  mImpl->set_max_id(max_id);
 }
 
 // @brief デストラクタ
 BackTracer::~BackTracer()
 {
-  delete mImpl;
 }
 
 // @brief バックトレースを行なう．
@@ -57,7 +51,17 @@ BackTracer::operator()(const TpgNode* ffr_root,
 		       const ValMap& val_map,
 		       NodeValList& pi_assign_list)
 {
-  mImpl->run(ffr_root, assign_list, output_list, val_map, pi_assign_list);
+  BtImpl* impl = nullptr;
+  switch ( mXmode ) {
+  case 0:  impl = new BtSimple(mMaxId, val_map); break;
+  case 1:  impl = new BtJust1(mMaxId, val_map); break;
+  case 2:  impl = new BtJust2(mMaxId, val_map); break;
+  default: impl = new BtJust2(mMaxId, val_map); break;
+  }
+
+  impl->run(ffr_root, assign_list, output_list, pi_assign_list);
+
+  delete impl;
 }
 
 END_NAMESPACE_YM_SATPG_TD

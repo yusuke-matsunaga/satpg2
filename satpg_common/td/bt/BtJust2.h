@@ -25,7 +25,10 @@ class BtJust2 :
 public:
 
   /// @brief コンストラクタ
-  BtJust2();
+  /// @param[in] max_id ノード番号の最大値
+  /// @param[in] val_map ノードの値を保持するクラス
+  BtJust2(ymuint max_id,
+	  const ValMap& val_map);
 
   /// @brief デストラクタ
   virtual
@@ -37,29 +40,19 @@ public:
   // BackTracer の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief ノードID番号の最大値を設定する．
-  /// @param[in] max_id ID番号の最大値
-  virtual
-  void
-  set_max_id(ymuint max_id);
-
   /// @brief バックトレースを行なう．
   /// @param[in] ffr_root 故障のあるFFRの根のノード
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] output_list 故障に関係する出力ノードのリスト
-  /// @param[in] val_map ノードの値を保持するクラス
   /// @param[out] pi_assign_list 外部入力上の値の割当リスト
   ///
   /// assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
   /// を入れる．
-  /// val_map には ffr_root のファンアウトコーン上の故障値と関係する
-  /// 回路全体の正常値が入っている．
   virtual
   void
   run(const TpgNode* ffr_root,
       const NodeValList& assign_list,
       const vector<const TpgNode*>& output_list,
-      const ValMap& val_map,
       NodeValList& pi_assign_list);
 
 
@@ -67,11 +60,6 @@ protected:
   //////////////////////////////////////////////////////////////////////
   // BtJustBase の仮想関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief clear_justified() 中で呼ばれるフック関数
-  virtual
-  void
-  clear_justified_hook(const TpgNode* node);
 
 
 private:
@@ -101,15 +89,13 @@ private:
   /// @note 正当化に用いられているノードには mark3 がつく．
   /// @note mark3 がついたノードは mBwdNodeList に格納される．
   NodeList*
-  justify(const TpgNode* node,
-	  const ValMap& val_map);
+  justify(const TpgNode* node);
 
   /// @brief すべてのファンインに対して justify() を呼ぶ．
   /// @param[in] node 対象のノード
   /// @param[in] val_map ノードの値の割当を保持するクラス
   NodeList*
-  just_sub1(const TpgNode* node,
-	    const ValMap& val_map);
+  just_sub1(const TpgNode* node);
 
   /// @brief 指定した値を持つのファンインに対して justify() を呼ぶ．
   /// @param[in] node 対象のノード
@@ -117,7 +103,6 @@ private:
   /// @param[in] val 値
   NodeList*
   just_sub2(const TpgNode* node,
-	    const ValMap& val_map,
 	    Val3 val);
 
   /// @brief solve 中で変数割り当ての正当化を行なう．
@@ -127,15 +112,13 @@ private:
   /// @note 正当化に用いられているノードには mark3 がつく．
   /// @note mark3 がついたノードは mBwdNodeList に格納される．
   NodeList*
-  justify0(const TpgNode* node,
-	   const ValMap& val_map);
+  justify0(const TpgNode* node);
 
   /// @brief すべてのファンインに対して justify() を呼ぶ．
   /// @param[in] node 対象のノード
   /// @param[in] val_map ノードの値の割当を保持するクラス
   NodeList*
-  just0_sub1(const TpgNode* node,
-	     const ValMap& val_map);
+  just0_sub1(const TpgNode* node);
 
   /// @brief 指定した値を持つのファンインに対して justify() を呼ぶ．
   /// @param[in] node 対象のノード
@@ -143,7 +126,6 @@ private:
   /// @param[in] val 値
   NodeList*
   just0_sub2(const TpgNode* node,
-	     const ValMap& val_map,
 	     Val3 val);
 
   /// @brief 新しいリストのセルを返す．

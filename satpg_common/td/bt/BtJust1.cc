@@ -18,7 +18,11 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-BtJust1::BtJust1()
+// @param[in] max_id ノード番号の最大値
+// @param[in] val_map ノードの値を保持するクラス
+BtJust1::BtJust1(ymuint max_id,
+		 const ValMap& val_map) :
+  BtJustBase(max_id, val_map)
 {
 }
 
@@ -31,7 +35,6 @@ BtJust1::~BtJust1()
 // @param[in] ffr_root 故障のあるFFRの根のノード
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
-// @param[in] val_map ノードの値を保持するクラス
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 //
 // assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
@@ -42,7 +45,6 @@ void
 BtJust1::run(const TpgNode* ffr_root,
 	     const NodeValList& assign_list,
 	     const vector<const TpgNode*>& output_list,
-	     const ValMap& val_map,
 	     NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
@@ -52,10 +54,10 @@ BtJust1::run(const TpgNode* ffr_root,
     NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
     if ( nv.time() == 0 ) {
-      justify0(node, val_map, pi_assign_list);
+      justify0(node, pi_assign_list);
     }
     else {
-      justify(node, val_map, pi_assign_list);
+      justify(node, pi_assign_list);
     }
   }
 
@@ -64,7 +66,7 @@ BtJust1::run(const TpgNode* ffr_root,
   for (vector<const TpgNode*>::const_iterator p = output_list.begin();
        p != output_list.end(); ++ p) {
     const TpgNode* node = *p;
-    if ( val_map.gval(node) != val_map.fval(node) ) {
+    if ( gval(node) != fval(node) ) {
       onode = node;
       break;
     }
@@ -72,25 +74,16 @@ BtJust1::run(const TpgNode* ffr_root,
   ASSERT_COND( onode != nullptr );
 
   // 正当化を行う．
-  justify(onode, val_map, pi_assign_list);
-
-  // 1時刻前の故障ノードの値も正当化する．
-  // ここでは ffr_root を正当化しているが，故障の影響が伝搬するためには
-  justify0(ffr_root, val_map, pi_assign_list);
-
-  // 一連の処理でつけたマークを消す．
-  clear_justified();
+  justify(onode, pi_assign_list);
 }
 
 // @brief solve 中で変数割り当ての正当化を行なう．
 // @param[in] node 対象のノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @note node の値割り当てを正当化する．
 // @note 正当化に用いられているノードには mJustifiedMark がつく．
 // @note mJustifiedMmark がついたノードは mJustifiedNodeList に格納される．
 void
 BtJust1::justify(const TpgNode* node,
-		 const ValMap& val_map,
 		 NodeValList& assign_list)
 {
   if ( justified_mark(node) ) {
@@ -100,24 +93,24 @@ BtJust1::justify(const TpgNode* node,
 
   if ( node->is_primary_input() ) {
     // val を記録
-    record_value(node, val_map, 1, assign_list);
+    record_value(node, 1, assign_list);
     return;
   }
 
   if ( node->is_dff_output() ) {
     const TpgDff* dff = node->dff();
     const TpgNode* alt_node = dff->input();
-    justify0(alt_node, val_map, assign_list);
+    justify0(alt_node, assign_list);
     return;
   }
 
-  Val3 gval = val_map.gval(node);
-  Val3 fval = val_map.fval(node);
+  Val3 gval = this->gval(node);
+  Val3 fval = this->fval(node);
 
   if ( gval != fval ) {
     // 正常値と故障値が異なっていたら
     // すべてのファンインをたどる．
-    just_sub1(node, val_map, assign_list);
+    just_sub1(node, assign_list);
     return;
   }
 
@@ -125,57 +118,57 @@ BtJust1::justify(const TpgNode* node,
   case kGateBUFF:
   case kGateNOT:
     // 無条件で唯一のファンインをたどる．
-    justify(node->fanin(0), val_map, assign_list);
+    justify(node->fanin(0), assign_list);
     break;
 
   case kGateAND:
     if ( gval == kVal1 ) {
       // すべてのファンインノードをたどる．
-      just_sub1(node, val_map, assign_list);
+      just_sub1(node, assign_list);
     }
     else if ( gval == kVal0 ) {
       // 0の値を持つ最初のノードをたどる．
-      just_sub2(node, val_map, kVal0, assign_list);
+      just_sub2(node, kVal0, assign_list);
     }
     break;
 
   case kGateNAND:
     if ( gval == kVal1 ) {
       // 0の値を持つ最初のノードをたどる．
-      just_sub2(node, val_map, kVal0, assign_list);
+      just_sub2(node, kVal0, assign_list);
     }
     else if ( gval == kVal0 ) {
       // すべてのファンインノードをたどる．
-      just_sub1(node, val_map, assign_list);
+      just_sub1(node, assign_list);
     }
     break;
 
   case kGateOR:
     if ( gval == kVal1 ) {
       // 1の値を持つ最初のノードをたどる．
-      just_sub2(node, val_map, kVal1, assign_list);
+      just_sub2(node, kVal1, assign_list);
     }
     else if ( gval == kVal0 ) {
       // すべてのファンインノードをたどる．
-      just_sub1(node, val_map, assign_list);
+      just_sub1(node, assign_list);
     }
     break;
 
   case kGateNOR:
     if ( gval == kVal1 ) {
       // すべてのファンインノードをたどる．
-      just_sub1(node, val_map, assign_list);
+      just_sub1(node, assign_list);
     }
     else if ( gval == kVal0 ) {
       // 1の値を持つ最初のノードをたどる．
-      just_sub2(node, val_map, kVal1, assign_list);
+      just_sub2(node, kVal1, assign_list);
     }
     break;
 
   case kGateXOR:
   case kGateXNOR:
     // すべてのファンインノードをたどる．
-    just_sub1(node, val_map, assign_list);
+    just_sub1(node, assign_list);
     break;
 
   default:
@@ -186,28 +179,24 @@ BtJust1::justify(const TpgNode* node,
 
 // @brief すべてのファンインに対して justify() を呼ぶ．
 // @param[in] node 対象のノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @param[out] assign_list 値の割当リスト
 void
 BtJust1::just_sub1(const TpgNode* node,
-		   const ValMap& val_map,
 		   NodeValList& assign_list)
 {
   ymuint ni = node->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
-    justify(inode, val_map, assign_list);
+    justify(inode, assign_list);
   }
 }
 
 // @brief 指定した値を持つのファンインに対して justify() を呼ぶ．
 // @param[in] node 対象のノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @param[in] val 値
 // @param[out] assign_list 値の割当リスト
 void
 BtJust1::just_sub2(const TpgNode* node,
-		   const ValMap& val_map,
 		   Val3 val,
 		   NodeValList& assign_list)
 {
@@ -216,17 +205,17 @@ BtJust1::just_sub2(const TpgNode* node,
   ymuint ni = node->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
-    Val3 igval = val_map.gval(inode);
-    Val3 ifval = val_map.fval(inode);
+    Val3 igval = gval(inode);
+    Val3 ifval = fval(inode);
     if ( !gfound && igval == val ) {
-      justify(inode, val_map, assign_list);
+      justify(inode, assign_list);
       gfound = true;
       if ( ifval == val ) {
 	break;
       }
     }
     else if ( !ffound && ifval == val ) {
-      justify(inode, val_map, assign_list);
+      justify(inode, assign_list);
       ffound = true;
     }
     if ( gfound && ffound ) {
@@ -237,13 +226,11 @@ BtJust1::just_sub2(const TpgNode* node,
 
 // @brief solve 中で変数割り当ての正当化を行なう．
 // @param[in] node 対象のノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @note node の値割り当てを正当化する．
 // @note 正当化に用いられているノードには mJustifiedMark がつく．
 // @note mJustifiedMmark がついたノードは mJustifiedNodeList に格納される．
 void
 BtJust1::justify0(const TpgNode* node,
-		  const ValMap& val_map,
 		  NodeValList& assign_list)
 {
   if ( justified0_mark(node) ) {
@@ -253,67 +240,67 @@ BtJust1::justify0(const TpgNode* node,
 
   if ( node->is_ppi() ) {
     // val を記録
-    record_value(node, val_map, 0, assign_list);
+    record_value(node, 0, assign_list);
     return;
   }
 
-  Val3 gval = val_map.gval(node, 0);
+  Val3 gval = this->gval(node, 0);
 
   switch ( node->gate_type() ) {
   case kGateBUFF:
   case kGateNOT:
     // 無条件で唯一のファンインをたどる．
-    justify0(node->fanin(0), val_map, assign_list);
+    justify0(node->fanin(0), assign_list);
     break;
 
   case kGateAND:
     if ( gval == kVal1 ) {
       // すべてのファンインノードをたどる．
-      just0_sub1(node, val_map, assign_list);
+      just0_sub1(node, assign_list);
     }
     else if ( gval == kVal0 ) {
       // 0の値を持つ最初のノードをたどる．
-      just0_sub2(node, val_map, kVal0, assign_list);
+      just0_sub2(node, kVal0, assign_list);
     }
     break;
 
   case kGateNAND:
     if ( gval == kVal1 ) {
       // 0の値を持つ最初のノードをたどる．
-      just0_sub2(node, val_map, kVal0, assign_list);
+      just0_sub2(node, kVal0, assign_list);
     }
     else if ( gval == kVal0 ) {
       // すべてのファンインノードをたどる．
-      just0_sub1(node, val_map, assign_list);
+      just0_sub1(node, assign_list);
     }
     break;
 
   case kGateOR:
     if ( gval == kVal1 ) {
       // 1の値を持つ最初のノードをたどる．
-      just0_sub2(node, val_map, kVal1, assign_list);
+      just0_sub2(node, kVal1, assign_list);
     }
     else if ( gval == kVal0 ) {
       // すべてのファンインノードをたどる．
-      just0_sub1(node, val_map, assign_list);
+      just0_sub1(node, assign_list);
     }
     break;
 
   case kGateNOR:
     if ( gval == kVal1 ) {
       // すべてのファンインノードをたどる．
-      just0_sub1(node, val_map, assign_list);
+      just0_sub1(node, assign_list);
     }
     else if ( gval == kVal0 ) {
       // 1の値を持つ最初のノードをたどる．
-      just0_sub2(node, val_map, kVal1, assign_list);
+      just0_sub2(node, kVal1, assign_list);
     }
     break;
 
   case kGateXOR:
   case kGateXNOR:
     // すべてのファンインノードをたどる．
-    just0_sub1(node, val_map, assign_list);
+    just0_sub1(node, assign_list);
     break;
 
   default:
@@ -324,37 +311,33 @@ BtJust1::justify0(const TpgNode* node,
 
 // @brief すべてのファンインに対して justify() を呼ぶ．
 // @param[in] node 対象のノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @param[out] assign_list 値の割当リスト
 void
 BtJust1::just0_sub1(const TpgNode* node,
-		    const ValMap& val_map,
 		    NodeValList& assign_list)
 {
   ymuint ni = node->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
-    justify0(inode, val_map, assign_list);
+    justify0(inode, assign_list);
   }
 }
 
 // @brief 指定した値を持つのファンインに対して justify() を呼ぶ．
 // @param[in] node 対象のノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @param[in] val 値
 // @param[out] assign_list 値の割当リスト
 void
 BtJust1::just0_sub2(const TpgNode* node,
-		    const ValMap& val_map,
 		    Val3 val,
 		    NodeValList& assign_list)
 {
   ymuint ni = node->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
-    Val3 igval = val_map.gval(inode, 0);
+    Val3 igval = gval(inode, 0);
     if ( igval == val ) {
-      justify0(inode, val_map, assign_list);
+      justify0(inode, assign_list);
       break;
     }
   }

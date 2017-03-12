@@ -24,7 +24,14 @@ class BtSimple :
 public:
 
   /// @brief コンストラクタ
-  BtSimple();
+  /// @param[in] max_id ノード番号の最大値
+  /// @param[in] val_map ノードの値を保持するクラス
+  BtSimple(ymuint max_id,
+	   const ValMap& val_map);
+
+  /// @brief デストラクタ
+  virtual
+  ~BtSimple();
 
 
 public:
@@ -32,19 +39,10 @@ public:
   // BtSimple の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief ノードID番号の最大値を設定する．
-  /// @param[in] max_id ID番号の最大値
-  ///
-  /// このクラスの実装ではなにもしない．
-  virtual
-  void
-  set_max_id(ymuint max_id);
-
   /// @brief バックトレースを行なう．
   /// @param[in] ffr_root 故障のあるFFRの根のノード
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] output_list 故障に関係する出力ノードのリスト
-  /// @param[in] val_map ノードの値を保持するクラス
   /// @param[out] pi_assign_list 外部入力上の値の割当リスト
   ///
   /// assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
@@ -56,7 +54,6 @@ public:
   run(const TpgNode* ffr_root,
       const NodeValList& assign_list,
       const vector<const TpgNode*>& output_list,
-      const ValMap& val_map,
       NodeValList& pi_assign_list);
 
 
@@ -71,7 +68,6 @@ private:
   /// @param[out] assign_list 値割当の結果を入れるリスト
   void
   tfi_recur(const TpgNode* node,
-	    const ValMap& val_map,
 	    NodeValList& assign_list);
 
   /// @brief node のファンインのうち外部入力を記録する．
@@ -80,7 +76,6 @@ private:
   /// @param[out] assign_list 値割当の結果を入れるリスト
   void
   tfi_recur0(const TpgNode* node,
-	     const ValMap& val_map,
 	     NodeValList& assign_list);
 
 
@@ -92,11 +87,8 @@ private:
   // ノード番号の最大値
   ymuint mMaxId;
 
-  // tfi_recur で用いるマーク
-  vector<bool> mMark;
-
-  // tfi_recur2 で用いるマーク
-  vector<bool> mMark2;
+  // tfi_recur/tfi_recur0 で用いるマークの配列
+  vector<ymuint8> mMarkArray;
 
 };
 

@@ -25,7 +25,10 @@ class BtJustBase :
 public:
 
   /// @brief コンストラクタ
-  BtJustBase();
+  /// @param[in] max_id ノード番号の最大値
+  /// @param[in] val_map ノードの値を保持するクラス
+  BtJustBase(ymuint max_id,
+	     const ValMap& val_map);
 
   /// @brief デストラクタ
   virtual
@@ -34,14 +37,8 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // Backtracer の仮想関数
+  // BtImpl の仮想関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ノードID番号の最大値を設定する．
-  /// @param[in] max_id ID番号の最大値
-  virtual
-  void
-  set_max_id(ymuint max_id);
 
 
 protected:
@@ -69,35 +66,14 @@ protected:
   bool
   justified0_mark(const TpgNode* node);
 
-  /// @brief justified マークを消す．
-  void
-  clear_justified();
-
-  /// @brief clear_justified() 中で呼ばれるフック関数
-  /// @note デフォルトの実装はなにもしない．
-  virtual
-  void
-  clear_justified_hook(const TpgNode* node);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 正当化されたノードのリスト
-  vector<const TpgNode*> mJustifiedNodeList;
-
-  // 正当化マークの配列
-  // インデックスは TpgNode::id()
-  vector<bool> mJustifiedMarkArray;
-
-  // 正当化されたノードのリスト
-  vector<const TpgNode*> mJustified0NodeList;
-
-  // 正当化マークの配列
-  // インデックスは TpgNode::id()
-  vector<bool> mJustified0MarkArray;
+  // 個々のノードのマークを表す配列
+  vector<ymuint8> mMarkArray;
 
 };
 
@@ -106,15 +82,30 @@ private:
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
+// @brief コンストラクタ
+// @param[in] max_id ノード番号の最大値
+// @param[in] val_map ノードの値を保持するクラス
+inline
+BtJustBase::BtJustBase(ymuint max_id,
+		       const ValMap& val_map) :
+  BtImpl(val_map),
+  mMarkArray(max_id, 0U)
+{
+}
+
+// @brief デストラクタ
+inline
+BtJustBase::~BtJustBase()
+{
+}
+
 // @brief justified マークをつける．
 // @param[in] node 対象のノード
 inline
 void
 BtJustBase::set_justified(const TpgNode* node)
 {
-  ASSERT_COND( node->id() < mJustifiedMarkArray.size() );
-  mJustifiedMarkArray[node->id()] = true;
-  mJustifiedNodeList.push_back(node);
+  mMarkArray[node->id()] |= 1U;
 }
 
 // @brief justified マークを読む．
@@ -123,8 +114,7 @@ inline
 bool
 BtJustBase::justified_mark(const TpgNode* node)
 {
-  ASSERT_COND( node->id() < mJustifiedMarkArray.size() );
-  return mJustifiedMarkArray[node->id()];
+  return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
 }
 
 // @brief justified マークをつける．
@@ -133,9 +123,7 @@ inline
 void
 BtJustBase::set_justified0(const TpgNode* node)
 {
-  ASSERT_COND( node->id() < mJustified0MarkArray.size() );
-  mJustified0MarkArray[node->id()] = true;
-  mJustified0NodeList.push_back(node);
+  mMarkArray[node->id()] |= 2U;
 }
 
 // @brief justified マークを読む．
@@ -144,8 +132,7 @@ inline
 bool
 BtJustBase::justified0_mark(const TpgNode* node)
 {
-  ASSERT_COND( node->id() < mJustified0MarkArray.size() );
-  return mJustified0MarkArray[node->id()];
+  return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
 }
 
 END_NAMESPACE_YM_SATPG_TD

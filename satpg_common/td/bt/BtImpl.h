@@ -26,7 +26,8 @@ class BtImpl
 public:
 
   /// @brief コンストラクタ
-  BtImpl();
+  /// @param[in] val_map ノードの値を保持するクラス
+  BtImpl(const ValMap& val_map);
 
   /// @brief デストラクタ
   virtual
@@ -35,16 +36,8 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // Bt2Impl の仮想関数
+  // BtImpl の仮想関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ノードID番号の最大値を設定する．
-  /// @param[in] max_id ID番号の最大値
-  ///
-  /// このクラスの実装ではなにもしない．
-  virtual
-  void
-  set_max_id(ymuint max_id);
 
   /// @brief バックトレースを行なう．
   /// @param[in] ffr_root 故障のあるFFRの根のノード
@@ -62,7 +55,6 @@ public:
   run(const TpgNode* ffr_root,
       const NodeValList& assign_list,
       const vector<const TpgNode*>& output_list,
-      const ValMap& val_map,
       NodeValList& pi_assign_list) = 0;
 
 
@@ -71,15 +63,25 @@ protected:
   // 継承クラスから用いられる便利関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ノードの正常値を返す．
+  /// @param[in] node ノード
+  /// @param[in] time 時刻 ( 0 or 1 )
+  Val3
+  gval(const TpgNode* node,
+       int time = 1) const;
+
+  /// @brief ノードの故障地を返す．
+  /// @param[in] node ノード
+  Val3
+  fval(const TpgNode* node) const;
+
   /// @brief 入力ノードの値を記録する．
   /// @param[in] node 対象の外部入力ノード
   /// @param[in] val_map ノードの値の割当を保持するクラス
   /// @param[in] time 時刻 (0 or 1)
   /// @param[out] assign_list 値の割当リスト
-  static
   void
   record_value(const TpgNode* node,
-	       const ValMap& val_map,
 	       int time,
 	       NodeValList& assign_list);
 
@@ -89,6 +91,9 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+  // ノードの値を保持するクラス
+  const ValMap& mValMap;
+
 };
 
 
@@ -96,19 +101,37 @@ private:
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
+// @brief ノードの正常値を返す．
+// @param[in] node ノード
+// @param[in] time 時刻 ( 0 or 1 )
+inline
+Val3
+BtImpl::gval(const TpgNode* node,
+	     int time) const
+{
+  return mValMap.gval(node, time);
+}
+
+// @brief ノードの故障地を返す．
+// @param[in] node ノード
+inline
+Val3
+BtImpl::fval(const TpgNode* node) const
+{
+  return mValMap.fval(node);
+}
+
 // @brief 入力ノードの値を記録する．
 // @param[in] node 対象の外部入力ノード
-// @param[in] val_map ノードの値の割当を保持するクラス
 // @param[in] time 時刻 (0 or 1)
 // @param[out] assign_list 値の割当リスト
 inline
 void
 BtImpl::record_value(const TpgNode* node,
-		     const ValMap& val_map,
 		     int time,
 		     NodeValList& assign_list)
 {
-  Val3 v = val_map.gval(node, time);
+  Val3 v = gval(node, time);
   if ( v != kValX ) {
     bool bval = (v == kVal1);
     assign_list.add(node, time, bval);

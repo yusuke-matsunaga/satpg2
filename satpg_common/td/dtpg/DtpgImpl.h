@@ -195,6 +195,17 @@ protected:
   make_ffr_condition(const TpgFault* fault,
 		     NodeValList& assign_list);
 
+  /// @brief NodeValList に追加する．
+  /// @param[in] assign_list 追加するリスト
+  /// @param[in] node 対象のノード
+  /// @param[in] time 時刻 ( 0 or 1 )
+  /// @param[in] val 値
+  void
+  add_assign(NodeValList& assign_list,
+	     const TpgNode* node,
+	     int time,
+	     bool val);
+
   /// @brief 一つの SAT問題を解く．
   /// @param[in] fault 対象の故障
   /// @param[in] assumptions 値の決まっている変数のリスト

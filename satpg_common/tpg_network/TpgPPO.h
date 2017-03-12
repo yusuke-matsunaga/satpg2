@@ -61,6 +61,14 @@ public:
   ymuint
   output_id2() const;
 
+  /// @brief ゲートタイプを得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ただし疑似出力の場合はバッファタイプとみなす．
+  virtual
+  GateType
+  gate_type() const;
+
   /// @brief ファンイン数を得る．
   virtual
   ymuint

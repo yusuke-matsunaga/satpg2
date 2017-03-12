@@ -402,32 +402,10 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   const TpgNode* inode = fault->tpg_inode();
   // 0 縮退故障の時に 1 にする．
   bool val = (fault->val() == 0);
-  assign_list.add(inode, 1, val);
-
-#if DEBUG_DTPG
-  print_node(DEBUG_OUT, inode);
-  DEBUG_OUT << "@1: ";
-  if ( val ) {
-    DEBUG_OUT << "1" << endl;
-  }
-  else {
-    DEBUG_OUT << "0" << endl;
-  }
-#endif
+  add_assign(assign_list, inode, 1, val);
 
   // 1時刻前の値が逆の値である条件を作る．
-  assign_list.add(inode, 0, !val);
-
-#if DEBUG_DTPG
-  print_node(DEBUG_OUT, inode);
-  DEBUG_OUT << "@0: ";
-  if ( val ) {
-    DEBUG_OUT << "0" << endl;
-  }
-  else {
-    DEBUG_OUT << "1" << endl;
-  }
-#endif
+  add_assign(assign_list, inode, 0, !val);
 
   // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
   if ( fault->is_branch_fault() ) {
@@ -439,18 +417,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* inode1 = onode->fanin(i);
 	if ( inode1 != inode ) {
-	  assign_list.add(inode1, 1, val);
-
-#if DEBUG_DTPG
-	  print_node(DEBUG_OUT, inode1);
-	  DEBUG_OUT << "@1: ";
-	  if ( val ) {
-	    DEBUG_OUT << "1" << endl;
-	  }
-	  else {
-	    DEBUG_OUT << "0" << endl;
-	  }
-#endif
+	  add_assign(assign_list, inode1, 1, val);
 	}
       }
     }
@@ -472,24 +439,38 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode1 = fonode->fanin(i);
       if ( inode1 != node ) {
-	assign_list.add(inode1, 1, val);
-
-#if DEBUG_DTPG
-	print_node(DEBUG_OUT, inode1);
-	DEBUG_OUT << "@1: ";
-	if ( val ) {
-	  DEBUG_OUT << "1" << endl;
-	}
-	else {
-	  DEBUG_OUT << "0" << endl;
-	}
-#endif
+	add_assign(assign_list, inode1, 1, val);
       }
     }
   }
 
 #if DEBUG_DTPG
   DEBUG_OUT << endl;
+#endif
+}
+
+// @brief NodeValList に追加する．
+// @param[in] assign_list 追加するリスト
+// @param[in] node 対象のノード
+// @param[in] time 時刻 ( 0 or 1 )
+// @param[in] val 値
+void
+DtpgImpl::add_assign(NodeValList& assign_list,
+		     const TpgNode* node,
+		     int time,
+		     bool val)
+{
+  assign_list.add(node, time, val);
+
+#if DEBUG_DTPG
+  print_node(DEBUG_OUT, node);
+  DEBUG_OUT << "@" << time << ": ";
+  if ( val ) {
+    DEBUG_OUT << "1" << endl;
+  }
+  else {
+    DEBUG_OUT << "0" << endl;
+  }
 #endif
 }
 
@@ -541,13 +522,13 @@ DtpgImpl::solve(const TpgFault* fault,
   //sat_stats -= prev_stats;
 
   if ( ans == kB3True ) {
+    // パタンが求まった．
+
     timer.reset();
     timer.start();
 
-    // パタンが求まった．
-    ValMap val_map(mHvarMap, mGvarMap, mFvarMap, model);
-
     // バックトレースを行う．
+    ValMap val_map(mHvarMap, mGvarMap, mFvarMap, model);
     const TpgNode* start_node = fault->tpg_onode()->ffr_root();
     mBackTracer(start_node, assign_list, mOutputList, val_map, nodeval_list);
 
