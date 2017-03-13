@@ -1,23 +1,23 @@
-﻿#ifndef TD_DTPG_H
-#define TD_DTPG_H
+﻿#ifndef DTPG_H
+#define DTPG_H
 
-/// @file td/Dtpg.h
+/// @file Dtpg.h
 /// @brief Dtpg のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "td/td_nsdef.h"
+#include "satpg.h"
 
 #include "DtpgStats.h"
 #include "FaultStatus.h"
 #include "ym/SatBool3.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_TD
+BEGIN_NAMESPACE_YM_SATPG
 
 class DtpgImpl;
 
@@ -33,10 +33,12 @@ public:
   /// @param[in] sat_type SATソルバの種類を表す文字列
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
+  /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
   /// @param[in] bt バックトレーサー
   Dtpg(const string& sat_type,
        const string& sat_option,
        ostream* sat_outp,
+       bool td_mode,
        BackTracer& bt);
 
   /// @brief デストラクタ
@@ -97,6 +99,9 @@ private:
   // SATのログ出力
   ostream* mSatOutP;
 
+  // 遷移故障モード
+  bool mTdMode;
+
   // バックトレーサー
   BackTracer& mBackTracer;
 
@@ -105,6 +110,6 @@ private:
 
 };
 
-END_NAMESPACE_YM_SATPG_TD
+END_NAMESPACE_YM_SATPG
 
-#endif // TD_DTPG_H
+#endif // DTPG_H

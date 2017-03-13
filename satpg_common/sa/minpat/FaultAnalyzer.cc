@@ -21,7 +21,7 @@
 #include "sa/FoCone.h"
 #include "ValMap.h"
 
-#include "sa/BackTracer.h"
+#include "BackTracer.h"
 
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -302,7 +302,8 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
       ValMap val_map(focone->gvar_map(), focone->fvar_map(), sat_model);
 
       BackTracer backtracer(2, mMaxNodeId);
-      backtracer(fault->tpg_onode(), NodeValList(), focone->output_list(), val_map, pi_suf_list);
+      backtracer(fault->tpg_onode(), NodeValList(), focone->output_list(), false, val_map,
+		 pi_suf_list);
       pi_suf_list.sort();
     }
 

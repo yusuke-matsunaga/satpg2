@@ -12,16 +12,16 @@
 #include "TpgFFR.h"
 #include "TpgFault.h"
 #include "TpgFaultMgr.h"
-#include "td/Dtpg.h"
+#include "Dtpg.h"
 #include "NodeValList.h"
-#include "td/BackTracer.h"
+#include "BackTracer.h"
 #include "Fsim.h"
 #include "DetectOp.h"
 #include "DopList.h"
 #include "ym/StopWatch.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_TD
+BEGIN_NAMESPACE_YM_SATPG
 
 const char* argv0 = "";
 
@@ -284,7 +284,8 @@ dtpg_test(int argc,
 
   BackTracer bt(bt_mode, network.node_num());
 
-  Dtpg dtpg(sat_type, sat_option, sat_outp, bt);
+  bool td_mode = true;
+  Dtpg dtpg(sat_type, sat_option, sat_outp, td_mode, bt);
 
   StopWatch timer;
   timer.start();
@@ -437,12 +438,12 @@ dtpg_test(int argc,
   return 0;
 }
 
-END_NAMESPACE_YM_SATPG_TD
+END_NAMESPACE_YM_SATPG
 
 
 int
 main(int argc,
      char** argv)
 {
-  return nsYm::nsSatpg::nsTd::dtpg_test(argc, argv);
+  return nsYm::nsSatpg::dtpg_test(argc, argv);
 }

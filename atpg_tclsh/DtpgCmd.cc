@@ -14,10 +14,10 @@
 #include "TpgMFFC.h"
 #include "TpgFaultMgr.h"
 #include "DtpgStats.h"
-#include "sa/Dtpg.h"
+#include "Dtpg.h"
 #include "Fsim.h"
 #include "NodeValList.h"
-#include "sa/BackTracer.h"
+#include "BackTracer.h"
 #include "DetectOp.h"
 #include "DopList.h"
 #include "UntestOp.h"
@@ -27,7 +27,7 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 void
-run_single(nsSa::Dtpg& dtpg,
+run_single(Dtpg& dtpg,
 	   const TpgNetwork& network,
 	   TpgFaultMgr& fmgr,
 	   DetectOp& dop,
@@ -53,7 +53,7 @@ run_single(nsSa::Dtpg& dtpg,
 }
 
 void
-run_mffc(nsSa::Dtpg& dtpg,
+run_mffc(Dtpg& dtpg,
 	 const TpgNetwork& network,
 	 TpgFaultMgr& fmgr,
 	 DetectOp& dop,
@@ -212,7 +212,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     xmode = mPoptX->val();
   }
 
-  nsSa::BackTracer bt(xmode, _network().node_num());
+  BackTracer bt(xmode, _network().node_num());
 
   if ( mPoptDrop->is_specified() ) {
     dop_list.add(new_DopDrop(_fault_mgr(), _fsim3()));
@@ -234,7 +234,8 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
-  nsSa::Dtpg dtpg(sat_type, sat_option, outp, bt);
+  bool td_mode = false;
+  Dtpg dtpg(sat_type, sat_option, outp, td_mode, bt);
 
   DtpgStats stats;
   if ( engine_type == "single" ) {

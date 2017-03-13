@@ -58,6 +58,12 @@ set (fsim_SOURCES
   fsim/Fsim.cc
   )
 
+set (dtpg_SOURCES
+  dtpg/Dtpg.cc
+  dtpg/DtpgImpl.cc
+  dtpg/DtpgImplM.cc
+  )
+
 set (dop_SOURCES
   dop/DopBase.cc
   dop/DopDrop.cc
@@ -75,18 +81,15 @@ set (uop_SOURCES
   uop/UopSkip.cc
   )
 
+set (bt_SOURCES
+  bt/BackTracer.cc
+  bt/BtImpl.cc
+  bt/BtJust1.cc
+  bt/BtJust2.cc
+  bt/BtSimple.cc
+  )
+
 set (sa_SOURCES
-  sa/bt/BackTracer.cc
-  sa/bt/BtImpl.cc
-  sa/bt/BtJust1.cc
-  sa/bt/BtJust2.cc
-  sa/bt/BtJustBase.cc
-  sa/bt/BtSimple.cc
-
-  sa/dtpg/Dtpg.cc
-  sa/dtpg/DtpgImpl.cc
-  sa/dtpg/DtpgImplM.cc
-
   sa/minpat/Verifier.cc
   sa/minpat/MinPatBase.cc
   sa/minpat/MinPatNaive.cc
@@ -111,17 +114,6 @@ set (sa_SOURCES
   )
 
 set (td_SOURCES
-  td/bt/BackTracer.cc
-  td/bt/BtImpl.cc
-  td/bt/BtJust1.cc
-  td/bt/BtJust2.cc
-  td/bt/BtJustBase.cc
-  td/bt/BtSimple.cc
-
-  td/dtpg/Dtpg.cc
-  td/dtpg/DtpgImpl.cc
-  td/dtpg/DtpgImplM.cc
-
   td/rtpg/FopRtpg.cc
   td/rtpg/RtpgP1.cc
   td/rtpg/RtpgP2.cc
@@ -140,8 +132,10 @@ set (td_SOURCES
 ym_add_object_library ( satpg_common
   ${tpg_network_SOURCES}
   ${fsim_SOURCES}
+  ${dtpg_SOURCES}
   ${dop_SOURCES}
   ${uop_SOURCES}
+  ${bt_SOURCES}
   ${sa_SOURCES}
   ${td_SOURCES}
   )

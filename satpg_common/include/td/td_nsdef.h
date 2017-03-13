@@ -38,9 +38,6 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 class FoCone;
 class MffcCone;
 class StructSat;
-class BackTracer;
-class Dtpg;
-class DtpgEngine;
 class Rtpg;
 class RtpgStats;
 class MinPat;

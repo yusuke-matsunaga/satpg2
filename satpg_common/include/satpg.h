@@ -115,8 +115,11 @@ class NodeValList;
 class TestVector;
 class TvMgr;
 
+class Dtpg;
 class DetectOp;
 class UntestOp;
+
+class BackTracer;
 
 class GateLitMap;
 class VidMap;
