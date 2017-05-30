@@ -64,6 +64,11 @@ set (dtpg_SOURCES
   dtpg/DtpgImplM.cc
   )
 
+set (dtpg2_SOURCES
+  dtpg_minpower/Dtpg2.cc
+  dtpg_minpower/Dtpg2Impl.cc
+  )
+
 set (dop_SOURCES
   dop/DopBase.cc
   dop/DopDrop.cc
@@ -132,6 +137,7 @@ ym_add_object_library ( satpg_common
   ${tpg_network_SOURCES}
   ${fsim_SOURCES}
   ${dtpg_SOURCES}
+  ${dtpg2_SOURCES}
   ${dop_SOURCES}
   ${uop_SOURCES}
   ${bt_SOURCES}
