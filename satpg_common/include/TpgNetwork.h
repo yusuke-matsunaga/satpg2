@@ -200,6 +200,11 @@ public:
   // 内容を設定するための関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief BnNetwork から内容を設定する．
+  /// @param[in] network 設定元のネットワーク
+  void
+  set(const BnNetwork& network);
+
   /// @brief blif ファイルを読み込む．
   /// @param[in] filename ファイル名
   /// @param[in] cell_library セルライブラリ
@@ -254,11 +259,6 @@ private:
   /// @brief 内容をクリアする．
   void
   clear();
-
-  /// @brief BnNetwork から内容を設定する．
-  /// @param[in] network 設定元のネットワーク
-  void
-  set(const BnNetwork& network);
 
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号

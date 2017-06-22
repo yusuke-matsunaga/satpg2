@@ -193,7 +193,6 @@ TpgNetwork::read_blif(const string& filename,
   BnNetwork network;
   bool stat = BnBlifReader::read(network, filename, cell_library);
   if ( stat ) {
-    clear();
     set(network);
   }
 
@@ -209,7 +208,6 @@ TpgNetwork::read_iscas89(const string& filename)
   BnNetwork network;
   bool stat = BnIscas89Reader::read(network, filename);
   if ( stat ) {
-    clear();
     set(network);
   }
 
@@ -298,6 +296,9 @@ TpgNetwork::clear()
 void
 TpgNetwork::set(const BnNetwork& network)
 {
+  // まずクリアしておく．
+  clear();
+
   //////////////////////////////////////////////////////////////////////
   // NodeInfoMgr にノードの論理関数を登録する．
   //////////////////////////////////////////////////////////////////////
