@@ -19,18 +19,36 @@ cdef class TpgNetwork :
     ## @brief blif ファイルを読み込む．
     # @param[in] filename ファイル名
     # @param[in] cell_library セルライブラリ
-    def read_blif(TpgNetwork self, str filename, CellLibrary cell_library = None) :
+    # @return 結果のネットワークを返す．
+    #
+    # エラーが起きたら None を返す．
+    @staticmethod
+    def read_blif(str filename, CellLibrary cell_library = None) :
         cdef string c_filename = filename.encode('UTF-8')
+        network = TpgNetwork()
         if cell_library == None :
-            return self._this.read_blif(c_filename)
+            stat = network._this.read_blif(c_filename)
         else :
-            return self._this.read_blif(c_filename, cell_library._thisptr)
+            stat = network._this.read_blif(c_filename, cell_library._thisptr)
+        if stat :
+            return network
+        else :
+            return None
 
     ## @brief iscas89(.bench)ファイルを読み込む
     # @param[in] filename ファイル名
-    def read_iscas89(TpgNetwork self, str filename) :
+    # @return 結果のネットワークを返す．
+    #
+    # エラーが起きたら None を返す．
+    @staticmethod
+    def read_iscas89(str filename) :
         cdef string c_filename = filename.encode('UTF-8')
-        return self._this.read_iscas89(c_filename)
+        network = TpgNetwork()
+        stat = network._this.read_iscas89(c_filename)
+        if stat :
+            return network
+        else :
+            return None
 
     ## @brief ノード数を返す．
     @property
