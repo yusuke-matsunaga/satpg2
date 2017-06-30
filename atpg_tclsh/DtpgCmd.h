@@ -64,6 +64,12 @@ private:
   // ymsat1 モードオプションの解析用オブジェクト
   TclPopt* mPoptYmSat1;
 
+  // stuck_at オプションの解析用オブジェクト
+  TclPopt* mPoptStuckAt;
+
+  // transition_delay オプションの解析用オブジェクト
+  TclPopt* mPoptTransitionDelay;
+
   // print_stats オプションの解析用オブジェクト
   TclPopt* mPoptPrintStats;
 

@@ -106,6 +106,10 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			     "MINISAT-2 mode");
   mPoptYmSat1 = new TclPopt(this, "ymsat1",
 			    "YmSat1 mode");
+  mPoptStuckAt = new TclPopt(this, "stuck-at",
+			     "stuck-at fault mode");
+  mPoptTransitionDelay = new TclPopt(this, "transition-delay",
+				     "transition delay fault mode");
   mPoptPrintStats = new TclPopt(this, "print_stats",
 				"print statistics");
   mPoptSingle0 = new TclPopt(this, "single0",
@@ -132,6 +136,7 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			     "disable timer");
 
   new_popt_group(mPoptSat, mPoptMiniSat, mPoptMiniSat2, mPoptSatRec);
+  new_popt_group(mPoptStuckAt, mPoptTransitionDelay);
 
   TclPoptGroup* g0 = new_popt_group(mPoptSingle0, mPoptSingle, mPoptMFFC);
 
@@ -196,6 +201,11 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     engine_type = "mffc";
   }
 
+  bool sa_mode = true;
+  if ( mPoptTransitionDelay->is_specified() ) {
+    sa_mode = false;
+  }
+
   string option_str = mPoptOpt->val();
 
   DopList dop_list;
@@ -218,7 +228,12 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     dop_list.add(new_DopDrop(_fault_mgr(), _fsim3()));
   }
   if ( mPoptVerify->is_specified() ) {
-    dop_list.add(new_DopSaVerify(_fsim3()));
+    if ( sa_mode ) {
+      dop_list.add(new_DopSaVerify(_fsim3()));
+    }
+    else {
+      dop_list.add(new_DopTdVerify(_fsim3()));
+    }
   }
 
   bool timer_enable = true;
@@ -234,8 +249,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
-  bool td_mode = false;
-  Dtpg dtpg(sat_type, sat_option, outp, td_mode, bt);
+  Dtpg dtpg(sat_type, sat_option, outp, !sa_mode, bt);
 
   DtpgStats stats;
   if ( engine_type == "single" ) {
