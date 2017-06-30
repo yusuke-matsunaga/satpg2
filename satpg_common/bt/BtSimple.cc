@@ -54,7 +54,7 @@ BtSimple::run(const NodeValList& assign_list,
        p != output_list.end(); ++ p) {
     const TpgNode* node = *p;
     if ( gval(node, 1) != fval(node, 1) ) {
-      tfi_recur(node, pi_assign_list);
+      justify(node, 1, pi_assign_list);
     }
   }
 
@@ -63,74 +63,42 @@ BtSimple::run(const NodeValList& assign_list,
   for (ymuint i = 0; i < assign_list.size(); ++ i) {
     NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
-    if ( td_mode() ) {
-      if ( nv.time() == 0 ) {
-	tfi_recur0(node, pi_assign_list);
-      }
-      else {
-	tfi_recur(node, pi_assign_list);
-      }
-    }
-    else {
-      tfi_recur(node, pi_assign_list);
-    }
+    justify(node, nv.time(), pi_assign_list);
   }
 }
 
 // @brief node のファンインのうち外部入力を記録する．
 // @param[in] node ノード
+// @param[in] time タイムフレーム ( 0 or 1 )
 // @param[out] assign_list 値割当の結果を入れるリスト
 void
-BtSimple::tfi_recur(const TpgNode* node,
-		    NodeValList& assign_list)
+BtSimple::justify(const TpgNode* node,
+		  int time,
+		  NodeValList& assign_list)
 {
-  if ( justified_mark(node, 1) ) {
+  if ( justified_mark(node, time) ) {
     return;
   }
-  set_justified(node, 1);
+  set_justified(node, time);
 
   if ( node->is_primary_input() ) {
-    record_value(node, 1, assign_list);
+    record_value(node, time, assign_list);
   }
   else if ( node->is_dff_output() ) {
-    if ( td_mode() ) {
+    if ( time == 1 && td_mode() ) {
       const TpgDff* dff = node->dff();
       const TpgNode* alt_node = dff->input();
-      tfi_recur0(alt_node, assign_list);
+      justify(alt_node, 0, assign_list);
     }
     else {
-      record_value(node, 1, assign_list);
+      record_value(node, time, assign_list);
     }
   }
   else {
     ymuint ni = node->fanin_num();
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode = node->fanin(i);
-      tfi_recur(inode, assign_list);
-    }
-  }
-}
-
-// @brief node のファンインのうち外部入力を記録する．
-// @param[in] node ノード
-// @param[out] assign_list 値割当の結果を入れるリスト
-void
-BtSimple::tfi_recur0(const TpgNode* node,
-		     NodeValList& assign_list)
-{
-  if ( justified_mark(node, 0) ) {
-    return;
-  }
-  set_justified(node, 0);
-
-  if ( node->is_ppi() ) {
-    record_value(node, 0, assign_list);
-  }
-  else {
-    ymuint ni = node->fanin_num();
-    for (ymuint i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
-      tfi_recur0(inode, assign_list);
+      justify(inode, time, assign_list);
     }
   }
 }

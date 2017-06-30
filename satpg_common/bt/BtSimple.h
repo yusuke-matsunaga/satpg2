@@ -64,19 +64,12 @@ private:
 
   /// @brief node のファンインのうち外部入力を記録する．
   /// @param[in] node ノード
-  /// @param[in] val_map 値のマップ
+  /// @param[in] time タイムフレーム ( 0 or 1 )
   /// @param[out] assign_list 値割当の結果を入れるリスト
   void
-  tfi_recur(const TpgNode* node,
-	    NodeValList& assign_list);
-
-  /// @brief node のファンインのうち外部入力を記録する．
-  /// @param[in] node ノード
-  /// @param[in] val_map 値のマップ
-  /// @param[out] assign_list 値割当の結果を入れるリスト
-  void
-  tfi_recur0(const TpgNode* node,
-	     NodeValList& assign_list);
+  justify(const TpgNode* node,
+	  int time,
+	  NodeValList& assign_list);
 
 
 private:
