@@ -42,7 +42,6 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief バックトレースを行なう．
-  /// @param[in] ffr_root 故障のあるFFRの根のノード
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] output_list 故障に関係する出力ノードのリスト
   /// @param[in] val_map ノードの値を保持するクラス
@@ -54,8 +53,7 @@ public:
   /// 回路全体の正常値が入っている．
   virtual
   void
-  run(const TpgNode* ffr_root,
-      const NodeValList& assign_list,
+  run(const NodeValList& assign_list,
       const vector<const TpgNode*>& output_list,
       NodeValList& pi_assign_list) = 0;
 

@@ -8,6 +8,7 @@
 
 
 #include "BtJust2.h"
+#include "TpgDff.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -26,8 +27,7 @@ BtJust2::BtJust2(ymuint max_id,
   BtJustBase(max_id, td_mode, val_map),
   mAlloc(sizeof(NodeList), 1024),
   mJustArray(max_id, nullptr),
-  mJust0Array(max_id, nullptr),
-  mTfoMark(max_id, false)
+  mJust0Array(max_id, nullptr)
 {
 }
 
@@ -37,7 +37,6 @@ BtJust2::~BtJust2()
 }
 
 // @brief バックトレースを行なう．
-// @param[in] ffr_root 故障のあるFFRの根のノード
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
@@ -45,16 +44,14 @@ BtJust2::~BtJust2()
 // assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
 // を入れる．
 void
-BtJust2::run(const TpgNode* ffr_root,
-	     const NodeValList& assign_list,
+BtJust2::run(const NodeValList& assign_list,
 	     const vector<const TpgNode*>& output_list,
 	     NodeValList& pi_assign_list)
 {
-  mark_tfo(ffr_root);
-
   pi_assign_list.clear();
 
   // assign_list の値を正当化する．
+  NodeList* node_list0 = nullptr;
   for (ymuint i = 0; i < assign_list.size(); ++ i) {
     NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
@@ -69,6 +66,12 @@ BtJust2::run(const TpgNode* ffr_root,
     }
     else {
       node_list = justify(node);
+    }
+    if ( node_list0 == nullptr ) {
+      node_list0 = node_list;
+    }
+    else {
+      list_merge(node_list0, node_list);
     }
   }
 
@@ -89,6 +92,13 @@ BtJust2::run(const TpgNode* ffr_root,
     }
   }
   ASSERT_COND( nmin > 0 );
+
+  if ( best_list == nullptr ) {
+    best_list = node_list0;
+  }
+  else {
+    list_merge(best_list, node_list0);
+  }
 
   for (NodeList* tmp = best_list; tmp; tmp = tmp->mLink) {
     const TpgNode* node = tmp->mNode;
@@ -115,22 +125,25 @@ BtJust2::justify(const TpgNode* node)
       if ( node->is_primary_input() ) {
 	// val を記録
 	mJustArray[node->id()] = new_list_cell(node, 1);
-	return mJustArray[node->id()];
       }
-
-#warning "TODO: node->is_dff_output() の処理"
+      else if ( node->is_dff_output() ) {
+	// 1時刻前のタイムフレームに戻る．
+	const TpgDff* dff = node->dff();
+	const TpgNode* alt_node = dff->input();
+	mJustArray[node->id()] = justify0(alt_node);
+      }
     }
     else {
       // val を記録
       mJustArray[node->id()] = new_list_cell(node, 0);
-      return mJustArray[node->id()];
     }
+    return mJustArray[node->id()];
   }
 
   Val3 gval = this->gval(node);
   Val3 fval = this->fval(node);
 
-  if ( mTfoMark[node->id()] && gval != fval ) {
+  if ( gval != fval ) {
     // 正常値と故障値が異なっていたら
     // すべてのファンインをたどる．
     return just_sub1(node);
@@ -229,7 +242,7 @@ BtJust2::just_sub2(const TpgNode* node,
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
     Val3 igval = gval(inode);
-    Val3 ifval = mTfoMark[node->id()] ? fval(inode) : gval(inode);
+    Val3 ifval = fval(inode);
     if ( igval != ifval || igval != val ) {
       continue;
     }
@@ -245,8 +258,6 @@ BtJust2::just_sub2(const TpgNode* node,
     list_merge(node_list, mJustArray[node->fanin(pos)->id()]);
     return node_list;
   }
-
-  ASSERT_COND( mTfoMark[node->id()] );
 
   ymuint gpos = ni;
   ymuint fpos = ni;
@@ -476,22 +487,6 @@ BtJust2::list_free(NodeList* node_list)
     NodeList* next = tmp->mLink;
     mAlloc.put_memory(sizeof(NodeList), tmp);
     tmp = next;
-  }
-}
-
-// @brief ノードの TFO に印をつける．
-void
-BtJust2::mark_tfo(const TpgNode* node)
-{
-  if ( mTfoMark[node->id()] ) {
-    return;
-  }
-  mTfoMark[node->id()] = true;
-
-  ymuint nfo = node->fanout_num();
-  for (ymuint i = 0; i < nfo; ++ i) {
-    const TpgNode* onode = node->fanout(i);
-    mark_tfo(onode);
   }
 }
 

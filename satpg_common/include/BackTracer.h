@@ -40,7 +40,6 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief バックトレースを行なう．
-  /// @param[in] ffr_root 故障のあるFFRの根のノード
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] output_list 故障に関係する出力ノードのリスト
   /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
@@ -52,8 +51,7 @@ public:
   /// val_map には ffr_root のファンアウトコーン上の故障値と関係する
   /// 回路全体の正常値が入っている．
   void
-  operator()(const TpgNode* ffr_root,
-	     const NodeValList& assign_list,
+  operator()(const NodeValList& assign_list,
 	     const vector<const TpgNode*>& output_list,
 	     bool td_mode,
 	     const ValMap& val_map,

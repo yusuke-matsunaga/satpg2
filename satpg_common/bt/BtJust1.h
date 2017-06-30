@@ -42,7 +42,6 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief バックトレースを行なう．
-  /// @param[in] ffr_root 故障のあるFFRの根のノード
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] output_list 故障に関係する出力ノードのリスト
   /// @param[out] pi_assign_list 外部入力上の値の割当リスト
@@ -51,8 +50,7 @@ public:
   /// を入れる．
   virtual
   void
-  run(const TpgNode* ffr_root,
-      const NodeValList& assign_list,
+  run(const NodeValList& assign_list,
       const vector<const TpgNode*>& output_list,
       NodeValList& pi_assign_list);
 

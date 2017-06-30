@@ -647,8 +647,7 @@ Dtpg2Impl::solve(const TpgFault* fault,
     // バックトレースを行う．
     const VidMap& hvar_map = mHvarMap;
     ValMap val_map(hvar_map, mGvarMap, mFvarMap, model);
-    const TpgNode* start_node = fault->tpg_onode()->ffr_root();
-    mBackTracer(start_node, assign_list, mOutputList, true, val_map, nodeval_list);
+    mBackTracer(assign_list, mOutputList, true, val_map, nodeval_list);
 
     timer.stop();
     stats.mBackTraceTime += timer.time();
