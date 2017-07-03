@@ -3,6 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
+  ../../tests/dtpgtest
   )
 
 
@@ -22,6 +23,7 @@ include_directories(
 
 add_executable ( DtpgTest
   DtpgTest.cc
+  ../../tests/dtpgtest/DtpgTest.cc
   $<TARGET_OBJECTS:satpg_common_d>
   $<TARGET_OBJECTS:satpg_fsim2_d>
   $<TARGET_OBJECTS:satpg_fsim3_d>
@@ -39,7 +41,7 @@ target_compile_options ( DtpgTest
   )
 
 target_compile_definitions ( DtpgTest
-  PRIVATE "-DFSIM_VAL2"
+  PRIVATE "-DDATAPATH=${CMAKE_CURRENT_SOURCE_DIR}/data"
   )
 
 target_link_libraries ( DtpgTest

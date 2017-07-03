@@ -14,3 +14,4 @@ include_directories(
 add_subdirectory( tpg_network )
 add_subdirectory( sa_fsim2 )
 add_subdirectory( sa_fsim3 )
+add_subdirectory( dtpg )
