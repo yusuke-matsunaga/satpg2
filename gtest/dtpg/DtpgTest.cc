@@ -14,8 +14,56 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
+struct TestData
+{
+  TestData()
+  {
+  }
+
+  // コンストラクタ
+  TestData(const string& filename,
+	   ymuint total_num,
+	   ymuint sa_detect_num,
+	   ymuint td_detect_num,
+	   ymuint sa_untest_num,
+	   ymuint td_untest_num) :
+    mFileName(filename),
+    mTotalFaultNum(total_num),
+    mSaDetectFaultNum(sa_detect_num),
+    mTdDetectFaultNum(td_detect_num),
+    mSaUntestFaultNum(sa_untest_num),
+    mTdUntestFaultNum(td_untest_num)
+  {
+  };
+
+  // ファイル名
+  string mFileName;
+
+  // 総故障数
+  ymuint mTotalFaultNum;
+
+  // 検出可能故障数(縮退故障)
+  ymuint mSaDetectFaultNum;
+
+  // 検出可能故障数(遷移故障)
+  ymuint mTdDetectFaultNum;
+
+  // 検出不能故障数(縮退故障)
+  ymuint mSaUntestFaultNum;
+
+  // 検出不能故障数(遷移故障)
+  ymuint mTdUntestFaultNum;
+
+};
+
+TestData mydata[] = {
+  TestData("s27.blif",     32,   32,   32,  0,   0),
+  TestData("s1196.blif", 1242, 1242, 1241,  0,   1),
+  TestData("s5378.blif", 4603, 4563, 4253, 40, 350)
+};
+
 class DtpgTestWithParam :
-public ::testing::TestWithParam<std::tuple<string, string, bool, int> >
+public ::testing::TestWithParam<std::tuple<TestData, string, bool, int> >
 {
 public:
 
@@ -43,6 +91,18 @@ private:
   /// @brief テストパラメータからファイル名を取り出す．
   string
   filename();
+
+  /// @brief テストパラメータから総故障数を取り出す．
+  ymuint
+  total_fault_num();
+
+  /// @brief テストパラメータから検出可能故障数を取り出す．
+  ymuint
+  detect_fault_num();
+
+  /// @brief テストパラメータから検出不能故障数を取り出す．
+  ymuint
+  untest_fault_num();
 
   /// @brief テストパラメータからテストモードを取り出す．
   string
@@ -78,7 +138,8 @@ private:
 DtpgTestWithParam::DtpgTestWithParam() :
   mSatType(""),
   mSatOption(""),
-  mSatOutp(nullptr)
+  mSatOutp(nullptr),
+  mDtpgTest(nullptr)
 {
 }
 
@@ -97,6 +158,7 @@ void
 DtpgTestWithParam::TearDown()
 {
   delete mDtpgTest;
+  mDtpgTest = nullptr;
 }
 
 void
@@ -117,6 +179,10 @@ DtpgTestWithParam::do_test()
     ASSERT_NOT_REACHED;
   }
 
+  EXPECT_EQ( total_fault_num(), mNetwork.rep_fault_num() );
+  EXPECT_EQ( detect_fault_num(), num_pair.first );
+  EXPECT_EQ( untest_fault_num(), num_pair.second );
+
   const DopVerifyResult& result = mDtpgTest->verify_result();
   EXPECT_EQ( 0, result.error_count() );
 }
@@ -125,7 +191,42 @@ DtpgTestWithParam::do_test()
 string
 DtpgTestWithParam::filename()
 {
-  return DATAPATH + std::get<0>(GetParam());
+  const TestData& data = std::get<0>(GetParam());
+  return DATAPATH + data.mFileName;
+}
+
+// @brief テストパラメータから総故障数を取り出す．
+ymuint
+DtpgTestWithParam::total_fault_num()
+{
+  const TestData& data = std::get<0>(GetParam());
+  return data.mTotalFaultNum;
+}
+
+// @brief テストパラメータから検出可能故障数を取り出す．
+ymuint
+DtpgTestWithParam::detect_fault_num()
+{
+  const TestData& data = std::get<0>(GetParam());
+  if ( td_mode() ) {
+    return data.mTdDetectFaultNum;
+  }
+  else {
+    return data.mSaDetectFaultNum;
+  }
+}
+
+// @brief テストパラメータから検出不能故障数を取り出す．
+ymuint
+DtpgTestWithParam::untest_fault_num()
+{
+  const TestData& data = std::get<0>(GetParam());
+  if ( td_mode() ) {
+    return data.mTdUntestFaultNum;
+  }
+  else {
+    return data.mSaUntestFaultNum;
+  }
 }
 
 // @brief テストパラメータからテストモードを取り出す．
@@ -155,7 +256,7 @@ TEST_P(DtpgTestWithParam, test1)
 }
 
 INSTANTIATE_TEST_CASE_P(DtpgTest, DtpgTestWithParam,
-			::testing::Combine(::testing::Values("s27.blif", "s1196.blif"),
+			::testing::Combine(::testing::ValuesIn(mydata),
 					   ::testing::Values("single", "ffr", "mffc"),
 					   ::testing::Values(false, true),
 					   ::testing::Range(0, 3)));
