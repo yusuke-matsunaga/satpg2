@@ -30,15 +30,15 @@ BEGIN_NAMESPACE_YM_SATPG
 
 #if FSIM_VAL2
 Fsim*
-Fsim::new_Fsim2()
+Fsim::new_Fsim2(const TpgNetwork& network)
 {
-  return new nsFsim2::Fsim2();
+  return new nsFsim2::Fsim2(network);
 }
 #elif FSIM_VAL3
 Fsim*
-Fsim::new_Fsim3()
+Fsim::new_Fsim3(const TpgNetwork& network)
 {
-  return new nsFsim3::Fsim3();
+  return new nsFsim3::Fsim3(network);
 }
 #endif
 
@@ -52,9 +52,11 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-FSIM_CLASSNAME::FSIM_CLASSNAME()
+// @param[in] network ネットワーク
+FSIM_CLASSNAME::FSIM_CLASSNAME(const TpgNetwork& network)
 {
   mPatMap = kPvAll0;
+  set_network(network);
 }
 
 // @brief デストラクタ
@@ -68,8 +70,6 @@ FSIM_CLASSNAME::~FSIM_CLASSNAME()
 void
 FSIM_CLASSNAME::set_network(const TpgNetwork& network)
 {
-  clear();
-
   mInputNum = network.input_num();
   mOutputNum = network.output_num();
   mDffNum = network.dff_num();

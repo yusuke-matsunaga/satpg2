@@ -36,8 +36,7 @@ DtpgTest::DtpgTest(const string& sat_type,
   mBackTracer(bt_mode, network.node_num()),
   mDtpg(sat_type, sat_option, sat_outp, td_mode, mBackTracer)
 {
-  mFsim = Fsim::new_Fsim3();
-  mFsim->set_network(network);
+  mFsim = Fsim::new_Fsim3(network);
   FaultType fault_type = td_mode ? kFtTransitionDelay : kFtStuckAt;
   mDop.add(new_DopVerify(*mFsim, mVerifyResult, fault_type));
 }

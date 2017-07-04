@@ -21,7 +21,7 @@ include_directories(
 #  テスト用のターゲットの設定
 # ===================================================================
 
-add_executable ( SaFsim3SimNodeTest
+ym_add_gtest ( SaFsim3SimNodeTest
   SimNodeTest.cc
   $<TARGET_OBJECTS:satpg_common_d>
   $<TARGET_OBJECTS:satpg_fsim3_d>
@@ -34,20 +34,6 @@ add_executable ( SaFsim3SimNodeTest
   $<TARGET_OBJECTS:ym_udgraph_d>
   )
 
-target_compile_options ( SaFsim3SimNodeTest
-  PRIVATE "-g"
-  )
-
 target_compile_definitions ( SaFsim3SimNodeTest
   PRIVATE "-DFSIM_VAL3"
-  )
-
-target_link_libraries ( SaFsim3SimNodeTest
-  ${YM_LIB_DEPENDS}
-  pthread
-  ${GTEST_BOTH_LIBRARIES}
-  )
-
-add_test ( SaFsim3Test
-  SaFsim3SimNodeTest
   )

@@ -319,16 +319,14 @@ fsim2test(int argc,
 
   Fsim* fsim = nullptr;
   if ( fsim2 ) {
-    fsim = Fsim::new_Fsim2();
+    fsim = Fsim::new_Fsim2(network);
   }
   else if ( fsim3 ) {
-    fsim = Fsim::new_Fsim3();
+    fsim = Fsim::new_Fsim3(network);
   }
   else {
     ASSERT_NOT_REACHED;
   }
-
-  fsim->set_network(network);
 
   TvMgr tvmgr;
   tvmgr.init(network);

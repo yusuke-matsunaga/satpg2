@@ -41,7 +41,8 @@ class FSIM_CLASSNAME :
 public:
 
   /// @brief コンストラクタ
-  FSIM_CLASSNAME ();
+  /// @param[in] network ネットワーク
+  FSIM_CLASSNAME (const TpgNetwork& network);
 
   /// @brief デストラクタ
   virtual
@@ -52,14 +53,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ネットワークをセットする．
-  /// @param[in] network ネットワーク
-  ///
-  /// 全ての故障のスキップマークはクリアされる．
-  virtual
-  void
-  set_network(const TpgNetwork& network);
 
   /// @brief 全ての故障にスキップマークをつける．
   virtual
@@ -274,6 +267,13 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief ネットワークをセットする．
+  /// @param[in] network ネットワーク
+  ///
+  /// 全ての故障のスキップマークはクリアされる．
+  void
+  set_network(const TpgNetwork& network);
 
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障

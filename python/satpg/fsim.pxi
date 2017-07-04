@@ -16,11 +16,11 @@ cdef class Fsim :
     cdef CXX_Fsim* _thisptr
 
     ## @brief 初期化
-    def __cinit__(Fsim self, name) :
+    def __cinit__(Fsim self, name, TpgNetwork network) :
         if name == 'Fsim2' :
-            self._thisptr = CXX_Fsim.new_Fsim2()
+            self._thisptr = CXX_Fsim.new_Fsim2(network._this)
         elif name == 'Fsim3' :
-            self._thisptr = CXX_Fsim.new_Fsim3()
+            self._thisptr = CXX_Fsim.new_Fsim3(network._this)
         else :
             assert False
 
@@ -28,10 +28,6 @@ cdef class Fsim :
     def __dealloc__(Fsim self) :
         if self._thisptr != NULL :
             del self._thisptr
-
-    ## @brief ネットワークをセットする．
-    def set_network(Fsim self, TpgNetwork network) :
-        self._thisptr.set_network(network._this)
 
     ## @brief 全故障を対象から外す．
     def set_skip_all(Fsim self) :

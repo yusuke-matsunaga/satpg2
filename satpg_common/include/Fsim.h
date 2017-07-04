@@ -34,14 +34,16 @@ class Fsim
 public:
 
   /// @brief 2値版の故障シミュレータを生成するクラスメソッド
+  /// @param[in] network ネットワーク
   static
   Fsim*
-  new_Fsim2();
+  new_Fsim2(const TpgNetwork& network);
 
   /// @brief 3値版の故障シミュレータを生成するクラスメソッド
+  /// @param[in] network ネットワーク
   static
   Fsim*
-  new_Fsim3();
+  new_Fsim3(const TpgNetwork& network);
 
   virtual
   ~Fsim() { }
@@ -49,16 +51,8 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // 対象のネットワーク，故障を設定する関数
+  // 故障を設定する関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ネットワークをセットする．
-  /// @param[in] network ネットワーク
-  ///
-  /// 全ての故障のスキップマークはクリアされる．
-  virtual
-  void
-  set_network(const TpgNetwork& network) = 0;
 
   /// @brief 全ての故障にスキップマークをつける．
   virtual

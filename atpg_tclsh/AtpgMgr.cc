@@ -30,8 +30,8 @@ AtpgMgr::AtpgMgr() :
 
   mTvMgr = new TvMgr();
 
-  mFsim2 = Fsim::new_Fsim2();
-  mFsim3 = Fsim::new_Fsim3();
+  mFsim2 = nullptr;
+  mFsim3 = nullptr;
 }
 
 // @brief デストラクタ
@@ -83,11 +83,14 @@ void
 AtpgMgr::after_set_network()
 {
   delete mFaultMgr;
+  delete mFsim2;
+  delete mFsim3;
+
   mFaultMgr = new TpgFaultMgr(_network());
 
   mTvMgr->init(_network());
-  mFsim2->set_network(_network());
-  mFsim3->set_network(_network());
+  mFsim2 = Fsim::new_Fsim2(_network());
+  mFsim3 = Fsim::new_Fsim3(_network());
 }
 
 END_NAMESPACE_YM_SATPG
