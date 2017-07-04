@@ -12,6 +12,7 @@ from CXX_TpgNetwork cimport TpgNetwork
 from CXX_TpgFault cimport TpgFault
 from CXX_TestVector cimport TestVector
 from CXX_NodeValList cimport NodeValList
+from CXX_FaultType cimport FaultType
 from CXX_vector cimport vector
 
 ctypedef unsigned int ymuint
@@ -44,11 +45,11 @@ cdef extern from "Fsim.h" namespace "nsYm::nsSatpg" :
         ymuint td_sppfp(const NodeValList& assign_list)
         ymuint td_ppsfp()
         ymuint td_calc_wsa(const TestVector* tv, bool weighted)
-        bool spsfp(const TestVector* tv, const TpgFault* f, bool)
-        bool spsfp(const NodeValList& assign_list, const TpgFault* f, bool)
-        ymuint sppfp(const TestVector* tv, bool)
-        ymuint sppfp(const NodeValList& assign_list, bool)
-        ymuint ppsfp(bool)
+        bool spsfp(const TestVector* tv, const TpgFault* f, FaultType fault_type)
+        bool spsfp(const NodeValList& assign_list, const TpgFault* f, FaultType fault_type)
+        ymuint sppfp(const TestVector* tv, FaultType fault_type)
+        ymuint sppfp(const NodeValList& assign_list, FaultType fault_type)
+        ymuint ppsfp(FaultType fault_type)
         void clear_patterns()
         void set_pattern(ymuint pos, const TestVector* tv)
         const TestVector* get_pattern(ymuint pos)

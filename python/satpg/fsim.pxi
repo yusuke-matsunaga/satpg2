@@ -9,6 +9,7 @@
 
 from CXX_Fsim cimport Fsim as CXX_Fsim
 from CXX_TestVector cimport TestVector as CXX_TestVector
+from CXX_FaultType cimport FaultType as CXX_FaultType
 
 
 cdef class Fsim :
@@ -113,24 +114,29 @@ cdef class Fsim :
         return self._thisptr.td_calc_wsa(tv._thisptr, weighted)
 
     ## @brief SPSFP シミュレーションを行う．
-    def spsfp(Fsim self, TestVector tv, TpgFault f, bool td_mode) :
-        return self._thisptr.spsfp(tv._thisptr, f._thisptr, td_mode)
+    def spsfp(Fsim self, TestVector tv, TpgFault f, fault_type) :
+        cdef CXX_FaultType c_fault_type = from_FaultType(fault_type)
+        return self._thisptr.spsfp(tv._thisptr, f._thisptr, c_fault_type)
 
     ## @brief SPSFP シミュレーションを行う．
-    def spsfp(Fsim self, NodeValList assign_list, TpgFault f, bool td_mode) :
-        return self._thisptr.spsfp(assign_list._this, f._thisptr, td_mode)
+    def spsfp(Fsim self, NodeValList assign_list, TpgFault f, fault_type) :
+        cdef CXX_FaultType c_fault_type = from_FaultType(fault_type)
+        return self._thisptr.spsfp(assign_list._this, f._thisptr, c_fault_type)
 
     ## @brief SPPFP シミュレーションを行う．
-    def sppfp(Fsim self, TestVector tv, bool td_mode) :
-        return self._thisptr.sppfp(tv._thisptr, td_mode)
+    def sppfp(Fsim self, TestVector tv, fault_type) :
+        cdef CXX_FaultType c_fault_type = from_FaultType(fault_type)
+        return self._thisptr.sppfp(tv._thisptr, c_fault_type)
 
     ## @brief SPPFP シミュレーションを行う．
-    def sppfp(Fsim self, NodeValList assign_list, bool td_mode) :
-        return self._thisptr.sppfp(assign_list._this, td_mode)
+    def sppfp(Fsim self, NodeValList assign_list, fault_type) :
+        cdef CXX_FaultType c_fault_type = from_FaultType(fault_type)
+        return self._thisptr.sppfp(assign_list._this, c_fault_type)
 
     ## @brief PPSFP シミュレーションを行う．
-    def ppsfp(Fsim self, bool td_mode) :
-        return self._thisptr.ppsfp(td_mode)
+    def ppsfp(Fsim self, fault_type) :
+        cdef CXX_FaultType c_fault_type = from_FaultType(fault_type)
+        return self._thisptr.ppsfp(c_fault_type)
 
     ## @brief パタンバッファをクリアする．
     def clear_patterns(Fsim self) :

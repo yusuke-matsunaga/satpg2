@@ -10,6 +10,7 @@
 
 
 #include "satpg.h"
+#include "GateType.h"
 #include "GateLitMap.h"
 #include "Val3.h"
 #include "ym/Alloc.h"

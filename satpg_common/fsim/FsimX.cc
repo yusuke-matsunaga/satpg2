@@ -921,5 +921,4 @@ TdFaultProp::operator()(SimFault* fault)
   return mFsim._td_fault_prop(fault);
 }
 
-
 END_NAMESPACE_YM_SATPG_FSIM

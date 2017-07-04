@@ -11,6 +11,7 @@
 
 
 #include "satpg.h"
+#include "FaultType.h"
 #include "PackedVal.h"
 
 
@@ -222,53 +223,53 @@ public:
   /// @brief SPSFP故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
   /// @param[in] f 対象の故障
-  /// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+  /// @param[in] fault_type 故障の種類
   /// @retval true 故障の検出が行えた．
   /// @retval false 故障の検出が行えなかった．
   bool
   spsfp(const TestVector* tv,
 	const TpgFault* f,
-	bool td_mode);
+	FaultType fault_type);
 
   /// @brief SPSFP故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
   /// @param[in] f 対象の故障
-  /// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+  /// @param[in] fault_type 故障の種類
   /// @retval true 故障の検出が行えた．
   /// @retval false 故障の検出が行えなかった．
   bool
   spsfp(const NodeValList& assign_list,
 	const TpgFault* f,
-	bool td_mode);
+	FaultType fault_type);
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
-  /// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+  /// @param[in] fault_type 故障の種類
   /// @return 検出された故障数を返す．
   ///
   /// 検出された故障は det_fault() で取得する．
   ymuint
   sppfp(const TestVector* tv,
-	bool td_mode);
+	FaultType fault_type);
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
-  /// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+  /// @param[in] fault_type 故障の種類
   /// @return 検出された故障数を返す．
   ///
   /// 検出された故障は det_fault() で取得する．
   ymuint
   sppfp(const NodeValList& assign_list,
-	bool td_mode);
+	FaultType fault_type);
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
   /// @return 検出された故障数を返す．
-  /// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+  /// @param[in] fault_type 故障の種類
   ///
   /// 検出された故障は det_fault() で取得する．<br>
   /// 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
   ymuint
-  ppsfp(bool td_mode);
+  ppsfp(FaultType fault_type);
 
 
 public:
@@ -328,97 +329,112 @@ public:
 // @brief SPSFP故障シミュレーションを行う．
 // @param[in] tv テストベクタ
 // @param[in] f 対象の故障
-// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+// @param[in] fault_type 故障の種類
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 inline
 bool
 Fsim::spsfp(const TestVector* tv,
 	    const TpgFault* f,
-	    bool td_mode)
+	    FaultType fault_type)
 {
-  if ( td_mode ) {
-    return td_spsfp(tv, f);
-  }
-  else {
+  if ( fault_type == kFtStuckAt ) {
     return sa_spsfp(tv, f);
   }
+  if ( fault_type == kFtTransitionDelay ) {
+    return td_spsfp(tv, f);
+  }
+
+  ASSERT_NOT_REACHED;
+  return false;
 }
 
 // @brief SPSFP故障シミュレーションを行う．
 // @param[in] assign_list 値の割当リスト
 // @param[in] f 対象の故障
-// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+// @param[in] fault_type 故障の種類
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 inline
 bool
 Fsim::spsfp(const NodeValList& assign_list,
 	    const TpgFault* f,
-	    bool td_mode)
+	    FaultType fault_type)
 {
-  if ( td_mode ) {
-    return td_spsfp(assign_list, f);
-  }
-  else {
+  if ( fault_type == kFtStuckAt ) {
     return sa_spsfp(assign_list, f);
   }
+  if ( fault_type == kFtTransitionDelay ) {
+    return td_spsfp(assign_list, f);
+  }
+
+  ASSERT_NOT_REACHED;
+  return false;
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] tv テストベクタ
-// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+// @param[in] fault_type 故障の種類
 // @return 検出された故障数を返す．
 //
 // 検出された故障は det_fault() で取得する．
 inline
 ymuint
 Fsim::sppfp(const TestVector* tv,
-	    bool td_mode)
+	    FaultType fault_type)
 {
-  if ( td_mode ) {
-    return td_sppfp(tv);
-  }
-  else {
+  if ( fault_type == kFtStuckAt ) {
     return sa_sppfp(tv);
   }
+  if ( fault_type == kFtTransitionDelay ) {
+    return td_sppfp(tv);
+  }
+
+  ASSERT_NOT_REACHED;
+  return 0;
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] assign_list 値の割当リスト
-// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+// @param[in] fault_type 故障の種類
 // @return 検出された故障数を返す．
 //
 // 検出された故障は det_fault() で取得する．
 inline
 ymuint
 Fsim::sppfp(const NodeValList& assign_list,
-	    bool td_mode)
+	    FaultType fault_type)
 {
-  if ( td_mode ) {
-    return td_sppfp(assign_list);
-  }
-  else {
+  if ( fault_type == kFtStuckAt ) {
     return sa_sppfp(assign_list);
   }
+  if ( fault_type == kFtTransitionDelay ) {
+    return td_sppfp(assign_list);
+  }
+
+  ASSERT_NOT_REACHED;
+  return 0;
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
 // @return 検出された故障数を返す．
-// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+// @param[in] fault_type 故障の種類
 //
 // 検出された故障は det_fault() で取得する．<br>
 // 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
 inline
 ymuint
-Fsim::ppsfp(bool td_mode)
+Fsim::ppsfp(FaultType fault_type)
 {
-  if ( td_mode ) {
-    return td_ppsfp();
-  }
-  else {
+  if ( fault_type == kFtStuckAt ) {
     return sa_ppsfp();
   }
+  if ( fault_type == kFtTransitionDelay ) {
+    return td_ppsfp();
+  }
+
+  ASSERT_NOT_REACHED;
+  return 0;
 }
 
 END_NAMESPACE_YM_SATPG

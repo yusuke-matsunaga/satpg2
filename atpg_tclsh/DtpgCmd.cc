@@ -203,9 +203,12 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   }
 
   bool sa_mode = true;
+  FaultType fault_type = kFtStuckAt;
   if ( mPoptTransitionDelay->is_specified() ) {
     sa_mode = false;
+    fault_type = kFtTransitionDelay;
   }
+
 
   string option_str = mPoptOpt->val();
 
@@ -236,7 +239,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 
   DopVerifyResult verify_result;
   if ( mPoptVerify->is_specified() ) {
-    dop_list.add(new_DopVerify(_fsim3(), verify_result, !sa_mode));
+    dop_list.add(new_DopVerify(_fsim3(), verify_result, fault_type));
   }
 
   bool timer_enable = true;

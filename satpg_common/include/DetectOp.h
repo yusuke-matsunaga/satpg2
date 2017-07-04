@@ -10,6 +10,7 @@
 
 
 #include "satpg.h"
+#include "FaultType.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -71,11 +72,11 @@ new_DopTvListTd(TvMgr& tvmgr,
 /// @brief 'verify' タイプを生成する．
 /// @param[in] fsim 故障シミュレータ
 /// @param[in] result 結果を格納するオブジェクト
-/// @param[in] td_mode 遷移故障モードの時 true にするフラグ
+/// @param[in] fault_type 故障の種類
 DetectOp*
 new_DopVerify(Fsim& fsim,
 	      DopVerifyResult& result,
-	      bool td_mode);
+	      FaultType fault_type);
 
 /// @brief 'sa-verify' タイプを生成する．
 /// @param[in] fsim 故障シミュレータ

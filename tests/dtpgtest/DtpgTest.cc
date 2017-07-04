@@ -38,7 +38,8 @@ DtpgTest::DtpgTest(const string& sat_type,
 {
   mFsim = Fsim::new_Fsim3();
   mFsim->set_network(network);
-  mDop.add(new_DopVerify(*mFsim, mVerifyResult, td_mode));
+  FaultType fault_type = td_mode ? kFtTransitionDelay : kFtStuckAt;
+  mDop.add(new_DopVerify(*mFsim, mVerifyResult, fault_type));
 }
 
 // @brief デストラクタ

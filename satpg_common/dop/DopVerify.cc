@@ -19,13 +19,13 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief 'verify' タイプを生成する．
 // @param[in] fsim 故障シミュレータ
 // @param[in] result 結果を格納するオブジェクト
-// @param[in] td_mode 遷移故障モードの時 true にするフラグ
+// @param[in] fault_type 故障の種類
 DetectOp*
 new_DopVerify(Fsim& fsim,
 	      DopVerifyResult& result,
-	      bool td_mode)
+	      FaultType fault_type)
 {
-  return new DopVerify(fsim, result, td_mode);
+  return new DopVerify(fsim, result, fault_type);
 }
 
 // @brief 'sa-verify' タイプを生成する．
@@ -35,7 +35,7 @@ DetectOp*
 new_DopSaVerify(Fsim& fsim,
 		DopVerifyResult& result)
 {
-  return new DopVerify(fsim, result, false);
+  return new DopVerify(fsim, result, kFtStuckAt);
 }
 
 // @brief 'td-verify' タイプを生成する．
@@ -45,7 +45,7 @@ DetectOp*
 new_DopTdVerify(Fsim& fsim,
 		DopVerifyResult& result)
 {
-  return new DopVerify(fsim, result, true);
+  return new DopVerify(fsim, result, kFtTransitionDelay);
 }
 
 
@@ -56,13 +56,13 @@ new_DopTdVerify(Fsim& fsim,
 // @brief コンストラクタ
 // @param[in] fsim 故障シミュレータ
 // @param[in] result 結果を格納するオブジェクト
-// @param[in] td_mode 遷移故障モードの時に true にするフラグ
+// @param[in] fault_type 故障の種類
 DopVerify::DopVerify(Fsim& fsim,
 		     DopVerifyResult& result,
-		     bool td_mode) :
+		     FaultType fault_type) :
   mFsim(fsim),
   mResult(result),
-  mTdMode(td_mode)
+  mFaultType(fault_type)
 {
 }
 
@@ -78,7 +78,7 @@ void
 DopVerify::operator()(const TpgFault* f,
 		      const NodeValList& assign_list)
 {
-  bool detect = mFsim.spsfp(assign_list, f, mTdMode);
+  bool detect = mFsim.spsfp(assign_list, f, mFaultType);
   if ( detect ) {
     mResult.add_good(f);
   }
