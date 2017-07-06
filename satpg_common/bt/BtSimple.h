@@ -26,10 +26,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] max_id ノード番号の最大値
   /// @param[in] fault_type 故障の型
-  /// @param[in] val_map ノードの値を保持するクラス
   BtSimple(ymuint max_id,
-	   FaultType fault_type,
-	   const ValMap& val_map);
+	   FaultType fault_type);
 
   /// @brief デストラクタ
   virtual
@@ -52,9 +50,9 @@ public:
   /// 回路全体の正常値が入っている．
   virtual
   void
-  run(const NodeValList& assign_list,
-      const vector<const TpgNode*>& output_list,
-      NodeValList& pi_assign_list);
+  _run(const NodeValList& assign_list,
+       const vector<const TpgNode*>& output_list,
+       NodeValList& pi_assign_list);
 
 
 private:

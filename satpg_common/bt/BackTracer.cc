@@ -20,23 +20,29 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
+// @param[in] fault_type 故障の型
 // @param[in] max_id ID番号の最大値
 BackTracer::BackTracer(ymuint xmode,
-		       ymuint max_id) :
-  mXmode(xmode),
-  mMaxId(max_id)
+		       FaultType fault_type,
+		       ymuint max_id)
 {
+  switch ( xmode ) {
+  case 0:  mImpl = new BtSimple(max_id, fault_type); break;
+  case 1:  mImpl = new BtJust1(max_id, fault_type); break;
+  case 2:  mImpl = new BtJust2(max_id, fault_type); break;
+  default: mImpl = new BtJust2(max_id, fault_type); break;
+  }
 }
 
 // @brief デストラクタ
 BackTracer::~BackTracer()
 {
+  delete mImpl;
 }
 
 // @brief バックトレースを行なう．
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
-// @param[in] fault_type 故障の型
 // @param[in] val_map ノードの値を保持するクラス
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 //
@@ -47,21 +53,10 @@ BackTracer::~BackTracer()
 void
 BackTracer::operator()(const NodeValList& assign_list,
 		       const vector<const TpgNode*>& output_list,
-		       FaultType fault_type,
 		       const ValMap& val_map,
 		       NodeValList& pi_assign_list)
 {
-  BtImpl* impl = nullptr;
-  switch ( mXmode ) {
-  case 0:  impl = new BtSimple(mMaxId, fault_type, val_map); break;
-  case 1:  impl = new BtJust1(mMaxId, fault_type, val_map); break;
-  case 2:  impl = new BtJust2(mMaxId, fault_type, val_map); break;
-  default: impl = new BtJust2(mMaxId, fault_type, val_map); break;
-  }
-
-  impl->run(assign_list, output_list, pi_assign_list);
-
-  delete impl;
+  mImpl->run(assign_list, output_list, val_map, pi_assign_list);
 }
 
 END_NAMESPACE_YM_SATPG

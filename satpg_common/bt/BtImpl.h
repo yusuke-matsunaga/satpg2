@@ -28,10 +28,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] max_id ノード番号の最大値
   /// @param[in] fault_type 故障の型
-  /// @param[in] val_map ノードの値を保持するクラス
   BtImpl(ymuint max_id,
-	 FaultType fault_type,
-	 const ValMap& val_map);
+	 FaultType fault_type);
 
   /// @brief デストラクタ
   virtual
@@ -40,7 +38,7 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // BtImpl の仮想関数
+  // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
   /// @brief バックトレースを行なう．
@@ -53,11 +51,41 @@ public:
   /// を入れる．
   /// val_map には ffr_root のファンアウトコーン上の故障値と関係する
   /// 回路全体の正常値が入っている．
-  virtual
   void
   run(const NodeValList& assign_list,
       const vector<const TpgNode*>& output_list,
-      NodeValList& pi_assign_list) = 0;
+      const ValMap& val_map,
+      NodeValList& pi_assign_list);
+
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // BtImpl の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief バックトレースを行なう．
+  /// @param[in] assign_list 値の割り当てリスト
+  /// @param[in] output_list 故障に関係する出力ノードのリスト
+  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
+  ///
+  /// assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
+  /// を入れる．
+  /// val_map には ffr_root のファンアウトコーン上の故障値と関係する
+  /// 回路全体の正常値が入っている．
+  virtual
+  void
+  _run(const NodeValList& assign_list,
+       const vector<const TpgNode*>& output_list,
+       NodeValList& pi_assign_list) = 0;
+
+  /// @brief 処理の終了後に作業領域をクリアするためのフック関数
+  /// @param[in] id ノード番号
+  ///
+  /// デフォルトの実装では何もしない．
+  virtual
+  void
+  _clear_hook(ymuint id);
 
 
 protected:
@@ -119,10 +147,14 @@ private:
   FaultType mFaultType;
 
   // ノードの値を保持するクラス
-  const ValMap& mValMap;
+  const ValMap* mValMap;
 
   // 個々のノードのマークを表す配列
   vector<ymuint8> mMarkArray;
+
+  // mMarkArray に印を付けたノードの番号のリスト
+  // クリアするために使う．
+  vector<ymuint> mNodeIdList;
 
 };
 
@@ -147,8 +179,14 @@ void
 BtImpl::set_justified(const TpgNode* node,
 		      int time)
 {
+  // 念のため time の値を制限する．
   time &= 1;
-  mMarkArray[node->id()] |= (1U << time);
+  ymuint id = node->id();
+  if ( mMarkArray[id] == 0U ) {
+    // クリアのために値の変わったノード番号を記憶しておく．
+    mNodeIdList.push_back(id);
+  }
+  mMarkArray[id] |= (1U << time);
 }
 
 // @brief justified マークを読む．
@@ -159,6 +197,7 @@ bool
 BtImpl::justified_mark(const TpgNode* node,
 		       int time)
 {
+  // 念のため time の値を制限する．
   time &= 1;
   return static_cast<bool>((mMarkArray[node->id()] >> time) & 1U);
 }
@@ -171,7 +210,7 @@ Val3
 BtImpl::gval(const TpgNode* node,
 	     int time) const
 {
-  return mValMap.gval(node, time);
+  return mValMap->gval(node, time);
 }
 
 // @brief ノードの故障地を返す．
@@ -183,10 +222,10 @@ BtImpl::fval(const TpgNode* node,
 	     int time) const
 {
   if ( time == 0 ) {
-    return mValMap.gval(node, 0);
+    return mValMap->gval(node, 0);
   }
   else {
-    return mValMap.fval(node);
+    return mValMap->fval(node);
   }
 }
 

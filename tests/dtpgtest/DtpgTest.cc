@@ -33,7 +33,7 @@ DtpgTest::DtpgTest(const string& sat_type,
   mFaultType(fault_type),
   mNetwork(network),
   mFaultMgr(network),
-  mBackTracer(bt_mode, network.node_num()),
+  mBackTracer(bt_mode, fault_type, network.node_num()),
   mDtpg(sat_type, sat_option, sat_outp, fault_type, mBackTracer)
 {
   mFsim = Fsim::new_Fsim3(network, fault_type);

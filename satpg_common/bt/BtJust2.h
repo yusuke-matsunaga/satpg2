@@ -27,19 +27,17 @@ public:
   /// @brief コンストラクタ
   /// @param[in] max_id ノード番号の最大値
   /// @param[in] fault_type 故障の型
-  /// @param[in] val_map ノードの値を保持するクラス
   BtJust2(ymuint max_id,
-	  FaultType fault_type,
-	  const ValMap& val_map);
+	  FaultType fault_type);
 
   /// @brief デストラクタ
   virtual
   ~BtJust2();
 
 
-public:
+private:
   //////////////////////////////////////////////////////////////////////
-  // BackTracer の仮想関数
+  // BtImpl の仮想関数
   //////////////////////////////////////////////////////////////////////
 
   /// @brief バックトレースを行なう．
@@ -51,15 +49,15 @@ public:
   /// を入れる．
   virtual
   void
-  run(const NodeValList& assign_list,
-      const vector<const TpgNode*>& output_list,
-      NodeValList& pi_assign_list);
+  _run(const NodeValList& assign_list,
+       const vector<const TpgNode*>& output_list,
+       NodeValList& pi_assign_list);
 
-
-protected:
-  //////////////////////////////////////////////////////////////////////
-  // BtJustBase の仮想関数
-  //////////////////////////////////////////////////////////////////////
+  /// @brief 処理の終了後に作業領域をクリアするためのフック関数
+  /// @param[in] id ノード番号
+  virtual
+  void
+  _clear_hook(ymuint id);
 
 
 private:

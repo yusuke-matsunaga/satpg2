@@ -229,7 +229,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     xmode = mPoptX->val();
   }
 
-  BackTracer bt(xmode, _network().node_num());
+  BackTracer bt(xmode, fault_type, _network().node_num());
 
   if ( mPoptDrop->is_specified() ) {
     dop_list.add(new_DopDrop(fault_mgr, _fsim3()));

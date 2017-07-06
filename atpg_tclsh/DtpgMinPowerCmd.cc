@@ -144,7 +144,7 @@ DtpgMinPowerCmd::cmd_proc(TclObjVector& objv)
     xmode = mPoptX->val();
   }
 
-  BackTracer bt(xmode, _network().node_num());
+  BackTracer bt(xmode, kFtTransitionDelay, _network().node_num());
   DopVerifyResult verify_result;
 
   if ( mPoptDrop->is_specified() ) {

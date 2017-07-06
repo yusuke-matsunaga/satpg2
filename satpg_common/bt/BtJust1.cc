@@ -20,11 +20,9 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] max_id ノード番号の最大値
 // @param[in] fault_type 故障の型
-// @param[in] val_map ノードの値を保持するクラス
 BtJust1::BtJust1(ymuint max_id,
-		 FaultType fault_type,
-		 const ValMap& val_map) :
-  BtImpl(max_id, fault_type, val_map)
+		 FaultType fault_type) :
+  BtImpl(max_id, fault_type)
 {
 }
 
@@ -43,9 +41,9 @@ BtJust1::~BtJust1()
 // val_map には ffr_root のファンアウトコーン上の故障値と関係する
 // 回路全体の正常値が入っている．
 void
-BtJust1::run(const NodeValList& assign_list,
-	     const vector<const TpgNode*>& output_list,
-	     NodeValList& pi_assign_list)
+BtJust1::_run(const NodeValList& assign_list,
+	      const vector<const TpgNode*>& output_list,
+	      NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
 

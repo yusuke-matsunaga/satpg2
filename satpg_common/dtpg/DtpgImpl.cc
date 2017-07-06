@@ -535,7 +535,7 @@ DtpgImpl::solve(const TpgFault* fault,
     // バックトレースを行う．
     const VidMap& hvar_map = mFaultType == kFtTransitionDelay ? mHvarMap : mGvarMap;
     ValMap val_map(hvar_map, mGvarMap, mFvarMap, model);
-    mBackTracer(assign_list, mOutputList, mFaultType, val_map, nodeval_list);
+    mBackTracer(assign_list, mOutputList, val_map, nodeval_list);
 
     timer.stop();
     stats.mBackTraceTime += timer.time();

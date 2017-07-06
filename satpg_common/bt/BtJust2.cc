@@ -20,11 +20,9 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] max_id ノード番号の最大値
 // @param[in] fault_type 故障の型
-// @param[in] val_map ノードの値を保持するクラス
 BtJust2::BtJust2(ymuint max_id,
-		 FaultType fault_type,
-		 const ValMap& val_map) :
-  BtImpl(max_id, fault_type, val_map),
+		 FaultType fault_type) :
+  BtImpl(max_id, fault_type),
   mAlloc(sizeof(NodeList), 1024),
   mJustArray(max_id * 2, nullptr)
 {
@@ -43,9 +41,9 @@ BtJust2::~BtJust2()
 // assign_list には故障の活性化条件と ffr_root までの故障伝搬条件
 // を入れる．
 void
-BtJust2::run(const NodeValList& assign_list,
-	     const vector<const TpgNode*>& output_list,
-	     NodeValList& pi_assign_list)
+BtJust2::_run(const NodeValList& assign_list,
+	      const vector<const TpgNode*>& output_list,
+	      NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
 
@@ -83,6 +81,17 @@ BtJust2::run(const NodeValList& assign_list,
     int time = tmp->mTime;
     record_value(node, time, pi_assign_list);
   }
+
+  mAlloc.destroy();
+}
+
+// @brief 処理の終了後に作業領域をクリアするためのフック関数
+// @param[in] id ノード番号
+void
+BtJust2::_clear_hook(ymuint id)
+{
+  mJustArray[id * 2 + 0] = nullptr;
+  mJustArray[id * 2 + 1] = nullptr;
 }
 
 // @brief solve 中で変数割り当ての正当化を行なう．
