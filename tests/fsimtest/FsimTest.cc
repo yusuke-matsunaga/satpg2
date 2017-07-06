@@ -206,6 +206,9 @@ fsim2test(int argc,
   bool ppsfp = false;
   bool sppfp = false;
 
+  bool sa_mode = false;
+  bool td_mode = false;
+
   argv0 = argv[0];
 
   ymuint pos = 1;
@@ -250,6 +253,20 @@ fsim2test(int argc,
 	  return -1;
 	}
 	sppfp = true;
+      }
+      else if ( strcmp(argv[pos], "--stuck-at") == 0 ) {
+	if ( td_mode ) {
+	  cerr << "--stuck-at and --transition-delay are mutually exclusive" << endl;
+	  return -1;
+	}
+	sa_mode = true;
+      }
+      else if ( strcmp(argv[pos], "--transition-delay") == 0 ) {
+	if ( td_mode ) {
+	  cerr << "--stuck-at and --transition-delay are mutually exclusive" << endl;
+	  return -1;
+	}
+	td_mode = true;
       }
       else if ( strcmp(argv[pos], "--blif") == 0 ) {
 	if ( iscas89 ) {
@@ -317,18 +334,29 @@ fsim2test(int argc,
     ASSERT_NOT_REACHED;
   }
 
+  if ( !sa_mode && !td_mode ) {
+    sa_mode = true;
+  }
+  if ( td_mode && network.dff_num() == 0 ) {
+    cerr << "Network(" << filename << ") is not sequential,"
+	 << " --transition-delay option is ignored." << endl;
+    td_mode = false;
+    sa_mode = true;
+  }
+  FaultType fault_type = sa_mode ? kFtStuckAt : kFtTransitionDelay;
+
   Fsim* fsim = nullptr;
   if ( fsim2 ) {
-    fsim = Fsim::new_Fsim2(network, kFtStuckAt);
+    fsim = Fsim::new_Fsim2(network, fault_type);
   }
   else if ( fsim3 ) {
-    fsim = Fsim::new_Fsim3(network, kFtStuckAt);
+    fsim = Fsim::new_Fsim3(network, fault_type);
   }
   else {
     ASSERT_NOT_REACHED;
   }
 
-  TvMgr tvmgr(network, kFtStuckAt);
+  TvMgr tvmgr(network, fault_type);
 
   RandGen rg;
   vector<const TestVector*> tv_list;
