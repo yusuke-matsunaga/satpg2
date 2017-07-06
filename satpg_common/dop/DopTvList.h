@@ -26,10 +26,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] tvmgr テストベクタのマネージャ
   /// @param[in] tvlist テストベクタのリスト
-  /// @param[in] td_mode TDモードの時 true にするフラグ
   DopTvList(TvMgr& tvmgr,
-	    vector<const TestVector*>& tvlist,
-	    bool td_mode);
+	    vector<const TestVector*>& tvlist);
 
   /// @brief デストラクタ
   virtual
@@ -60,9 +58,6 @@ private:
 
   // テストベクタのリスト
   vector<const TestVector*>& mTvList;
-
-  // TDモード
-  bool mTdMode;
 
 };
 

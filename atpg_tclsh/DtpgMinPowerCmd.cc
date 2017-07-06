@@ -134,7 +134,7 @@ DtpgMinPowerCmd::cmd_proc(TclObjVector& objv)
   UopList uop_list;
 
   if ( !mPoptNoPat->is_specified() ) {
-    dop_list.add(new_DopTvListTd(_td_tv_mgr(), _td_tv_list()));
+    dop_list.add(new_DopTvList(_td_tv_mgr(), _td_tv_list()));
   }
   dop_list.add(new_DopBase(_td_fault_mgr()));
   uop_list.add(new_UopBase(_td_fault_mgr()));

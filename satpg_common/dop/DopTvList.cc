@@ -13,24 +13,14 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-// @brief 'tvlist-sa' タイプを生成する．
+// @brief 'tvlist' タイプを生成する．
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
 DetectOp*
-new_DopTvListSa(TvMgr& tvmgr,
-		vector<const TestVector*>& tvlist)
+new_DopTvList(TvMgr& tvmgr,
+	      vector<const TestVector*>& tvlist)
 {
-  return new DopTvList(tvmgr, tvlist, false);
-}
-
-// @brief 'tvlist-td' タイプを生成する．
-// @param[in] tvmgr テストベクタのマネージャ
-// @param[in] tvlist テストベクタのリスト
-DetectOp*
-new_DopTvListTd(TvMgr& tvmgr,
-		vector<const TestVector*>& tvlist)
-{
-  return new DopTvList(tvmgr, tvlist, true);
+  return new DopTvList(tvmgr, tvlist);
 }
 
 
@@ -41,13 +31,10 @@ new_DopTvListTd(TvMgr& tvmgr,
 // @brief コンストラクタ
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
-// @param[in] td_mode TDモードの時 true にするフラグ
 DopTvList::DopTvList(TvMgr& tvmgr,
-		     vector<const TestVector*>& tvlist,
-		     bool td_mode) :
+		     vector<const TestVector*>& tvlist) :
   mTvMgr(tvmgr),
-  mTvList(tvlist),
-  mTdMode(td_mode)
+  mTvList(tvlist)
 {
 }
 

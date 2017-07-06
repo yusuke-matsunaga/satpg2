@@ -219,12 +219,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   TpgFaultMgr& fault_mgr = sa_mode ? _sa_fault_mgr() : _td_fault_mgr();
 
   if ( !mPoptNoPat->is_specified() ) {
-    if ( sa_mode ) {
-      dop_list.add(new_DopTvListSa(tv_mgr, tv_list));
-    }
-    else {
-      dop_list.add(new_DopTvListTd(tv_mgr, tv_list));
-    }
+    dop_list.add(new_DopTvList(tv_mgr, tv_list));
   }
   dop_list.add(new_DopBase(fault_mgr));
   uop_list.add(new_UopBase(fault_mgr));
