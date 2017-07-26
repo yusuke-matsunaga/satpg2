@@ -10,7 +10,6 @@
 
 #include "satpg.h"
 #include "Val3.h"
-#include "PackedVal.h"
 #include "FaultType.h"
 #include "ym/RandGen.h"
 
@@ -104,7 +103,23 @@ public:
 
   /// @brief X の個数を得る．
   ymuint
-  x_num() const;
+  x_count() const;
+
+  /// @brief 入力のベクタを得る．
+  const InputVector&
+  input_vector() const;
+
+  /// @brief DFFのベクタを得る．
+  ///
+  /// nullptr の場合もある．
+  const DffVector&
+  dff_vector() const;
+
+  /// @brief ２時刻目の入力のベクタを得る．
+  ///
+  /// nullptr の場合もある．
+  const InputVector&
+  aux_input_vector() const;
 
   /// @brief 2つのベクタが両立しないとき true を返す．
   /// @param[in] tv1, tv2 対象のテストベクタ
@@ -233,60 +248,17 @@ public:
 
 private:
   //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる便利関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief pos 番めの値を得る．
-  /// @param[in] pos 入力の位置番号
-  Val3
-  _val(ymuint pos) const;
-
-  /// @breif pos 番めの値を設定する．
-  /// @param[in] pos 入力の位置番号
-  /// @param[in] val 値
-  void
-  _set_val(ymuint pos,
-	   Val3 val);
-
-  /// @brief ブロック数を返す．
-  /// @param[in] ni 入力数
-  static
-  ymuint
-  block_num(ymuint ni);
-
-  /// @brief HEX文字列の長さを返す．
-  /// @param[in] ni 入力数
-  static
-  ymuint
-  hex_length(ymuint ni);
-
-  // 入力位置からブロック番号を得る．
-  /// @param[in] ipos 入力の位置番号
-  static
-  ymuint
-  block_idx(ymuint ipos);
-
-  // 入力位置からシフト量を得る．
-  /// @param[in] ipos 入力の位置番号
-  static
-  ymuint
-  shift_num(ymuint ipos);
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
   // 特殊なアロケーションをしているのでコンストラクタ関係は
   // プライベートにしている．
   //////////////////////////////////////////////////////////////////////
 
   /// @brief コンストラクタ
-  /// @param[in] input_num 入力数
-  /// @param[in] dff_num DFF数
-  /// @param[in] fault_type 故障の種類
-  explicit
-  TestVector(ymuint input_num,
-	     ymuint dff_num,
-	     FaultType fault_type);
+  /// @param[in] input_vector入力のベクタ
+  /// @param[in] dff_vector DFFのベクタ
+  /// @param[in] aux_input_vector ２時刻目の入力のベクタ
+  TestVector(InputVector* input_vector,
+	     DffVector* dff_vector,
+	     InputVector* aux_input_vector);
 
   /// @brief デストラクタ
   ~TestVector();
@@ -306,29 +278,14 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 外部入力数
-  // ただし最下位ビットで縮退故障用か遷移故障用かを区別する．
-  // 最下位ビットが0の時縮退故障用
-  ymuint mInputNum;
+  // 入力用ベクタ
+  InputVector* mInputVector;
 
-  // DFF数
-  ymuint mDffNum;
+  // DFF用ベクタ
+  DffVector* mDffVector;
 
-  // 最後のブロックのマスク
-  PackedVal mMask;
-
-  // ベクタ本体(ただしサイズは可変)
-  PackedVal mPat[1];
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // このクラスに固有の定数
-  //////////////////////////////////////////////////////////////////////
-
-  // 1ワードあたりのHEX文字数
-  static
-  const ymuint HPW = kPvBitLen / 4;
+  // ２時刻目の入力用ベクタ
+  InputVector* mAuxInputVector;
 
 };
 
@@ -393,7 +350,7 @@ inline
 ymuint
 TestVector::input_num() const
 {
-  return mInputNum / 2;
+  return mInputVector->vect_len();
 }
 
 // @brief DFF数を得る．
@@ -401,7 +358,10 @@ inline
 ymuint
 TestVector::dff_num() const
 {
-  return mDffNum;
+  if ( mDffVector != nullptr ) {
+    return mDffVector->vect_len();
+  }
+  return 0;
 }
 
 // @brief PPI数を得る．
@@ -419,7 +379,7 @@ inline
 FaultType
 TestVector::fault_type() const
 {
-  if ( mInputNum & 1U ) {
+  if ( mAuxInputVector != nullptr ) {
     return kFtTransitionDelay;
   }
   else {
@@ -432,16 +392,11 @@ inline
 ymuint
 TestVector::vect_len() const
 {
-  if ( fault_type() == kFtStuckAt ) {
-    return input_num() + dff_num();
+  ymuint ans = input_num() + dff_num();
+  if ( mAuxInputVector != nullptr ) {
+    ans += mAuxInputVector->vect_len();
   }
-  else if ( fault_type() == kFtTransitionDelay ) {
-    return input_num() * 2 + dff_num();
-  }
-  else {
-    ASSERT_NOT_REACHED;
-    return 0;
-  }
+  return ans;
 }
 
 // @brief PPIの値を得る．
@@ -452,7 +407,12 @@ TestVector::ppi_val(ymuint pos) const
 {
   ASSERT_COND( pos < ppi_num() );
 
-  return _val(pos);
+  if ( pos < input_num() ) {
+    return mInputVector->val(pos);
+  }
+  else {
+    return mDffVector->val(pos - input_num());
+  }
 }
 
 // @brief 1時刻目の外部入力の値を得る．
@@ -464,7 +424,7 @@ TestVector::input_val(ymuint pos) const
   ASSERT_COND( fault_type() == kFtTransitionDelay );
   ASSERT_COND( pos < input_num() );
 
-  return _val(pos);
+  return mInputVector->val(pos);
 }
 
 // @brief 1時刻目のDFFの値を得る．
@@ -476,7 +436,7 @@ TestVector::dff_val(ymuint pos) const
   ASSERT_COND( fault_type() == kFtTransitionDelay );
   ASSERT_COND( pos < dff_num() );
 
-  return _val(pos + input_num());
+  return mDffVector->val(pos);
 }
 
 // @brief 2時刻目の外部入力の値を得る．
@@ -488,7 +448,35 @@ TestVector::aux_input_val(ymuint pos) const
   ASSERT_COND( fault_type() == kFtTransitionDelay );
   ASSERT_COND( pos < input_num() );
 
-  return _val(pos + input_num() + dff_num());
+  return mAuxInputVector->val(pos);
+}
+
+// @brief 入力のベクタを得る．
+inline
+const InputVector&
+TestVector::input_vector() const
+{
+  return *mInputVector;
+}
+
+// @brief DFFのベクタを得る．
+//
+// nullptr の場合もある．
+inline
+const DffVector&
+TestVector::dff_vector() const
+{
+  return *mDffVector;
+}
+
+// @brief ２時刻目の入力のベクタを得る．
+//
+// nullptr の場合もある．
+inline
+const InputVector&
+TestVector::aux_input_vector() const
+{
+  return *mAuxInputVector;
 }
 
 // @brief PPIの値を設定する．
@@ -504,7 +492,12 @@ TestVector::set_ppi_val(ymuint pos,
   ASSERT_COND( fault_type() == kFtStuckAt );
   ASSERT_COND( pos < ppi_num() );
 
-  _set_val(pos, val);
+  if ( pos < input_num() ) {
+    mInputVector->set_val(pos, val);
+  }
+  else {
+    mDffVector->set_val(pos - input_num(), val);
+  }
 }
 
 // @breif 1時刻目の外部入力の値を設定する．
@@ -518,7 +511,7 @@ TestVector::set_input_val(ymuint pos,
   ASSERT_COND( fault_type() == kFtTransitionDelay );
   ASSERT_COND( pos < input_num() );
 
-  _set_val(pos, val);
+  mInputVector->set_val(pos, val);
 }
 
 // @breif 1時刻目のDFFの値を設定する．
@@ -532,7 +525,7 @@ TestVector::set_dff_val(ymuint pos,
   ASSERT_COND( fault_type() == kFtTransitionDelay );
   ASSERT_COND( pos < dff_num() );
 
-  _set_val(pos + input_num(), val);
+  mDffVector->set_val(pos, val);
 }
 
 // @breif 2時刻目の外部入力の値を設定する．
@@ -547,77 +540,8 @@ TestVector::set_aux_input_val(ymuint pos,
   ASSERT_COND( pos < input_num() );
 
   if ( fault_type() == kFtTransitionDelay ) {
-    _set_val(pos + input_num() + dff_num(), val);
+    mAuxInputVector->set_val(pos, val);
   }
-}
-
-// @brief pos 番めの値を得る．
-inline
-Val3
-TestVector::_val(ymuint pos) const
-{
-  ymuint shift = shift_num(pos);
-  ymuint block0 = block_idx(pos);
-  ymuint block1 = block0 + 1;
-  int v0 = (mPat[block0] >> shift) & 1UL;
-  int v1 = (mPat[block1] >> shift) & 1UL;
-  return static_cast<Val3>(v1 + v1 + v0);
-}
-
-// @breif pos 番めの値を設定する．
-inline
-void
-TestVector::_set_val(ymuint pos,
-		     Val3 val)
-{
-  ymuint shift = shift_num(pos);
-  ymuint block0 = block_idx(pos);
-  ymuint block1 = block0 + 1;
-  PackedVal mask = 1UL << shift;
-  if ( val == kVal0 ) {
-    mPat[block0] |= mask;
-    mPat[block1] &= ~mask;
-  }
-  else if ( val == kVal1 ) {
-    mPat[block0] &= ~mask;
-    mPat[block1] |= mask;
-  }
-  else { // val == kValX
-    mPat[block0] &= ~mask;
-    mPat[block1] &= ~mask;
-  }
-}
-
-// @brief ブロック数を返す．
-inline
-ymuint
-TestVector::block_num(ymuint ni)
-{
-  return ((ni + kPvBitLen - 1) / kPvBitLen) * 2;
-}
-
-// @brief HEX文字列の長さを返す．
-inline
-ymuint
-TestVector::hex_length(ymuint ni)
-{
-  return (ni + 3) / 4;
-}
-
-// 入力位置からブロック番号を得る．
-inline
-ymuint
-TestVector::block_idx(ymuint ipos)
-{
-  return (ipos / kPvBitLen) * 2;
-}
-
-// 入力位置からシフト量を得る．
-inline
-ymuint
-TestVector::shift_num(ymuint ipos)
-{
-  return (kPvBitLen - 1 - ipos) % kPvBitLen;
 }
 
 // @brief 内容を出力する．

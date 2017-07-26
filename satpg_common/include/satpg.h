@@ -46,6 +46,8 @@ class TpgFault;
 class TpgFaultMgr;
 
 class NodeValList;
+class InputVector;
+class DffVector;
 class TestVector;
 class TvMgr;
 

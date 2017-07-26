@@ -16,28 +16,16 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
-// @param[in] input_num 入力数
-// @param[in] dff_num DFF数
-// @param[in] fault_type 故障の種類
-TestVector::TestVector(ymuint input_num,
-		       ymuint dff_num,
-		       FaultType fault_type) :
-  mInputNum((input_num << 1)),
-  mDffNum(dff_num)
+// @param[in] input_vector入力のベクタ
+// @param[in] dff_vector DFFのベクタ
+// @param[in] aux_input_vector ２時刻目の入力のベクタ
+TestVector::TestVector(InputVector* input_vector,
+		       DffVector* dff_vector,
+		       InputVector* aux_input_vector) :
+  mInputVector(input_vector),
+  mDffVector(dff_vector),
+  mAuxInputVector(aux_input_vector)
 {
-  if ( fault_type == kFtTransitionDelay ) {
-    mInputNum |= 1U;
-  }
-
-  // X に初期化しておく．
-  ymuint nb = block_num(vect_len());
-  for (ymuint i = 0; i < nb; ++ i) {
-    mPat[i] = kPvAll0;
-  }
-
-  // マスクを設定する．
-  ymuint k = vect_len() % kPvBitLen;
-  mMask = kPvAll1 << (kPvBitLen - k);
 }
 
 // @brief デストラクタ
@@ -47,16 +35,16 @@ TestVector::~TestVector()
 
 // @brief X の個数を得る．
 ymuint
-TestVector::x_num() const
+TestVector::x_count() const
 {
-  ymuint nb = block_num(vect_len());
-  ymint n = 0;
-  for (ymuint i = 0; i < nb; i += 2) {
-    PackedVal v = mPat[i] | mPat[i + 1];
-    // v 中の1の数を数える．
-    n += count_ones(v);
+  ymuint ans = mInputVector->x_count();
+  if ( mDffVector != nullptr ) {
+    ans += mDffVector->x_count();
   }
-  return vect_len() - n;
+  if ( mAuxInputVector != nullptr ) {
+    ans += mAuxInputVector->x_count();
+  }
+  return ans;
 }
 
 // @brief 2つのベクタが両立しないとき true を返す．
@@ -64,15 +52,20 @@ bool
 TestVector::is_conflict(const TestVector& tv1,
 			const TestVector& tv2)
 {
-  ASSERT_COND( tv1.mInputNum == tv2.mInputNum );
+  ASSERT_COND( tv1.input_num() == tv2.input_num() );
+  ASSERT_COND( tv1.dff_num() == tv2.dff_num() );
+  ASSERT_COND( tv1.aux_input_num() == tv2.aux_input_num() );
 
-  ymuint nb = block_num(tv1.vect_len());
-  for (ymuint i = 0; i < nb; i += 2) {
-    ymuint i0 = i;
-    ymuint i1 = i + 1;
-    PackedVal diff0 = (tv1.mPat[i0] ^ tv2.mPat[i0]);
-    PackedVal diff1 = (tv1.mPat[i1] ^ tv2.mPat[i1]);
-    if ( (diff0 & diff1) != kPvAll0 ) {
+  if ( is_conflict(tv1.input_vector(), tv2.input_vector()) ) {
+    return true;
+  }
+  if ( tv1.dff_num() > 0 ) {
+    if ( is_conflict(tv1.dff_vector(), tv2.dff_vector()) ) {
+      return true;
+    }
+  }
+  if ( tv1.aux_input_num() > 0 ) {
+    if ( is_conflict(tv1.aux_input_vector(), tv2.aux_input_vector()) ) {
       return true;
     }
   }
@@ -85,11 +78,20 @@ TestVector::is_conflict(const TestVector& tv1,
 bool
 TestVector::operator==(const TestVector& right) const
 {
-  ASSERT_COND( mInputNum == right.mInputNum );
+  ASSERT_COND( tv1.input_num() == tv2.input_num() );
+  ASSERT_COND( tv1.dff_num() == tv2.dff_num() );
+  ASSERT_COND( tv1.aux_input_num() == tv2.aux_input_num() );
 
-  ymuint nb = block_num(vect_len());
-  for (ymuint i = 0; i < nb; ++ i) {
-    if ( mPat[i] != right.mPat[i] ) {
+  if ( tv1.input_vector() != tv2.input_vector() ) {
+    return false;
+  }
+  if ( tv1.dff_num() > 0 ) {
+    if ( tv1.dff_vector() != tv2.dff_vector() ) {
+      return false;
+    }
+  }
+  if ( tv1.aux_input_num() > 0 ) {
+    if ( tv1.aux_input_vector() != tv2.aux_input_vector() ) {
       return false;
     }
   }
@@ -103,21 +105,24 @@ TestVector::operator==(const TestVector& right) const
 bool
 TestVector::operator<(const TestVector& right) const
 {
-  ASSERT_COND( mInputNum == right.mInputNum );
+  ASSERT_COND( tv1.input_num() == tv2.input_num() );
+  ASSERT_COND( tv1.dff_num() == tv2.dff_num() );
+  ASSERT_COND( tv1.aux_input_num() == tv2.aux_input_num() );
 
-  ymuint nb = block_num(vect_len());
-  bool diff = false;
-  for (ymuint i = 0; i < nb; ++ i) {
-    PackedVal val1 = mPat[i];
-    PackedVal val2 = right.mPat[i];
-    if ( (~val1 & val2) != kPvAll0 ) {
+  if ( !(tv1.input_vector() < tv2.input_vector()) ) {
+    return false;
+  }
+  if ( tv1.dff_num() > 0 ) {
+    if ( !(tv1.dff_vector() < tv2.dff_vector()) ) {
       return false;
     }
-    if ( val1 != val2 ) {
-      diff = true;
+  }
+  if ( tv1.aux_input_num() > 0 ) {
+    if ( !(tv1.aux_input_vector() < tv2.aux_input_vector()) ) {
+      return false;
     }
   }
-  return diff;
+  return true;
 }
 
 // @brief 包含関係の比較を行なう
@@ -128,13 +133,20 @@ TestVector::operator<(const TestVector& right) const
 bool
 TestVector::operator<=(const TestVector& right) const
 {
-  ASSERT_COND( mInputNum == right.mInputNum );
+  ASSERT_COND( tv1.input_num() == tv2.input_num() );
+  ASSERT_COND( tv1.dff_num() == tv2.dff_num() );
+  ASSERT_COND( tv1.aux_input_num() == tv2.aux_input_num() );
 
-  ymuint nb = block_num(vect_len());
-  for (ymuint i = 0; i < nb; ++ i) {
-    PackedVal val1 = mPat[i];
-    PackedVal val2 = right.mPat[i];
-    if ( (~val1 & val2) != kPvAll0 ) {
+  if ( !(tv1.input_vector() <= tv2.input_vector()) ) {
+    return false;
+  }
+  if ( tv1.dff_num() > 0 ) {
+    if ( !(tv1.dff_vector() <= tv2.dff_vector()) ) {
+      return false;
+    }
+  }
+  if ( tv1.aux_input_num() > 0 ) {
+    if ( !(tv1.aux_input_vector() <= tv2.aux_input_vector()) ) {
       return false;
     }
   }
@@ -145,12 +157,12 @@ TestVector::operator<=(const TestVector& right) const
 void
 TestVector::init()
 {
-  ymuint nb = block_num(vect_len());
-  for (ymuint i = 0; i < nb; i += 2) {
-    ymuint i0 = i;
-    ymuint i1 = i + 1;
-    mPat[i0] = kPvAll0;
-    mPat[i1] = kPvAll0;
+  mInputVector->init();
+  if ( mDffVector != nullptr ) {
+    mDffVector->init();
+  }
+  if ( mAuxInputVector != nullptr ) {
+    mAuxInputVector->init();
   }
 }
 

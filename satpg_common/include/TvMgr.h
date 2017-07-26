@@ -9,7 +9,6 @@
 /// All rights reserved.
 
 #include "satpg.h"
-#include "TestVector.h"
 #include "ym/UnitAlloc.h"
 
 
@@ -25,9 +24,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] network 対象のネットワーク
-  /// @param[in] fault_type 故障の種類
-  TvMgr(const TpgNetwork& network,
-	FaultType fault_type);
+  TvMgr(const TpgNetwork& network);
 
   /// @brief デストラクタ
   ///
@@ -54,20 +51,29 @@ public:
   ymuint
   dff_num() const;
 
-  /// @brief ベクタ長を返す．
-  ymuint
-  vect_len() const;
-
-  /// @brief 新しいパタンを生成する．
-  /// @return 生成されたパタンを返す．
+  /// @brief 新しい入力用ベクタを生成する．
+  /// @return 生成されたベクタを返す．
   ///
   /// パタンは0で初期化される．
-  TestVector*
-  new_vector();
+  InputVector*
+  new_input_vector();
 
-  /// @brief 縮退故障用のパタンを削除する．
+  /// @brief 入力用ベクタを削除する．
+  /// @param[in] vect 削除するベクタ
   void
-  delete_vector(TestVector* tv);
+  delete_vector(InputVector* vect);
+
+  /// @brief 新しいFF用ベクタを生成する．
+  /// @return 生成されたベクタを返す．
+  ///
+  /// パタンは0で初期化される．
+  FFVector*
+  new_ff_vector();
+
+  /// @brief FF用ベクタを削除する．
+  /// @param[in] vect 削除するベクタ
+  void
+  delete_vector(FFVector* vect);
 
 
 private:
@@ -78,7 +84,7 @@ private:
   /// @brief ベクタ長からバイトサイズを計算する．
   /// @param[in] vectlen ベクタ長
   ///
-  /// TestVector::block_num() にアクセスするためにクラスメソッドにしている．
+  /// BitVector::block_num() にアクセスするためにクラスメソッドにしている．
   static
   ymuint
   calc_size(ymuint vectlen);
@@ -90,11 +96,13 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief コピーコンストラクタ
-  /// @note 使用禁止なので実装しない．
+  ///
+  /// 使用禁止なので実装しない．
   TvMgr(const TvMgr& src);
 
   /// @brief 代入演算子
-  /// @note 使用禁止なので実装しない．
+  ///
+  /// 使用禁止なので実装しない．
   const TvMgr&
   operator=(const TvMgr& src);
 
@@ -104,23 +112,23 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 故障の種類
-  FaultType mFaultType;
-
   // 対象回路の入力数
   ymuint mInputNum;
 
   // 対象回路の DFF 数
   ymuint mDffNum;
 
-  // テストベクタの長さ
-  ymuint mVectLen;
+  // InputVector の実際のサイズ
+  ymuint mIvSize;
 
-  // テストベクタの実際のバイトサイズ
-  ymuint mTvSize;
+  // 入力ベクタのメモリ確保用のアロケータ
+  UnitAlloc mInputVectorAlloc;
 
-  // テストベクタのメモリ確保用のアロケータ
-  UnitAlloc mAlloc;
+  // FFVector の実際のサイズ
+  ymuint mFvSize;
+
+  // FFベクタのメモリ確保用のアロケータ
+  UnitAlloc mFFVectorAlloc;
 
 };
 
@@ -143,14 +151,6 @@ ymuint
 TvMgr::dff_num() const
 {
   return mDffNum;
-}
-
-// @brief ベクタ長を返す．
-inline
-ymuint
-TvMgr::vect_len() const
-{
-  return mVectLen;
 }
 
 END_NAMESPACE_YM_SATPG

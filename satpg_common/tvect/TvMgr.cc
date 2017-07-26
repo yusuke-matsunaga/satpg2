@@ -9,45 +9,37 @@
 
 #include "TvMgr.h"
 #include "TpgNetwork.h"
-#include "TestVector.h"
+#include "InputVector.h"
+#include "FFVector.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
 
+// @brief ベクタ長からバイトサイズを計算する．
+// @param[in] vectlen ベクタ長
 inline
 ymuint
-calc_vectlen(ymuint input_num,
-	     ymuint dff_num,
-	     FaultType fault_type)
+calc_size(ymuint vectlen)
 {
-  ymuint ans = 0;
-  if ( fault_type == kFtStuckAt ) {
-    ans = input_num + dff_num;
+  if ( vectlen == 0 ) {
+    vectlen = 1;
   }
-  else if ( fault_type == kFtTransitionDelay ) {
-    ans = input_num * 2 + dff_num;
-  }
-  else {
-    ASSERT_NOT_REACHED;
-  }
-  return ans;
+  return sizeof(BitfffVector) + kPvBitLen * (BitVector::block_num(vectlen) - 1);
 }
 
 END_NONAMESPACE
 
 // @brief コンストラクタ
 // @param[in] network 対象のネットワーク
-// @param[in] fault_type 故障の種類
-TvMgr::TvMgr(const TpgNetwork& network,
-	     FaultType fault_type) :
-  mFaultType(fault_type),
+TvMgr::TvMgr(const TpgNetwork& network) :
   mInputNum(network.input_num()),
   mDffNum(network.dff_num()),
-  mVectLen(calc_vectlen(mInputNum, mDffNum, fault_type)),
-  mTvSize(calc_size(mVectLen)),
-  mAlloc(mTvSize, 1024)
+  mIvSize(calc_size(mInputNum)),
+  mFvSize(calc_size(mDffNum)),
+  mInputVectorAlloc(mIvSize, 1024),
+  mFFVectorAlloc(mFvSize, 1024)
 {
 }
 
@@ -61,40 +53,49 @@ TvMgr::~TvMgr()
 void
 TvMgr::clear()
 {
-  mAlloc.destroy();
+  mInputVectorAlloc.destroy();
+  mFFVectorAlloc.destroy();
 }
 
-// @brief 新しいパタンを生成する．
+// @brief 新しい入力用ベクタを生成する．
 // @return 生成されたパタンを返す．
 //
 // パタンは0で初期化される．
-TestVector*
-TvMgr::new_vector()
+InputVector*
+TvMgr::new_input_vector()
 {
-  void* p = mAlloc.get_memory(mTvSize);
-  TestVector* tv = new (p) TestVector(mInputNum, mDffNum, mFaultType);
+  void* p = mInputVectorAlloc.get_memory(mIvSize);
+  InputVector* vect = new (p) InputVector(mInputNum);
 
-  return tv;
+  return vect;
 }
 
-// @brief パタンを削除する．
+// @brief 入力用ベクタを削除する．
 void
-TvMgr::delete_vector(TestVector* tv)
+TvMgr::delete_vector(InputVector* vect)
 {
-  mAlloc.put_memory(mTvSize, (void*)tv);
+  mInputVectorAlloc.put_memory(mIvSize, (void*)vect);
 }
 
-// @brief ベクタ長からバイトサイズを計算する．
-// @param[in] vectlen ベクタ長
+// @brief 新しいFF用ベクタを生成する．
+// @return 生成されたベクタを返す．
 //
-// TestVector::block_num() にアクセスするためにクラスメソッドにしている．
-ymuint
-TvMgr::calc_size(ymuint vectlen)
+// パタンは0で初期化される．
+FFVector*
+TvMgr::new_ff_vector()
 {
-  if ( vectlen == 0 ) {
-    vectlen = 1;
-  }
-  return sizeof(TestVector) + kPvBitLen * (TestVector::block_num(vectlen) - 1);
+  void* p = mFFVectorAlloc.get_memory(mFvSize);
+  FFVector* vect = new (p) FFVector(mDffNum);
+
+  return vect;
+}
+
+// @brief FF用ベクタを削除する．
+// @param[in] vect 削除するベクタ
+void
+TvMgr::delete_vector(FFVector* vect)
+{
+  mFFVectorAlloc.put_memory(mFvSize, (void*)vect);
 }
 
 END_NAMESPACE_YM_SATPG
