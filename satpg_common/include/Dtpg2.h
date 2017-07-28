@@ -15,6 +15,7 @@
 #include "DtpgStats.h"
 #include "FaultStatus.h"
 #include "ym/SatBool3.h"
+#include "ym/RandGen.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -107,6 +108,9 @@ private:
 
   // 実装クラス
   Dtpg2Impl* mImpl;
+
+  // 乱数発生器
+  RandGen mRandGen;
 
 };
 

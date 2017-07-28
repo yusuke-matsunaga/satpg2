@@ -89,6 +89,17 @@ public:
        NodeValList& nodeval_list,
        DtpgStats& stats);
 
+  /// @brief テスト生成を行なう．
+  /// @param[in] fault 対象の故障
+  /// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
+  /// @param[inout] stats DTPGの統計情報
+  /// @return 結果を返す．
+  SatBool3
+  dtpg(const TpgFault* fault,
+       ymuint xor_assign,
+       NodeValList& nodeval_list,
+       DtpgStats& stats);
+
 
 protected:
   //////////////////////////////////////////////////////////////////////
@@ -327,6 +338,8 @@ private:
   ymuint mXorNum1;
   ymuint mXorNum2;
   vector<const TpgNode*> mXorNodeList;
+
+  vector<SatLiteral> mXorLitList;
 
 };
 

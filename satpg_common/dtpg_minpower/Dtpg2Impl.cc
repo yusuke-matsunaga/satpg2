@@ -105,6 +105,7 @@ void
 Dtpg2Impl::add_xor_constraint(ymuint num,
 			      RandGen& rg)
 {
+  mXorLitList.clear();
   if ( num == mXorNum2 ) {
     // もともとの入力数が少ないときはランダムに最小項を選ぶ．
     for (ymuint idx = 0; idx < mXorNum2; ++ idx) {
@@ -117,13 +118,7 @@ Dtpg2Impl::add_xor_constraint(ymuint num,
 	var = mHvarMap(node);
       }
       SatLiteral lit(var);
-      if ( rg.int31() % 2 ) {
-	lit = ~lit;
-      }
-      mSolver.add_clause(lit);
-      if ( !mSolver.sane() ) {
-	break;
-      }
+      mXorLitList.push_back(lit);
     }
     return;
   }
@@ -132,30 +127,29 @@ Dtpg2Impl::add_xor_constraint(ymuint num,
   for (ymuint i = 0; i < num; ++ i) {
     // p の確率で変数を選び，そのXORを作る．
     vector<SatVarId> var_list;
-    for (ymuint j = 0; j < mXorNum2; ++ j) {
-      if ( rg.real1() < p ) {
-	const TpgNode* node = mXorNodeList[j];
-	if ( j < mXorNum1 ) {
-	  SatVarId var = mGvarMap(node);
-	  var_list.push_back(var);
-	}
-	else {
-	  SatVarId var = mHvarMap(node);
-	  var_list.push_back(var);
+    for ( ; ; ) {
+      for (ymuint j = 0; j < mXorNum2; ++ j) {
+	if ( rg.real1() < p ) {
+	  const TpgNode* node = mXorNodeList[j];
+	  if ( j < mXorNum1 ) {
+	    SatVarId var = mGvarMap(node);
+	    var_list.push_back(var);
+	  }
+	  else {
+	    SatVarId var = mHvarMap(node);
+	    var_list.push_back(var);
+	  }
 	}
       }
+      if ( var_list.size() > 0 ) {
+	break;
+      }
     }
-    // 1/2 の確率でパリティを決める．
     SatLiteral xor_lit = make_xor(var_list, 0, var_list.size());
     if ( !mSolver.sane() ) {
       break;
     }
-    if ( rg.int31() % 2 ) {
-      mSolver.add_clause(xor_lit);
-    }
-    else {
-      mSolver.add_clause(~xor_lit);
-    }
+    mXorLitList.push_back(xor_lit);
   }
 }
 
@@ -203,6 +197,37 @@ Dtpg2Impl::dtpg(const TpgFault* fault,
   }
 
   SatBool3 ans = solve(fault, vector<SatLiteral>(), nodeval_list, stats);
+
+  return ans;
+}
+
+// @brief テスト生成を行なう．
+// @param[in] fault 対象の故障
+// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
+// @param[inout] stats DTPGの統計情報
+// @return 結果を返す．
+SatBool3
+Dtpg2Impl::dtpg(const TpgFault* fault,
+		ymuint xor_assign,
+		NodeValList& nodeval_list,
+		DtpgStats& stats)
+{
+  if ( fault->tpg_onode()->ffr_root() != root_node() ) {
+    cerr << "Error[Dtpg2Impl::dtpg()]: " << fault << " is not within mFfrRoot's FFR" << endl;
+    cerr << " fautl->ffr_root() = " << fault->tpg_onode()->ffr_root()->name() << endl;
+    return kB3X;
+  }
+
+  vector<SatLiteral> assumptions;
+  for (ymuint i = 0; i < mXorLitList.size(); ++ i) {
+    SatLiteral lit = mXorLitList[i];
+    if ( xor_assign & (1U << i) ) {
+      lit = ~lit;
+    }
+    assumptions.push_back(lit);
+  }
+
+  SatBool3 ans = solve(fault, assumptions, nodeval_list, stats);
 
   return ans;
 }

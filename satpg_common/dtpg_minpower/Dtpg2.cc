@@ -21,8 +21,6 @@
 #include "TpgFFR.h"
 #include "TpgFault.h"
 
-#include "ym/RandGen.h"
-
 
 BEGIN_NAMESPACE_YM_SATPG
 
@@ -169,34 +167,47 @@ Dtpg2::dtpg(TvMgr& tvmgr,
   }
   // とりあえず xor_num ぐらいの制約をつける．
 
-  RandGen randgen;
+  ymuint count_limit = 200;
+  ymuint fcount_limit = 200;
   ymuint count = 0;
   ymuint fcount = 0;
-  for ( ; count < 50; ++ count) {
+  bool exit = false;
+  for ( ; count < count_limit; ++ count) {
     Dtpg2Impl impl2(mSatType, mSatOption, mSatOutP, mBackTracer, network, fault->ffr()->root());
     impl2.gen_cnf(stats);
     impl2.make_xor_list();
-    impl2.add_xor_constraint(xor_num, randgen);
-    NodeValList nodeval_list1;
-    SatBool3 ans = impl2.dtpg(fault, nodeval_list1, stats);
-    if ( ans != kB3True ) {
-      continue;
-    }
+    impl2.add_xor_constraint(xor_num, mRandGen);
 
-    tv->set_from_assign_list(nodeval_list1);
-    ymuint wsa = fsim.calc_wsa(tv, false);
-    if ( wsa <= wsa_limit ) {
-      nodeval_list = nodeval_list1;
-      break;
+    ymuint xn_exp = 1U << xor_num;
+    for (ymuint p = 0U; p < xn_exp; ++ p) {
+      NodeValList nodeval_list1;
+      SatBool3 ans = impl2.dtpg(fault, p, nodeval_list1, stats);
+      if ( ans != kB3True ) {
+	continue;
+      }
+
+      tv->set_from_assign_list(nodeval_list1);
+      wsa = fsim.calc_wsa(tv, false);
+      if ( wsa <= wsa_limit ) {
+	nodeval_list = nodeval_list1;
+	exit = true;
+	break;
+      }
+      ++ fcount;
+      if ( fcount > fcount_limit ) {
+	exit = true;
+	break;
+      }
     }
-    ++ fcount;
-    if ( fcount > 20 ) {
+    if ( exit ) {
       break;
     }
   }
   {
-    cout << fault->str() << ": wsa = " << wsa
-	 << ", count = " << count << ", fcount = " << fcount << endl;
+    cout << fault->str() << ": wsa_liit = " << wsa_limit << ": wsa = " << wsa
+	 << ", count = " << count
+	 << ", fcount = " << fcount
+	 << endl;
   }
 
   tvmgr.delete_vector(tv);
