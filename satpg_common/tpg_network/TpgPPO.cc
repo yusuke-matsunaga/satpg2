@@ -89,6 +89,7 @@ TpgPPO::fanin(ymuint pos) const
   return mFanin;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -123,6 +124,7 @@ TpgPPO::make_faulty_cnf(SatSolver& solver,
     solver.add_clause( olit);
   }
 }
+#endif
 
 // @brief 出力番号2をセットする．
 // @param[in] id セットする番号

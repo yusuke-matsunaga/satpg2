@@ -6,9 +6,6 @@
 /// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
-#define DEBUG_DTPGM 0
-#define DEBUG_OUT cout
-
 #include "DtpgImplM.h"
 
 #include "TpgFault.h"
@@ -17,8 +14,24 @@
 #include "TpgFFR.h"
 #include "GateLitMap_vect.h"
 
+#define DEBUG_OUT cout
+BEGIN_NONAMESPACE
+#ifdef DEBUG_DTPGM
+int debug_dtpgm = 1;
+#else
+const int debug_dtpgm = 0;
+#endif
+END_NONAMESPACE
+
 
 BEGIN_NAMESPACE_YM_SATPG
+
+void
+make_node_cnf(SatSolver& solver,
+	      GateType gate_type,
+	      const GateLitMap& litmap)
+{
+}
 
 // @brief コンストラクタ
 // @param[in] sat_type SATソルバの種類を表す文字列
@@ -113,9 +126,9 @@ DtpgImplM::make_mffc_condition()
   for (ymuint i = 0; i < mElemArray.size(); ++ i) {
     mElemVarArray[i] = solver().new_variable();
 
-#if DEBUG_DTPGM
-    DEBUG_OUT << "cvar(Elem#" << i << ") = " << mElemVarArray[i] << endl;
-#endif
+    if ( debug_dtpgm ) {
+      DEBUG_OUT << "cvar(Elem#" << i << ") = " << mElemVarArray[i] << endl;
+    }
   }
 
   // mElemArray[] に含まれるノードと root の間にあるノードを
@@ -136,9 +149,9 @@ DtpgImplM::make_mffc_condition()
 	set_fvar(onode, var);
 	node_list.push_back(onode);
 
-#if DEBUG_DTPGM
-	DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
-#endif
+	if ( debug_dtpgm ) {
+	  DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
+	}
       }
     }
   }
@@ -155,9 +168,9 @@ DtpgImplM::make_mffc_condition()
 	set_fvar(onode, var);
 	node_list.push_back(onode);
 
-#if DEBUG_DTPGM
-	DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
-#endif
+	if ( debug_dtpgm ) {
+	  DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
+	}
       }
     }
   }
@@ -197,17 +210,18 @@ DtpgImplM::make_mffc_condition()
     }
     // ほとんど GateLitMap_vid(node, fvar_map()) を使いたいのだが
     // ovar が fvar(node) ではない！
-    node->make_cnf(solver(), GateLitMap_vect(ivars, ovar));
+    //node->make_cnf(solver(), GateLitMap_vect(ivars, ovar));
+    make_node_cnf(solver(), node->gate_type(), GateLitMap_vect(ivars, ovar));
 
-#if DEBUG_DTPGM
-    DEBUG_OUT << "Node#" << node->id() << ": ofvar("
-	      << ovar << ") := " << node->gate_type()
-	      << "(";
-    for (ymuint i = 0; i < ni; ++ i) {
-      DEBUG_OUT << " " << ivars[i];
+    if ( debug_dtpgm ) {
+      DEBUG_OUT << "Node#" << node->id() << ": ofvar("
+		<< ovar << ") := " << node->gate_type()
+		<< "(";
+      for (ymuint i = 0; i < ni; ++ i) {
+	DEBUG_OUT << " " << ivars[i];
+      }
+      DEBUG_OUT << ")" << endl;
     }
-    DEBUG_OUT << ")" << endl;
-#endif
   }
 }
 
@@ -225,10 +239,10 @@ DtpgImplM::inject_fault(ymuint elem_pos,
 
   solver().add_xorgate_rel(lit1, lit2, olit);
 
-#if DEBUG_DTPGM
-  DEBUG_OUT << "inject fault: " << ovar << " -> " << fvar(node)
-	    << " with cvar = " << mElemVarArray[elem_pos] << endl;
-#endif
+  if ( debug_dtpgm ) {
+    DEBUG_OUT << "inject fault: " << ovar << " -> " << fvar(node)
+	      << " with cvar = " << mElemVarArray[elem_pos] << endl;
+  }
 }
 
 END_NAMESPACE_YM_SATPG

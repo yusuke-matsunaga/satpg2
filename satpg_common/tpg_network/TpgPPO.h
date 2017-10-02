@@ -80,6 +80,7 @@ public:
   TpgNode*
   fanin(ymuint pos) const;
 
+#if 0
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ
   /// @param[in] lit_map 入出力とリテラルの対応マップ
@@ -101,6 +102,7 @@ public:
 		  ymuint fpos,
 		  int fval,
 		  const GateLitMap& lit_map) const;
+#endif
 
 
 public:

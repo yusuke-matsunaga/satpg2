@@ -376,6 +376,7 @@ TpgNode::make_logic(ymuint id,
     break;
 
   default:
+    // kGateCPLX というタイプはない．
     ASSERT_NOT_REACHED;
   }
   node->set_name(name, alloc);
@@ -567,6 +568,7 @@ TpgNode::noval() const
   return kValX;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -592,6 +594,7 @@ TpgNode::make_faulty_cnf(SatSolver& solver,
 {
   ASSERT_NOT_REACHED;
 }
+#endif
 
 // @brief 出力番号2をセットする．
 // @param[in] id セットする番号

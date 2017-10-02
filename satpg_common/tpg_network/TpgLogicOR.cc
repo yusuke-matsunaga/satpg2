@@ -80,6 +80,7 @@ TpgLogicOR2::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -119,7 +120,7 @@ TpgLogicOR2::make_faulty_cnf(SatSolver& solver,
 
   solver.add_eq_rel(olit, ilit0);
 }
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicOR3
@@ -188,6 +189,7 @@ TpgLogicOR3::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -241,7 +243,7 @@ TpgLogicOR3::make_faulty_cnf(SatSolver& solver,
 
   solver.add_orgate_rel(olit, ilit0, ilit1);
 }
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicOR4
@@ -310,6 +312,7 @@ TpgLogicOR4::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -374,6 +377,7 @@ TpgLogicOR4::make_faulty_cnf(SatSolver& solver,
 
   solver.add_orgate_rel(olit, ilit0, ilit1, ilit2);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicORN
@@ -440,6 +444,7 @@ TpgLogicORN::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -487,5 +492,6 @@ TpgLogicORN::make_faulty_cnf(SatSolver& solver,
 
   solver.add_orgate_rel(olit, ilits);
 }
+#endif
 
 END_NAMESPACE_YM_SATPG

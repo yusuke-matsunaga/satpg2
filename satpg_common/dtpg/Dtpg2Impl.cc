@@ -6,9 +6,6 @@
 /// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
-#define DEBUG_DTPG 0
-#define DEBUG_OUT cout
-
 #include "Dtpg2Impl.h"
 
 #include "TpgNetwork.h"
@@ -25,8 +22,24 @@
 
 #include "GateLitMap_vid.h"
 
+#define DEBUG_OUT cout
+BEGIN_NONAMESPACE
+#ifdef DEBUG_DTPG2
+int debug_dtpg2 = 1;
+#else
+const int debug_dtpg2 = 0;
+#endif
+END_NONAMESPACE
+
 
 BEGIN_NAMESPACE_YM_SATPG
+
+void
+make_node_cnf(SatSolver& solver,
+	      GateType gate_type,
+	      const GateLitMap& litmap)
+{
+}
 
 // @brief コンストラクタ
 // @param[in] sat_type SATソルバの種類を表す文字列
@@ -329,11 +342,11 @@ Dtpg2Impl::gen_cnf_base()
     mFvarMap.set_vid(node, fvar);
     mDvarMap.set_vid(node, dvar);
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << gvar << endl
-	      << "fvar(Node#" << node->id() << ") = " << fvar << endl
-	      << "dvar(Node#" << node->id() << ") = " << dvar << endl;
-#endif
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << gvar << endl
+		<< "fvar(Node#" << node->id() << ") = " << fvar << endl
+		<< "dvar(Node#" << node->id() << ") = " << dvar << endl;
+    }
   }
 
   // TFI の部分に変数を割り当てる．
@@ -344,10 +357,10 @@ Dtpg2Impl::gen_cnf_base()
     mGvarMap.set_vid(node, gvar);
     mFvarMap.set_vid(node, gvar);
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << gvar << endl
-	      << "fvar(Node#" << node->id() << ") = " << gvar << endl;
-#endif
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << gvar << endl
+		<< "fvar(Node#" << node->id() << ") = " << gvar << endl;
+    }
   }
 
   // TFI2 の部分に変数を割り当てる．
@@ -357,9 +370,9 @@ Dtpg2Impl::gen_cnf_base()
 
     mHvarMap.set_vid(node, hvar);
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "hvar(Node#" << node->id() << ") = " << hvar << endl;
-#endif
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "hvar(Node#" << node->id() << ") = " << hvar << endl;
+    }
   }
 
 
@@ -368,18 +381,18 @@ Dtpg2Impl::gen_cnf_base()
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    node->make_cnf(mSolver, GateLitMap_vid(node, mGvarMap));
+    //node->make_cnf(mSolver, GateLitMap_vid(node, mGvarMap));
+    make_node_cnf(mSolver, node->gate_type(), GateLitMap_vid(node, mGvarMap));
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "Node#" << node->id() << ": gvar("
-	      << gvar(node) << ") := " << node->gate_type()
-	      << "(";
-    for (ymuint j = 0; j < node->fanin_num(); ++ j) {
-      const TpgNode* inode = node->fanin(j);
-      DEBUG_OUT << " " << gvar(inode);
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "Node#" << node->id() << ": gvar("
+		<< gvar(node) << ") := " << node->gate_type()
+		<< "(";
+      for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+	const TpgNode* inode = node->fanin(j);
+	DEBUG_OUT << " " << gvar(inode);
+      }
     }
-    DEBUG_OUT << ")" << endl;
-#endif
   }
 
   for (ymuint i = 0; i < mDffList.size(); ++ i) {
@@ -394,18 +407,19 @@ Dtpg2Impl::gen_cnf_base()
 
   for (ymuint i = 0; i < tfi2_num; ++ i) {
     const TpgNode* node = mNodeList2[i];
-    node->make_cnf(mSolver, GateLitMap_vid(node, mHvarMap));
+    //node->make_cnf(mSolver, GateLitMap_vid(node, mHvarMap));
+    make_node_cnf(mSolver, node->gate_type(), GateLitMap_vid(node, mHvarMap));
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "Node#" << node->id() << ": hvar("
-	      << hvar(node) << ") := " << node->gate_type()
-	      << "(";
-    for (ymuint j = 0; j < node->fanin_num(); ++ j) {
-      const TpgNode* inode = node->fanin(j);
-      DEBUG_OUT << " " << hvar(inode);
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "Node#" << node->id() << ": hvar("
+		<< hvar(node) << ") := " << node->gate_type()
+		<< "(";
+      for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+	const TpgNode* inode = node->fanin(j);
+	DEBUG_OUT << " " << hvar(inode);
+      }
+      DEBUG_OUT << ")" << endl;
     }
-    DEBUG_OUT << ")" << endl;
-#endif
   }
 
 
@@ -415,19 +429,20 @@ Dtpg2Impl::gen_cnf_base()
   for (ymuint i = 0; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
     if ( node != mRoot ) {
-      node->make_cnf(mSolver, GateLitMap_vid(node, mFvarMap));
+      //node->make_cnf(mSolver, GateLitMap_vid(node, mFvarMap));
+      make_node_cnf(mSolver, node->gate_type(), GateLitMap_vid(node, mFvarMap));
 
-#if DEBUG_DTPG
-      DEBUG_OUT << "Node#" << node->id() << ": fvar("
-		<< fvar(node) << ") := " << node->gate_type()
-		<< "(";
-      for (ymuint j = 0; j < node->fanin_num(); ++ j) {
-	const TpgNode* inode = node->fanin(j);
-	DEBUG_OUT << " " << fvar(inode);
+      if ( debug_dtpg2 ) {
+	DEBUG_OUT << "Node#" << node->id() << ": fvar("
+		  << fvar(node) << ") := " << node->gate_type()
+		  << "(";
+	for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+	  const TpgNode* inode = node->fanin(j);
+	  DEBUG_OUT << " " << fvar(inode);
+	}
+
+	DEBUG_OUT << ")" << endl;
       }
-
-      DEBUG_OUT << ")" << endl;
-#endif
     }
     make_dchain_cnf(node);
   }
@@ -465,34 +480,34 @@ Dtpg2Impl::make_dchain_cnf(const TpgNode* node)
   mSolver.add_clause(~glit, ~flit, ~dlit);
   mSolver.add_clause( glit,  flit, ~dlit);
 
-#if DEBUG_DTPG
-  DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
-	    << glit << " XOR " << flit << endl;
-#endif
+  if ( debug_dtpg2 ) {
+    DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
+	      << glit << " XOR " << flit << endl;
+  }
 
   if ( node->is_ppo() ) {
     mSolver.add_clause(~glit,  flit,  dlit);
     mSolver.add_clause( glit, ~flit,  dlit);
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "!dvar(Node#" << node->id() << ") -> "
-	      << glit << " = " << flit << endl;
-#endif
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "!dvar(Node#" << node->id() << ") -> "
+		<< glit << " = " << flit << endl;
+    }
   }
   else {
     // dlit -> ファンアウト先のノードの dlit の一つが 1
 
-#if DEBUG_DTPG
-    DEBUG_OUT << "dvar(Node#" << node->id() << ") -> ";
-#endif
+    if ( debug_dtpg2 ) {
+      DEBUG_OUT << "dvar(Node#" << node->id() << ") -> ";
+    }
     ymuint nfo = node->fanout_num();
     if ( nfo == 1 ) {
       SatLiteral odlit(mDvarMap(node->fanout(0)));
       mSolver.add_clause(~dlit, odlit);
 
-#if DEBUG_DTPG
-      DEBUG_OUT << odlit << endl;
-#endif
+      if ( debug_dtpg2 ) {
+	DEBUG_OUT << odlit << endl;
+      }
     }
     else {
       vector<SatLiteral> tmp_lits(nfo + 1);
@@ -500,14 +515,14 @@ Dtpg2Impl::make_dchain_cnf(const TpgNode* node)
 	const TpgNode* onode = node->fanout(i);
 	tmp_lits[i] = SatLiteral(mDvarMap(onode));
 
-#if DEBUG_DTPG
-	DEBUG_OUT << " " << mDvarMap(onode);
-#endif
+	if ( debug_dtpg2 ) {
+	  DEBUG_OUT << " " << mDvarMap(onode);
+	}
       }
 
-#if DEBUG_DTPG
-      DEBUG_OUT << endl;
-#endif
+      if ( debug_dtpg2 ) {
+	DEBUG_OUT << endl;
+      }
       tmp_lits[nfo] = ~dlit;
       mSolver.add_clause(tmp_lits);
 
@@ -516,10 +531,10 @@ Dtpg2Impl::make_dchain_cnf(const TpgNode* node)
 	SatLiteral odlit(mDvarMap(imm_dom));
 	mSolver.add_clause(~dlit, odlit);
 
-#if DEBUG_DTPG
-	DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
-		  << odlit << endl;
-#endif
+	if ( debug_dtpg2 ) {
+	  DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
+		    << odlit << endl;
+	}
       }
     }
   }
@@ -532,9 +547,9 @@ void
 Dtpg2Impl::make_ffr_condition(const TpgFault* fault,
 			     NodeValList& assign_list)
 {
-#if DEBUG_DTPG
-  DEBUG_OUT << "make_ffr_condition" << endl;
-#endif
+  if ( debug_dtpg2 ) {
+    DEBUG_OUT << "make_ffr_condition" << endl;
+  }
 
   // 故障の活性化条件を作る．
   const TpgNode* inode = fault->tpg_inode();
@@ -582,9 +597,9 @@ Dtpg2Impl::make_ffr_condition(const TpgFault* fault,
     }
   }
 
-#if DEBUG_DTPG
-  DEBUG_OUT << endl;
-#endif
+  if ( debug_dtpg2 ) {
+    DEBUG_OUT << endl;
+  }
 }
 
 // @brief NodeValList に追加する．
@@ -600,16 +615,16 @@ Dtpg2Impl::add_assign(NodeValList& assign_list,
 {
   assign_list.add(node, time, val);
 
-#if DEBUG_DTPG
-  print_node(DEBUG_OUT, node);
-  DEBUG_OUT << "@" << time << ": ";
-  if ( val ) {
-    DEBUG_OUT << "1" << endl;
+  if ( debug_dtpg2 ) {
+    print_node(DEBUG_OUT, node);
+    DEBUG_OUT << "@" << time << ": ";
+    if ( val ) {
+      DEBUG_OUT << "1" << endl;
+    }
+    else {
+      DEBUG_OUT << "0" << endl;
+    }
   }
-  else {
-    DEBUG_OUT << "0" << endl;
-  }
-#endif
 }
 
 // @brief 一つの SAT問題を解く．

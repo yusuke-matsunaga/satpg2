@@ -80,6 +80,7 @@ TpgLogicNAND2::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -119,7 +120,7 @@ TpgLogicNAND2::make_faulty_cnf(SatSolver& solver,
 
   solver.add_neq_rel(olit, ilit0);
 }
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicNAND3
@@ -188,6 +189,7 @@ TpgLogicNAND3::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -241,7 +243,7 @@ TpgLogicNAND3::make_faulty_cnf(SatSolver& solver,
 
   solver.add_nandgate_rel(olit, ilit0, ilit1);
 }
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicNAND4
@@ -310,6 +312,7 @@ TpgLogicNAND4::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -374,7 +377,7 @@ TpgLogicNAND4::make_faulty_cnf(SatSolver& solver,
 
   solver.add_nandgate_rel(olit, ilit0, ilit1, ilit2);
 }
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicNANDN
@@ -441,6 +444,7 @@ TpgLogicNANDN::noval() const
   return kVal0;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -488,5 +492,6 @@ TpgLogicNANDN::make_faulty_cnf(SatSolver& solver,
 
   solver.add_nandgate_rel(olit, ilits);
 }
+#endif
 
 END_NAMESPACE_YM_SATPG

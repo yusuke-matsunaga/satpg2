@@ -11,7 +11,6 @@
 
 #include "satpg.h"
 #include "GateType.h"
-//#include "GateLitMap.h"
 #include "Val3.h"
 #include "ym/Alloc.h"
 #include "ym/ym_sat.h"
@@ -162,6 +161,8 @@ public:
   /// @param[in] fanout_num ファンアウト数
   /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
+  ///
+  /// gate_type は kGateCPLX には対応していない．
   static
   TpgNode*
   make_logic(ymuint id,
@@ -457,7 +458,7 @@ public:
   void
   add_to_fault_list(vector<TpgFault*>& fault_list);
 
-
+#if 0
 public:
   //////////////////////////////////////////////////////////////////////
   // CNF の生成に関する関数
@@ -484,6 +485,7 @@ public:
 		  ymuint fpos,
 		  int fval,
 		  const GateLitMap& lit_map) const;
+#endif
 
 
 private:

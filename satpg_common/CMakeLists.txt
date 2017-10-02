@@ -48,8 +48,6 @@ set (tpg_network_SOURCES
   tvect/TvMgr.cc
 
   tpg_network/NodeValList.cc
-
-  tpg_network/ValMap.cc
   )
 
 set (fsim_SOURCES
@@ -61,13 +59,13 @@ set (dtpg_SOURCES
   dtpg/DtpgImpl.cc
   dtpg/DtpgImplM.cc
 
+  dtpg/Dtpg2.cc
+  dtpg/Dtpg2Impl.cc
+
   dtpg/GateLitMap_vect.cc
   dtpg/GateLitMap_vid.cc
-  )
 
-set (dtpg2_SOURCES
-  dtpg_minpower/Dtpg2.cc
-  dtpg_minpower/Dtpg2Impl.cc
+  dtpg/ValMap.cc
   )
 
 set (dop_SOURCES
@@ -145,7 +143,6 @@ ym_add_object_library ( satpg_common
   ${tpg_network_SOURCES}
   ${fsim_SOURCES}
   ${dtpg_SOURCES}
-  ${dtpg2_SOURCES}
   ${dop_SOURCES}
   ${uop_SOURCES}
   ${bt_SOURCES}

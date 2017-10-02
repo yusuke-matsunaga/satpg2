@@ -80,6 +80,7 @@ TpgLogicXOR2::noval() const
   return kValX;
 }
 
+#if 0
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -117,5 +118,6 @@ TpgLogicXOR2::make_faulty_cnf(SatSolver& solver,
     solver.add_neq_rel(olit, ilit0);
   }
 }
+#endif
 
 END_NAMESPACE_YM_SATPG
