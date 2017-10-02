@@ -11,13 +11,15 @@
 
 #include "satpg.h"
 #include "GateType.h"
-#include "GateLitMap.h"
+//#include "GateLitMap.h"
 #include "Val3.h"
 #include "ym/Alloc.h"
 #include "ym/ym_sat.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
+
+class GateLitMap;
 
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNode TpgNode.h "TpgNode.h"

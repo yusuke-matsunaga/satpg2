@@ -49,9 +49,6 @@ set (tpg_network_SOURCES
 
   tpg_network/NodeValList.cc
 
-  tpg_network/GateLitMap_vect.cc
-  tpg_network/GateLitMap_vid.cc
-
   tpg_network/ValMap.cc
   )
 
@@ -63,6 +60,9 @@ set (dtpg_SOURCES
   dtpg/Dtpg.cc
   dtpg/DtpgImpl.cc
   dtpg/DtpgImplM.cc
+
+  dtpg/GateLitMap_vect.cc
+  dtpg/GateLitMap_vid.cc
   )
 
 set (dtpg2_SOURCES

@@ -315,7 +315,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
       ASSERT_COND ( node->is_ppi() );
       ymuint id = node->input_id();
       Val3 val = nv.val() ? kVal1 : kVal0;
-      tv->set_input_val(id, val);
+      tv->set_ppi_val(id, val);
     }
     // X の部分をランダムに設定しておく
     tv->fix_x_from_random(mRandGen);

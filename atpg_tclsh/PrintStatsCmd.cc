@@ -94,11 +94,13 @@ PrintStatsCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
+  const vector<const TestVector*>& tv_list = mPoptTd->is_specified() ? _td_tv_list() : _sa_tv_list();
+
   fprintf(stdout, "#A: # of total faults       = %7lu\n", n_rep);
   fprintf(stdout, "#B: # of detected faults    = %7lu\n", n_det);
   fprintf(stdout, "#C: # of redundant faults   = %7lu\n", n_untest);
   fprintf(stdout, "#D: # of undetected faults  = %7lu\n", n_remain);
-  fprintf(stdout, "#E: # of generated patterns = %7lu\n", _sa_tv_list().size());
+  fprintf(stdout, "#E: # of generated patterns = %7lu\n", tv_list.size());
   fprintf(stdout, "#F: # of MFFCs              = %7u\n", _network().mffc_num());
   fprintf(stdout, "#G: # of FFRs               = %7u\n", _network().ffr_num());
   fprintf(stdout, "#H:   Total CPU time        = %7.2fu %7.2fs\n",
