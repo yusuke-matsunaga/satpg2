@@ -18,7 +18,7 @@
 #include "TvMgr.h"
 #include "TestVector.h"
 
-#include "ValMap.h"
+#include "../../dtpg/ValMap.h"
 #include "sa/StructSat.h"
 
 #include "FgMgrBase.h"

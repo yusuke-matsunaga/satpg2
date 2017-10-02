@@ -26,13 +26,6 @@ END_NONAMESPACE
 
 BEGIN_NAMESPACE_YM_SATPG
 
-void
-make_node_cnf(SatSolver& solver,
-	      GateType gate_type,
-	      const GateLitMap& litmap)
-{
-}
-
 // @brief コンストラクタ
 // @param[in] sat_type SATソルバの種類を表す文字列
 // @param[in] sat_option SATソルバに渡すオプション文字列
@@ -210,8 +203,7 @@ DtpgImplM::make_mffc_condition()
     }
     // ほとんど GateLitMap_vid(node, fvar_map()) を使いたいのだが
     // ovar が fvar(node) ではない！
-    //node->make_cnf(solver(), GateLitMap_vect(ivars, ovar));
-    make_node_cnf(solver(), node->gate_type(), GateLitMap_vect(ivars, ovar));
+    make_node_cnf(node->gate_type(), GateLitMap_vect(ivars, ovar));
 
     if ( debug_dtpgm ) {
       DEBUG_OUT << "Node#" << node->id() << ": ofvar("
