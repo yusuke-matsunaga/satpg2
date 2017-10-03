@@ -67,16 +67,4 @@ TpgPPI::fanin(ymuint pos) const
   return nullptr;
 }
 
-#if 0
-// @brief 入出力の関係を表す CNF 式を生成する．
-// @param[in] solver SAT ソルバ
-// @param[in] lit_map 入出力とリテラルの対応マップ
-void
-TpgPPI::make_cnf(SatSolver& solver,
-		 const GateLitMap& lit_map) const
-{
-  // なにもしない．
-}
-#endif
-
 END_NAMESPACE_YM_SATPG

@@ -672,33 +672,12 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // MFFC の情報を作る．
   //////////////////////////////////////////////////////////////////////
-#if 0
-  ymuint total_mffc_size = 0;
-  ymuint max_mffc_size = 0;
-  ymuint total_mffc_inputs = 0;
-  ymuint max_mffc_inputs = 0;
-#endif
-
   mMffcNum = mffc_root_list.size();
   mMffcArray = new TpgMFFC[mMffcNum];
-
   for (ymuint i = 0; i < mMffcNum; ++ i) {
     TpgNode* node = mffc_root_list[i];
     TpgMFFC* mffc = &mMffcArray[i];
     set_mffc(node, mffc);
-
-#if 0
-    ymuint mffc_size = node_list.size();
-    total_mffc_size += mffc_size;
-    if ( max_mffc_size < mffc_size ) {
-      max_mffc_size = mffc_size;
-    }
-    ymuint input_size = input_list.size();
-    total_mffc_inputs += input_size;
-    if ( max_mffc_inputs < input_size ) {
-      max_mffc_inputs = input_size;
-    }
-#endif
   }
 }
 

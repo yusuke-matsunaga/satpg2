@@ -203,7 +203,7 @@ DtpgImplM::make_mffc_condition()
     }
     // ほとんど GateLitMap_vid(node, fvar_map()) を使いたいのだが
     // ovar が fvar(node) ではない！
-    make_node_cnf(node->gate_type(), GateLitMap_vect(ivars, ovar));
+    make_node_cnf(node, GateLitMap_vect(ivars, ovar));
 
     if ( debug_dtpgm ) {
       DEBUG_OUT << "Node#" << node->id() << ": ofvar("

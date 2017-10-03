@@ -187,10 +187,10 @@ protected:
   gen_cnf_base();
 
   /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] gate_type ゲートの種類
+  /// @param[in] node 対象のノード
   /// @param[in] litmap 入出力のリテラル
   void
-  make_node_cnf(GateType gate_type,
+  make_node_cnf(const TpgNode* node,
 		const GateLitMap& litmap);
 
   /// @brief 故障伝搬条件を表すCNF式を生成する．

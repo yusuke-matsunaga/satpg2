@@ -18,8 +18,6 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-class GateLitMap;
-
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNode TpgNode.h "TpgNode.h"
 /// @brief SATPG 用のノードを表すクラス
@@ -457,35 +455,6 @@ public:
   /// @brief このノードが持っている代表故障をリストに追加する．
   void
   add_to_fault_list(vector<TpgFault*>& fault_list);
-
-#if 0
-public:
-  //////////////////////////////////////////////////////////////////////
-  // CNF の生成に関する関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 入出力の関係を表す CNF 式を生成する．
-  /// @param[in] solver SAT ソルバ
-  /// @param[in] lit_map 入出力とリテラルの対応マップ
-  virtual
-  void
-  make_cnf(SatSolver& solver,
-	   const GateLitMap& lit_map) const;
-
-  /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
-  /// @param[in] solver SAT ソルバ
-  /// @param[in] fpos 故障のある入力位置
-  /// @param[in] fval 故障値 ( 0 / 1 )
-  /// @param[in] lit_map 入出力とリテラルの対応マップ
-  ///
-  /// こちらは入力に故障を仮定したバージョン
-  virtual
-  void
-  make_faulty_cnf(SatSolver& solver,
-		  ymuint fpos,
-		  int fval,
-		  const GateLitMap& lit_map) const;
-#endif
 
 
 private:

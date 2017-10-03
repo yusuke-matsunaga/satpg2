@@ -80,44 +80,4 @@ TpgLogicXNOR2::noval() const
   return kValX;
 }
 
-#if 0
-// @brief 入出力の関係を表す CNF 式を生成する．
-// @param[in] solver SAT ソルバ
-// @param[in] lit_map 入出力とリテラルの対応マップ
-void
-TpgLogicXNOR2::make_cnf(SatSolver& solver,
-			const GateLitMap& lit_map) const
-{
-  SatLiteral ilit0 = lit_map.input(0);
-  SatLiteral ilit1 = lit_map.input(1);
-  SatLiteral olit  = lit_map.output();
-
-  solver.add_xnorgate_rel(olit, ilit0, ilit1);
-}
-
-// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
-// @param[in] solver SAT ソルバ
-// @param[in] fpos 故障のある入力位置
-// @param[in] fval 故障値 ( 0 / 1 )
-// @param[in] lit_map 入出力とリテラルの対応マップ
-//
-// こちらは入力に故障を仮定したバージョン
-void
-TpgLogicXNOR2::make_faulty_cnf(SatSolver& solver,
-			       ymuint fpos,
-			       int fval,
-			       const GateLitMap& lit_map) const
-{
-  ymuint pos = (fpos == 0) ? 1 : 0;
-  SatLiteral ilit0 = lit_map.input(pos);
-  SatLiteral olit  = lit_map.output();
-  if ( fval == 0 ) {
-    solver.add_eq_rel(~olit, ilit0);
-  }
-  else {
-    solver.add_neq_rel(~olit, ilit0);
-  }
-}
-#endif
-
 END_NAMESPACE_YM_SATPG

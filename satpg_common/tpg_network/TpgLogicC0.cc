@@ -38,17 +38,4 @@ TpgLogicC0::gate_type() const
   return kGateCONST0;
 }
 
-#if 0
-// @brief 入出力の関係を表す CNF 式を生成する．
-// @param[in] solver SAT ソルバ
-// @param[in] lit_map 入出力とリテラルの対応マップ
-void
-TpgLogicC0::make_cnf(SatSolver& solver,
-		     const GateLitMap& lit_map) const
-{
-  SatLiteral olit = lit_map.output();
-  solver.add_clause(~olit);
-}
-#endif
-
 END_NAMESPACE_YM_SATPG
