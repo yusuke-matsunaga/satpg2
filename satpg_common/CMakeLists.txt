@@ -65,7 +65,7 @@ set (dtpg_SOURCES
   dtpg/GateLitMap_vect.cc
   dtpg/GateLitMap_vid.cc
 
-  dtpg/ValMap.cc
+  dtpg/ValMap_model.cc
   )
 
 set (dop_SOURCES

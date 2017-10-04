@@ -12,7 +12,7 @@
 #include "TpgFault.h"
 
 #include "BackTracer.h"
-#include "ValMap.h"
+#include "ValMap_model.h"
 
 #include "ym/SatSolver.h"
 #include "ym/SatStats.h"
@@ -774,7 +774,7 @@ DtpgImpl::solve(const TpgFault* fault,
 
     // バックトレースを行う．
     const VidMap& hvar_map = mFaultType == kFtTransitionDelay ? mHvarMap : mGvarMap;
-    ValMap val_map(hvar_map, mGvarMap, mFvarMap, model);
+    ValMap_model val_map(hvar_map, mGvarMap, mFvarMap, model);
     mBackTracer(assign_list, mOutputList, val_map, nodeval_list);
 
     timer.stop();

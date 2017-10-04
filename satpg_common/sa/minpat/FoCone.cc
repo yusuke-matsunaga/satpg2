@@ -11,7 +11,7 @@
 #include "StructSat.h"
 #include "TpgNode.h"
 #include "../../dtpg/GateLitMap_vid.h"
-#include "../../dtpg/ValMap.h"
+#include "../../dtpg/ValMap_model.h"
 #include "Extractor.h"
 #include "NodeValList.h"
 
@@ -112,7 +112,7 @@ FoCone::get_suf_list(const vector<SatBool3>& sat_model,
 		     const TpgFault* fault,
 		     NodeValList& suf_list) const
 {
-  ValMap val_map(gvar_map(), fvar_map(), sat_model);
+  ValMap_model val_map(gvar_map(), fvar_map(), sat_model);
 
   Extractor extractor(val_map);
   extractor(fault, suf_list);

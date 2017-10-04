@@ -11,7 +11,7 @@
 
 #include "BackTracer.h"
 #include "NodeValList.h"
-#include "../dtpg/ValMap.h"
+#include "ValMap.h"
 #include "TpgNode.h"
 
 

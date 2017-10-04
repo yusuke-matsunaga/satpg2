@@ -1,27 +1,26 @@
-#ifndef VALMAP_H
-#define VALMAP_H
+#ifndef VALMAP_MODEL_H
+#define VALMAP_MODEL_H
 
-/// @file ValMap.h
-/// @brief ValMap のヘッダファイル
+/// @file ValMap_model.h
+/// @brief ValMap_model のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "satpg.h"
-#include "Val3.h"
+#include "ValMap.h"
 #include "VidMap.h"
-#include "ym/SatBool3.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class ValMap ValMap.h "ValMap.h"
+/// @class ValMap_model ValMap_model.h "ValMap_model.h"
 /// @brief SAT ソルバの model 配列からノードの値を読みだすためのクラス
 //////////////////////////////////////////////////////////////////////
-class ValMap
+class ValMap_model :
+  public ValMap
 {
 public:
 
@@ -29,22 +28,23 @@ public:
   /// @param[in] gvar_map 正常値の変数マップ
   /// @param[in] fvar_map 故障値の変数マップ
   /// @param[in] model SATソルバの作ったモデル
-  ValMap(const VidMap& gvar_map,
-	 const VidMap& fvar_map,
-	 const vector<SatBool3>& model);
+  ValMap_model(const VidMap& gvar_map,
+	       const VidMap& fvar_map,
+	       const vector<SatBool3>& model);
 
   /// @brief 遷移故障用のコンストラクタ
   /// @param[in] hvar_map 1時刻前の正常値の変数マップ
   /// @param[in] gvar_map 正常値の変数マップ
   /// @param[in] fvar_map 故障値の変数マップ
   /// @param[in] model SATソルバの作ったモデル
-  ValMap(const VidMap& hvar_map,
-	 const VidMap& gvar_map,
-	 const VidMap& fvar_map,
-	 const vector<SatBool3>& model);
+  ValMap_model(const VidMap& hvar_map,
+	       const VidMap& gvar_map,
+	       const VidMap& fvar_map,
+	       const vector<SatBool3>& model);
 
   /// @brief デストラクタ
-  ~ValMap();
+  virtual
+  ~ValMap_model();
 
 
 public:
@@ -55,12 +55,14 @@ public:
   /// @brief ノードの正常値を返す．
   /// @param[in] node 対象のノード
   /// @param[in] time 時刻 (0 or 1)
+  virtual
   Val3
   gval(const TpgNode* node,
        int time = 1) const;
 
   /// @brief ノードの故障値を返す．
   /// @param[in] node 対象のノード
+  virtual
   Val3
   fval(const TpgNode* node) const;
 
@@ -99,34 +101,10 @@ private:
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
-// @brief ノードの正常値を返す．
-// @param[in] node 対象のノード
-// @param[in] time 時刻 (0 or 1)
-inline
-Val3
-ValMap::gval(const TpgNode* node,
-	     int time) const
-{
-  SatVarId vid = (time == 0) ? mHvarMap(node) : mGvarMap(node);
-  ASSERT_COND( vid != kSatVarIdIllegal );
-  return val(vid);
-}
-
-// @brief ノードの故障値を返す．
-// @param[in] node 対象のノード
-inline
-Val3
-ValMap::fval(const TpgNode* node) const
-{
-  SatVarId vid = mFvarMap(node);
-  ASSERT_COND( vid != kSatVarIdIllegal );
-  return val(vid);
-}
-
 // @brief 変数番号から値を読み出す．
 inline
 Val3
-ValMap::val(SatVarId varid) const
+ValMap_model::val(SatVarId varid) const
 {
   return bool3_to_val3(mModel[varid.val()]);
 }

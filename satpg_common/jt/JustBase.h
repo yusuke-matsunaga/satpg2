@@ -13,7 +13,7 @@
 #include "NodeValList.h"
 #include "TpgNode.h"
 #include "Val3.h"
-#include "../dtpg/ValMap.h"
+#include "ValMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

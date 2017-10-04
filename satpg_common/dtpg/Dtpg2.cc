@@ -206,7 +206,7 @@ Dtpg2::dtpg(TvMgr& tvmgr,
     for (ymuint p = 0U; p < xn_exp; ++ p) {
       ++ mTotalSampling;
       NodeValList nodeval_list1;
-      SatBool3 ans = impl2.dtpg(fault, p, nodeval_list1, stats);
+      SatBool3 ans = impl2.dtpg_with_xor(fault, p, nodeval_list1, stats);
       if ( ans != kB3True ) {
 	continue;
       }

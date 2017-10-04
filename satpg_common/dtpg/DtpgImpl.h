@@ -182,6 +182,14 @@ protected:
   const TpgNode*
   root_node() const;
 
+  /// @brief 関係するノードのリストを返す．
+  const vector<const TpgNode*>&
+  cur_node_list() const;
+
+  /// @brief 関係する１時刻前のノードのリストを返す．
+  const vector<const TpgNode*>&
+  prev_node_list() const;
+
   /// @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
   void
   gen_cnf_base();
@@ -466,6 +474,22 @@ const VidMap&
 DtpgImpl::fvar_map() const
 {
   return mFvarMap;
+}
+
+// @brief 関係するノードのリストを返す．
+inline
+const vector<const TpgNode*>&
+DtpgImpl::cur_node_list() const
+{
+  return mNodeList;
+}
+
+// @brief 関係する１時刻前のノードのリストを返す．
+inline
+const vector<const TpgNode*>&
+DtpgImpl::prev_node_list() const
+{
+  return mNodeList2;
 }
 
 // @brief TFO マークをつける．
