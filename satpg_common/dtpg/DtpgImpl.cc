@@ -330,229 +330,223 @@ DtpgImpl::make_node_cnf(const TpgNode* node,
 			const GateLitMap& litmap)
 {
   SatLiteral olit = litmap.output();
-  if ( node->is_ppo() ) {
-    SatLiteral ilit = litmap.input(0);
-    mSolver.add_eq_rel(olit, ilit);
-  }
-  else if ( node->is_logic() ) {
-    ymuint ni = litmap.input_size();
-    switch ( node->gate_type() ) {
-    case kGateCONST0:
-      mSolver.add_clause(~olit);
-      break;
+  ymuint ni = litmap.input_size();
+  switch ( node->gate_type() ) {
+  case kGateCONST0:
+    mSolver.add_clause(~olit);
+    break;
 
-    case kGateCONST1:
-      mSolver.add_clause( olit);
-      break;
+  case kGateCONST1:
+    mSolver.add_clause( olit);
+    break;
 
-    case kGateINPUT:
-      // なにもしない．
-      break;
+  case kGateINPUT:
+    // なにもしない．
+    break;
 
-    case kGateBUFF:
-      {
-	SatLiteral ilit = litmap.input(0);
-	mSolver.add_eq_rel( ilit,  olit);
-      }
-      break;
+  case kGateBUFF:
+    {
+      SatLiteral ilit = litmap.input(0);
+      mSolver.add_eq_rel( ilit,  olit);
+    }
+    break;
 
-    case kGateNOT:
-      {
-	SatLiteral ilit = litmap.input(0);
-	mSolver.add_eq_rel( ilit, ~olit);
-      }
-      break;
+  case kGateNOT:
+    {
+      SatLiteral ilit = litmap.input(0);
+      mSolver.add_eq_rel( ilit, ~olit);
+    }
+    break;
 
-    case kGateAND:
-      switch ( ni ) {
-      case 2:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  mSolver.add_andgate_rel( olit, ilit0, ilit1);
-	}
-	break;
-
-      case 3:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2);
-	}
-	break;
-
-      case 4:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  SatLiteral ilit3 = litmap.input(3);
-	  mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-	}
-	break;
-
-      default:
-	ASSERT_COND( ni > 4 );
-	{
-	  vector<SatLiteral> ilits(ni);
-	  for (ymuint i = 0; i < ni; ++ i) {
-	    ilits[i] = litmap.input(i);
-	  }
-	  mSolver.add_andgate_rel( olit, ilits);
-	}
-	break;
-      }
-      break;
-
-    case kGateNAND:
-      switch ( ni ) {
-      case 2:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  mSolver.add_nandgate_rel( olit, ilit0, ilit1);
-	}
-	break;
-
-      case 3:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2);
-	}
-	break;
-
-      case 4:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  SatLiteral ilit3 = litmap.input(3);
-	  mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-	}
-	break;
-
-      default:
-	ASSERT_COND( ni > 4 );
-	{
-	  vector<SatLiteral> ilits(ni);
-	  for (ymuint i = 0; i < ni; ++ i) {
-	    ilits[i] = litmap.input(i);
-	  }
-	  mSolver.add_nandgate_rel( olit, ilits);
-	}
-	break;
-      }
-      break;
-
-    case kGateOR:
-      switch ( ni ) {
-      case 2:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  mSolver.add_orgate_rel( olit, ilit0, ilit1);
-	}
-	break;
-
-      case 3:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2);
-	}
-	break;
-
-      case 4:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  SatLiteral ilit3 = litmap.input(3);
-	  mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-	}
-	break;
-
-      default:
-	ASSERT_COND( ni > 4 );
-	{
-	  vector<SatLiteral> ilits(ni);
-	  for (ymuint i = 0; i < ni; ++ i) {
-	    ilits[i] = litmap.input(i);
-	  }
-	  mSolver.add_orgate_rel( olit, ilits);
-	}
-	break;
-      }
-      break;
-
-    case kGateNOR:
-      switch ( ni ) {
-      case 2:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  mSolver.add_norgate_rel( olit, ilit0, ilit1);
-	}
-	break;
-
-      case 3:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2);
-	}
-	break;
-
-      case 4:
-	{
-	  SatLiteral ilit0 = litmap.input(0);
-	  SatLiteral ilit1 = litmap.input(1);
-	  SatLiteral ilit2 = litmap.input(2);
-	  SatLiteral ilit3 = litmap.input(3);
-	  mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-	}
-	break;
-
-      default:
-	ASSERT_COND( ni > 4 );
-	{
-	  vector<SatLiteral> ilits(ni);
-	  for (ymuint i = 0; i < ni; ++ i) {
-	    ilits[i] = litmap.input(i);
-	  }
-	  mSolver.add_norgate_rel( olit, ilits);
-	}
-	break;
-      }
-      break;
-
-    case kGateXOR:
-      ASSERT_COND( ni == 2 );
+  case kGateAND:
+    switch ( ni ) {
+    case 2:
       {
 	SatLiteral ilit0 = litmap.input(0);
 	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_xorgate_rel( olit, ilit0, ilit1);
+	mSolver.add_andgate_rel( olit, ilit0, ilit1);
       }
       break;
 
-    case kGateXNOR:
-      ASSERT_COND( ni == 2 );
+    case 3:
       {
 	SatLiteral ilit0 = litmap.input(0);
 	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_xnorgate_rel( olit, ilit0, ilit1);
+	SatLiteral ilit2 = litmap.input(2);
+	mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2);
+      }
+      break;
+
+    case 4:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	SatLiteral ilit3 = litmap.input(3);
+	mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
       }
       break;
 
     default:
-      ASSERT_NOT_REACHED;
+      ASSERT_COND( ni > 4 );
+      {
+	vector<SatLiteral> ilits(ni);
+	for (ymuint i = 0; i < ni; ++ i) {
+	  ilits[i] = litmap.input(i);
+	}
+	mSolver.add_andgate_rel( olit, ilits);
+      }
       break;
     }
+    break;
+
+  case kGateNAND:
+    switch ( ni ) {
+    case 2:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	mSolver.add_nandgate_rel( olit, ilit0, ilit1);
+      }
+      break;
+
+    case 3:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2);
+      }
+      break;
+
+    case 4:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	SatLiteral ilit3 = litmap.input(3);
+	mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
+      }
+      break;
+
+    default:
+      ASSERT_COND( ni > 4 );
+      {
+	vector<SatLiteral> ilits(ni);
+	for (ymuint i = 0; i < ni; ++ i) {
+	  ilits[i] = litmap.input(i);
+	}
+	mSolver.add_nandgate_rel( olit, ilits);
+      }
+      break;
+    }
+    break;
+
+  case kGateOR:
+    switch ( ni ) {
+    case 2:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	mSolver.add_orgate_rel( olit, ilit0, ilit1);
+      }
+      break;
+
+    case 3:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2);
+      }
+      break;
+
+    case 4:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	SatLiteral ilit3 = litmap.input(3);
+	mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
+      }
+      break;
+
+    default:
+      ASSERT_COND( ni > 4 );
+      {
+	vector<SatLiteral> ilits(ni);
+	for (ymuint i = 0; i < ni; ++ i) {
+	  ilits[i] = litmap.input(i);
+	}
+	mSolver.add_orgate_rel( olit, ilits);
+      }
+      break;
+    }
+    break;
+
+  case kGateNOR:
+    switch ( ni ) {
+    case 2:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	mSolver.add_norgate_rel( olit, ilit0, ilit1);
+      }
+      break;
+
+    case 3:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2);
+      }
+      break;
+
+    case 4:
+      {
+	SatLiteral ilit0 = litmap.input(0);
+	SatLiteral ilit1 = litmap.input(1);
+	SatLiteral ilit2 = litmap.input(2);
+	SatLiteral ilit3 = litmap.input(3);
+	mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
+      }
+      break;
+
+    default:
+      ASSERT_COND( ni > 4 );
+      {
+	vector<SatLiteral> ilits(ni);
+	for (ymuint i = 0; i < ni; ++ i) {
+	  ilits[i] = litmap.input(i);
+	}
+	mSolver.add_norgate_rel( olit, ilits);
+      }
+      break;
+    }
+    break;
+
+  case kGateXOR:
+    ASSERT_COND( ni == 2 );
+    {
+      SatLiteral ilit0 = litmap.input(0);
+      SatLiteral ilit1 = litmap.input(1);
+      mSolver.add_xorgate_rel( olit, ilit0, ilit1);
+    }
+    break;
+
+  case kGateXNOR:
+    ASSERT_COND( ni == 2 );
+    {
+      SatLiteral ilit0 = litmap.input(0);
+      SatLiteral ilit1 = litmap.input(1);
+      mSolver.add_xnorgate_rel( olit, ilit0, ilit1);
+    }
+    break;
+
+  default:
+    ASSERT_NOT_REACHED;
+    break;
   }
 }
 
