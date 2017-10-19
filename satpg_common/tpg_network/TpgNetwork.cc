@@ -35,20 +35,20 @@ BEGIN_NONAMESPACE
 // BnFuncType を GateType に変換する．
 inline
 GateType
-conv_to_gate_type(BnLogicType type)
+conv_to_gate_type(BnNodeType type)
 {
   switch ( type ) {
-  case kBnLt_C0:   return kGateCONST0;
-  case kBnLt_C1:   return kGateCONST1;
-  case kBnLt_BUFF: return kGateBUFF;
-  case kBnLt_NOT:  return kGateNOT;
-  case kBnLt_AND:  return kGateAND;
-  case kBnLt_NAND: return kGateNAND;
-  case kBnLt_OR:   return kGateOR;
-  case kBnLt_NOR:  return kGateNOR;
-  case kBnLt_XOR:  return kGateXOR;
-  case kBnLt_XNOR: return kGateXNOR;
-  case kBnLt_EXPR: return kGateCPLX;
+  case kBnLogic_C0:   return kGateCONST0;
+  case kBnLogic_C1:   return kGateCONST1;
+  case kBnLogic_BUFF: return kGateBUFF;
+  case kBnLogic_NOT:  return kGateNOT;
+  case kBnLogic_AND:  return kGateAND;
+  case kBnLogic_NAND: return kGateNAND;
+  case kBnLogic_OR:   return kGateOR;
+  case kBnLogic_NOR:  return kGateNOR;
+  case kBnLogic_XOR:  return kGateXOR;
+  case kBnLogic_XNOR: return kGateXNOR;
+  case kBnLogic_EXPR: return kGateCPLX;
   default: break;
   }
   ASSERT_NOT_REACHED;
@@ -320,12 +320,12 @@ TpgNetwork::set(const BnNetwork& network)
   ymuint nl = network.logic_num();
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* src_node = network.logic(i);
-    BnLogicType logic_type = src_node->logic_type();
-    if ( logic_type == kBnLt_EXPR ) {
+    BnNodeType logic_type = src_node->type();
+    if ( logic_type == kBnLogic_EXPR ) {
       const TpgGateInfo* node_info = node_info_list[src_node->func_id()];
       extra_node_num += node_info->extra_node_num();
     }
-    else if ( logic_type == kBnLt_XOR || logic_type == kBnLt_XNOR ) {
+    else if ( logic_type == kBnLogic_XOR || logic_type == kBnLogic_XNOR ) {
       ymuint ni = src_node->fanin_num();
       extra_node_num += (ni - 2);
     }
@@ -439,12 +439,12 @@ TpgNetwork::set(const BnNetwork& network)
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* src_node = network.logic(i);
     const TpgGateInfo* node_info = nullptr;
-    BnLogicType logic_type = src_node->logic_type();
-    if ( logic_type == kBnLt_EXPR ) {
+    BnNodeType logic_type = src_node->type();
+    if ( logic_type == kBnLogic_EXPR ) {
       node_info = node_info_list[src_node->func_id()];
     }
     else {
-      ASSERT_COND( logic_type != kBnLt_TV );
+      ASSERT_COND( logic_type != kBnLogic_TV );
       GateType gate_type = conv_to_gate_type(logic_type);
       node_info = node_info_mgr.simple_type(gate_type);
     }
