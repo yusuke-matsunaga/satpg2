@@ -11,6 +11,7 @@
 #include "ym/TclPopt.h"
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
+#include "TpgFFR.h"
 #include "TpgMFFC.h"
 #include "TpgFaultMgr.h"
 #include "DtpgStats.h"
@@ -48,6 +49,35 @@ run_single(Dtpg& dtpg,
       }
       else if ( ans == kB3False ) {
 	uop(fault);
+      }
+    }
+  }
+}
+
+void
+run_ffr(Dtpg& dtpg,
+	const TpgNetwork& network,
+	TpgFaultMgr& fmgr,
+	DetectOp& dop,
+	UntestOp& uop,
+	DtpgStats& stats)
+{
+  ymuint nffr = network.ffr_num();
+  for (ymuint i = 0; i < nffr; ++ i) {
+    const TpgFFR* ffr = network.ffr(i);
+    dtpg.gen_ffr_cnf(network, ffr, stats);
+    ymuint nf = ffr->fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = ffr->fault(j);
+      if ( fmgr.status(fault) == kFsUndetected ) {
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	if ( ans == kB3True ) {
+	  dop(fault, nodeval_list);
+	}
+	else if ( ans == kB3False ) {
+	  uop(fault);
+	}
       }
     }
   }
@@ -101,22 +131,16 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			 "SAT option <STRING>");
   mPoptSatRec = new TclPopt(this, "satrec",
 			 "SATREC mode");
-  mPoptMiniSat = new TclPopt(this, "minisat",
-			     "MINISAT mode");
-  mPoptMiniSat2 = new TclPopt(this, "minisat2",
-			     "MINISAT-2 mode");
-  mPoptYmSat1 = new TclPopt(this, "ymsat1",
-			    "YmSat1 mode");
   mPoptStuckAt = new TclPopt(this, "stuck-at",
 			     "stuck-at fault mode");
   mPoptTransitionDelay = new TclPopt(this, "transition-delay",
 				     "transition delay fault mode");
   mPoptPrintStats = new TclPopt(this, "print_stats",
 				"print statistics");
-  mPoptSingle0 = new TclPopt(this, "single0",
-			     "original single mode");
   mPoptSingle = new TclPopt(this, "single",
 			    "single mode");
+  mPoptFFR = new TclPopt(this, "ffr",
+			 "FFR mode");
   mPoptMFFC = new TclPopt(this, "mffc",
 			  "MFFC mode");
   mPoptX = new TclPoptInt(this, "x",
@@ -136,10 +160,9 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
   mPoptNoTimer = new TclPopt(this, "notimer",
 			     "disable timer");
 
-  new_popt_group(mPoptSat, mPoptMiniSat, mPoptMiniSat2, mPoptSatRec);
   new_popt_group(mPoptStuckAt, mPoptTransitionDelay);
 
-  TclPoptGroup* g0 = new_popt_group(mPoptSingle0, mPoptSingle, mPoptMFFC);
+  TclPoptGroup* g0 = new_popt_group(mPoptSingle, mPoptFFR, mPoptMFFC);
 
   new_popt_group(mPoptTimer, mPoptNoTimer);
 }
@@ -180,6 +203,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   else {
     sat_type = "";
   }
+  if ( mPoptSatRec->is_specified() ) {
+    outp = &cout;
+  }
 
   bool print_stats = mPoptPrintStats->is_specified();
 
@@ -195,8 +221,8 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
       engine_type = "single";
     }
   }
-  else if ( mPoptSingle0->is_specified() ) {
-    engine_type = "single0";
+  else if ( mPoptFFR->is_specified() ) {
+    engine_type = "ffr";
   }
   else if ( mPoptMFFC->is_specified() ) {
     engine_type = "mffc";
@@ -259,6 +285,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   DtpgStats stats;
   if ( engine_type == "single" ) {
     run_single(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);
+  }
+  else if ( engine_type == "ffr" ) {
+    run_ffr(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else if ( engine_type == "mffc" ) {
     run_mffc(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);

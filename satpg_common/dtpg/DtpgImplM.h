@@ -10,7 +10,7 @@
 /// All rights reserved.
 
 
-#include "DtpgImpl.h"
+#include "DtpgImpl_new.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -84,6 +84,26 @@ private:
   inject_fault(ymuint elem_pos,
 	       SatVarId ovar);
 
+  /// @brief 正常値を表す変数を得る．
+  SatVarId
+  gvar(const TpgNode* node);
+
+  /// @brief 故障値を表す変数マップを得る．
+  const VidMap&
+  fvar_map() const;
+
+  /// @brief 故障値を表す変数を得る．
+  /// @param[in] node ノード
+  SatVarId
+  fvar(const TpgNode* node);
+
+  /// @brief 故障値を表す変数を設定する．
+  /// @param[in] node ノード
+  /// @param[in] var 変数
+  void
+  set_fvar(const TpgNode* node,
+	   SatVarId var);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -101,7 +121,46 @@ private:
   // 故障番号をキーにしてFFR番号を入れる配列
   vector<ymuint> mElemPosMap;
 
+  // MFFC内の故障回路の変数マップ
+  VidMap mFvarMap;
+
 };
+
+// @brief 正常値を表す変数を得る．
+inline
+SatVarId
+DtpgImplM::gvar(const TpgNode* node)
+{
+  return struct_sat().var(node, 1);
+}
+
+// @brief 故障値を表す変数マップを得る．
+inline
+const VidMap&
+DtpgImplM::fvar_map() const
+{
+  return mFvarMap;
+}
+
+// @brief 故障値を表す変数を得る．
+// @param[in] node ノード
+inline
+SatVarId
+DtpgImplM::fvar(const TpgNode* node)
+{
+  return mFvarMap(node);
+}
+
+// @brief 故障値を表す変数を設定する．
+// @param[in] node ノード
+// @param[in] var 変数
+inline
+void
+DtpgImplM::set_fvar(const TpgNode* node,
+		    SatVarId var)
+{
+  mFvarMap.set_vid(node, var);
+}
 
 END_NAMESPACE_YM_SATPG
 

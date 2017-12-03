@@ -12,7 +12,7 @@
 #include "TpgNetwork.h"
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
-#include "GateLitMap_vect.h"
+//#include "../struct_sat/GateLitMap_vect.h"
 
 #define DEBUG_OUT cout
 BEGIN_NONAMESPACE
@@ -44,7 +44,8 @@ DtpgImplM::DtpgImplM(const string& sat_type,
   DtpgImpl(sat_type, sat_option, sat_outp, fault_type, bt, network, mffc->root()),
   mElemArray(mffc->elem_num()),
   mElemVarArray(mffc->elem_num()),
-  mElemPosMap(network.max_fault_id(), -1)
+  mElemPosMap(network.max_fault_id(), -1),
+  mFvarMap(network.node_num())
 {
   for (ymuint i = 0; i < mffc->elem_num(); ++ i ) {
     const TpgFFR* ffr = mffc->elem(i);
@@ -187,12 +188,6 @@ DtpgImplM::make_mffc_condition()
   // node_list に含まれるノードの入出力の関係を表すCNF式を作る．
   for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
     const TpgNode* node = node_list[rpos];
-    ymuint ni = node->fanin_num();
-    vector<SatVarId> ivars(ni);
-    for (ymuint i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
-      ivars[i] = fvar(inode);
-    }
     SatVarId ovar = fvar(node);
     ymuint elem_pos = elem_map[node->id()];
     if ( elem_pos != -1 ) {
@@ -200,17 +195,21 @@ DtpgImplM::make_mffc_condition()
       // XORの一方の入力は mElemVarArray[elem_pos]
       ovar = solver().new_variable();
       inject_fault(elem_pos, ovar);
+      // ovar が fvar(node) ではない！
+      struct_sat().make_node_cnf(node, fvar_map(), ovar);
     }
-    // ほとんど GateLitMap_vid(node, fvar_map()) を使いたいのだが
-    // ovar が fvar(node) ではない！
-    make_node_cnf(node, GateLitMap_vect(ivars, ovar));
+    else {
+      struct_sat().make_node_cnf(node, fvar_map());
+    }
 
     if ( debug_dtpgm ) {
       DEBUG_OUT << "Node#" << node->id() << ": ofvar("
 		<< ovar << ") := " << node->gate_type()
 		<< "(";
+      ymuint ni = node->fanin_num();
       for (ymuint i = 0; i < ni; ++ i) {
-	DEBUG_OUT << " " << ivars[i];
+	const TpgNode* inode = node->fanin(i);
+	DEBUG_OUT << " " << fvar(inode);
       }
       DEBUG_OUT << ")" << endl;
     }

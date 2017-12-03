@@ -54,18 +54,28 @@ set (fsim_SOURCES
   fsim/Fsim.cc
   )
 
+set (struct_sat_SOURCES
+  struct_sat/FoCone.cc
+  struct_sat/StructSat.cc
+
+  struct_sat/Extractor.cc
+
+  #struct_sat/GateLitMap_vect.cc
+  struct_sat/GateLitMap_vid.cc
+  struct_sat/GateLitMap_vid2.cc
+
+  struct_sat/ValMap_model.cc
+  )
+
 set (dtpg_SOURCES
   dtpg/Dtpg.cc
-  dtpg/DtpgImpl.cc
+  #dtpg/DtpgImpl.cc
   dtpg/DtpgImplM.cc
+
+  dtpg/DtpgImpl_new.cc
 
   dtpg/Dtpg2.cc
   dtpg/Dtpg2Impl.cc
-
-  dtpg/GateLitMap_vect.cc
-  dtpg/GateLitMap_vid.cc
-
-  dtpg/ValMap_model.cc
   )
 
 set (dop_SOURCES
@@ -136,6 +146,7 @@ set (td_SOURCES
 ym_add_object_library ( satpg_common
   ${tpg_network_SOURCES}
   ${fsim_SOURCES}
+  ${struct_sat_SOURCES}
   ${dtpg_SOURCES}
   ${dop_SOURCES}
   ${uop_SOURCES}

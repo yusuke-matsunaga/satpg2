@@ -10,7 +10,6 @@
 #include "FoCone.h"
 #include "StructSat.h"
 #include "TpgNode.h"
-#include "GateLitMap_vid.h"
 #include "ValMap_model.h"
 #include "Extractor.h"
 #include "NodeValList.h"
@@ -22,6 +21,7 @@ BEGIN_NONAMESPACE
 
 bool debug = false;
 
+// TpgNode::output_id2() の値に基づく比較を行う．
 struct Lt
 {
   bool
@@ -38,7 +38,7 @@ END_NONAMESPACE
 // @param[in] struct_sat StructSat ソルバ
 // @param[in] fnode 故障位置のノード
 // @param[in] bnode ブロックノード
-// @param[in] detect 検出条件
+// @param[in] detect 故障を検出する時に true にするフラグ
 //
 // ブロックノードより先のノードは含めない．
 // 通常 bnode は fnode の dominator
@@ -46,8 +46,9 @@ END_NONAMESPACE
 FoCone::FoCone(StructSat& struct_sat,
 	       const TpgNode* fnode,
 	       const TpgNode* bnode,
-	       Val3 detect) :
+	       bool detect) :
   mStructSat(struct_sat),
+  mDetect(detect),
   mMaxNodeId(struct_sat.max_node_id()),
   mMarkArray(max_id()),
   mFvarMap(max_id()),
@@ -57,47 +58,8 @@ FoCone::FoCone(StructSat& struct_sat,
     set_end_mark(bnode);
   }
 
-  mark_tfo_tfi(fnode);
-
-  for (ymuint i = 0; i < tfo_num(); ++ i) {
-    const TpgNode* node = tfo_node(i);
-    if ( node != fnode ) {
-      // 故障回路のゲートの入出力関係を表すCNFを作る．
-      //node->make_cnf(solver(), GateLitMap_vid(node, fvar_map()));
-    }
-
-    if ( detect == kVal1 ) {
-      // D-Chain 制約を作る．
-      make_dchain_cnf(node);
-    }
-  }
-
-  ymuint npo = output_num();
-
-  if ( detect == kVal0 ) {
-    // 故障を検出しない条件を作る．
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_node(i);
-      SatLiteral glit(gvar(node), false);
-      SatLiteral flit(fvar(node), false);
-      solver().add_clause(~glit,  flit);
-      solver().add_clause( glit, ~flit);
-    }
-  }
-  else if ( detect == kVal1 ) {
-    // 故障を検出する条件を作る
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(npo);
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_node(i);
-      SatLiteral dlit(dvar(node));
-      tmp_lits.push_back(dlit);
-    }
-    solver().add_clause(tmp_lits);
-
-    SatLiteral dlit(dvar(fnode));
-    solver().add_clause(dlit);
-  }
+  mNodeList.reserve(max_id());
+  mark_tfo(fnode);
 }
 
 // @brief デストラクタ
@@ -107,100 +69,135 @@ FoCone::~FoCone()
 
 // @brief 十分条件を得る．
 // @param[in] sat_model SAT の割り当て結果
-// @param[in] fault 故障
-// @param[out] suf_list 十分条件の割り当てリスト
+// @param[out] assign_list 値の割り当てリスト
 void
-FoCone::get_suf_list(const vector<SatBool3>& sat_model,
-		     const TpgFault* fault,
-		     NodeValList& suf_list) const
+FoCone::extract(const vector<SatBool3>& sat_model,
+		NodeValList& assign_list) const
 {
-  ValMap_model val_map(gvar_map(), fvar_map(), sat_model);
-
-  Extractor extractor(val_map);
-  extractor(fault, suf_list);
-  suf_list.sort();
+  // 実際の処理は Extractor が行う．
+  Extractor extractor;
+  extractor(mNodeList[0], gvar_map(), fvar_map(), sat_model, assign_list);
 }
 
-// @brief 指定されたノードの TFO の TFI に印をつける．
-// @param[in] node_list 起点となるノードのリスト
-// @param[in] use_dvar D-var を使う時 true にする．
+// @brief 指定されたノードの TFO に印をつける．
+// @param[in] node 起点となるノード
 void
-FoCone::mark_tfo_tfi(const vector<const TpgNode*>& node_list,
-		     bool use_dvar)
+FoCone::mark_tfo(const TpgNode* node)
 {
-  mNodeList.reserve(max_id());
+  set_tfo_mark(node);
 
-  // node_list の TFO を mNodeList に入れる．
-  for (ymuint i = 0; i < node_list.size(); ++ i) {
-    const TpgNode* node = node_list[i];
-    set_tfo_mark(node);
-  }
   for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
     const TpgNode* node = mNodeList[rpos];
     if ( end_mark(node) ) {
+      // ここで止まる．
       continue;
     }
     ymuint nfo = node->fanout_num();
     for (ymuint i = 0; i < nfo; ++ i) {
       const TpgNode* fonode = node->fanout(i);
       if ( !tfo_mark(fonode) ) {
+	// マークをつけて mNodeList に追加する．
 	set_tfo_mark(fonode);
       }
     }
   }
 
-  mTfoNum = mNodeList.size();
-
-  // mNodeList に含まれるノードの TFI を mNodeList に追加する．
-  for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
-    ymuint ni = node->fanin_num();
-    for (ymuint i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
-      if ( !tfo_mark(inode) ) {
-	set_tfo_mark(inode);
-      }
-    }
-  }
-
-  // 出力のリストを整列しておく．
+  // 出力のリストを output_id2() の昇順に整列しておく．
   sort(mOutputList.begin(), mOutputList.end(), Lt());
+}
 
-  // 出力のリストに end マークをつけておく．
-  for (ymuint i = 0; i < mOutputList.size(); ++ i) {
-    set_end_mark(mOutputList[i]);
-  }
-
+// @brief 関係するノードの変数を作る．
+void
+FoCone::make_vars()
+{
   // TFO のノードに変数を割り当てる．
-  for (ymuint i = 0; i < mTfoNum; ++ i) {
+  for (ymuint i = 0; i < mNodeList.size(); ++ i) {
     const TpgNode* node = mNodeList[i];
-    mStructSat.make_tfi_cnf(node);
     SatVarId fvar = solver().new_variable();
     set_fvar(node, fvar);
     if ( debug ) {
       cout << "fvar(Node#" << node->id() << ") = " << fvar << endl;
     }
-    if ( use_dvar ) {
+    if ( mDetect ) {
       SatVarId dvar = solver().new_variable();
       set_dvar(node, dvar);
     }
+#if 0
+    // ファンインのノードうち TFO に含まれないノードの fvar を gvar にする．
+    ymuint ni = node->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      const TpgNode* inode = node->fanin(i);
+      if ( !tfo_mark(inode) ) {
+	set_fvar(inode, gvar(inode));
+	if ( debug ) {
+	  cout << "fvar(Node#" << inode->id() << ") = gvar" << endl;
+	}
+      }
+    }
+#endif
   }
 
-  // TFO に含まれないノードの fvar を gvar にする．
-  for (ymuint i = mTfoNum; i < mNodeList.size(); ++ i) {
+  // 暫定的
+  // TFO の TFI のノードの fvar を gvar と同じにする．
+  vector<const TpgNode*> tmp_list;
+  vector<bool> tfi_mark(max_id(), false);
+  for (ymuint i = 0; i < mNodeList.size(); ++ i) {
     const TpgNode* node = mNodeList[i];
+    ymuint ni = node->fanin_num();
+    for (ymuint j = 0; j < ni; ++ j) {
+      const TpgNode* inode = node->fanin(j);
+      if ( !tfo_mark(inode) && !tfi_mark[inode->id()] ) {
+	tfi_mark[inode->id()] = true;
+	tmp_list.push_back(inode);
+      }
+    }
+  }
+  for (ymuint rpos = 0; rpos < tmp_list.size(); ++ rpos) {
+    const TpgNode* node = tmp_list[rpos];
     set_fvar(node, gvar(node));
+    ymuint ni = node->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      const TpgNode* inode = node->fanin(i);
+      if ( !tfi_mark[inode->id()] ) {
+	tfi_mark[inode->id()] = true;
+	tmp_list.push_back(inode);
+      }
+    }
   }
 }
 
-// @brief 指定されたノードの TFO の TFI に印をつける．
-// @param[in] node 起点となるノード
-// @param[in] use_dvar D-var を使う時 true にする．
+// @brief 関係するノードの入出力の関係を表すCNFを作る．
 void
-FoCone::mark_tfo_tfi(const TpgNode* node,
-		     bool use_dvar)
+FoCone::make_cnf()
 {
-  mark_tfo_tfi(vector<const TpgNode*>(1, node), use_dvar);
+  for (ymuint i = 0; i < mNodeList.size(); ++ i) {
+    const TpgNode* node = mNodeList[i];
+    if ( i > 0 ) {
+      // 故障回路のゲートの入出力関係を表すCNFを作る．
+      mStructSat.make_node_cnf(node, fvar_map());
+    }
+
+    if ( mDetect ) {
+      // D-Chain 制約を作る．
+      make_dchain_cnf(node);
+    }
+  }
+
+  // 外部出力へ故障の影響が伝搬する条件を作る．
+  ymuint no = mOutputList.size();
+  vector<SatLiteral> odiff(no);
+  for (ymuint i = 0; i < no; ++ i) {
+    const TpgNode* node = mOutputList[i];
+    SatLiteral dlit(dvar(node));
+    odiff[i] = dlit;
+  }
+  solver().add_clause(odiff);
+
+  const TpgNode* root = mNodeList[0];
+  if ( !root->is_ppo() ) {
+    // root の dlit が1でなければならない．
+    solver().add_clause(SatLiteral(dvar(root)));
+  }
 }
 
 // @brief node に関する故障伝搬条件を作る．

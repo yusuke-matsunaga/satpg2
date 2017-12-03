@@ -23,23 +23,21 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 class FoCone
 {
-  friend class StructSat;
-
-private:
+public:
 
   /// @brief コンストラクタ
   /// @param[in] struct_sat StructSat ソルバ
   /// @param[in] fnode 故障位置のノード
   /// @param[in] bnode ブロックノード
-  /// @param[in] detect 検出条件
+  /// @param[in] detect 故障を検出する時に true にするフラグ
   ///
   /// ブロックノードより先のノードは含めない．
-  /// 通常 bnode は fnode の dominator
+  /// 通常 bnode は nullptr か fnode の dominator
   /// となっているはず．
   FoCone(StructSat& struct_sat,
 	 const TpgNode* fnode,
 	 const TpgNode* bnode,
-	 Val3 detect);
+	 bool detect);
 
   /// @brief デストラクタ
   ~FoCone();
@@ -54,6 +52,14 @@ public:
   ymuint
   max_id() const;
 
+  /// @brief 関係するノードの変数を作る．
+  void
+  make_vars();
+
+  /// @brief 関係するノードの入出力の関係を表すCNFを作る．
+  void
+  make_cnf();
+
   /// @brief TFO ノード数を得る．
   ymuint
   tfo_num() const;
@@ -62,6 +68,10 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < tfo_num() )
   const TpgNode*
   tfo_node(ymuint pos) const;
+
+  /// @brief TFO ノードのリストを得る．
+  const vector<const TpgNode*>&
+  tfo_node_list() const;
 
   /// @brief このコーンに関係する出力数を得る．
   ymuint
@@ -75,6 +85,24 @@ public:
   /// @brief このコーンに関係する出力のリストを得る．
   const vector<const TpgNode*>&
   output_list() const;
+
+  /// @brief 十分条件を得る．
+  /// @param[in] sat_model SAT の割り当て結果
+  /// @param[out] assign_list 値の割り当てリスト
+  void
+  extract(const vector<SatBool3>& sat_model,
+	  NodeValList& assign_list) const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる下請け関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 指定されたノードの TFO に印をつける．
+  /// @param[in] node 起点となるノード
+  void
+  mark_tfo(const TpgNode* node);
 
   /// @brief 正常回路の変数マップを得る．
   const VidMap&
@@ -99,35 +127,6 @@ public:
   /// @brief 伝搬値の変数を得る．
   SatVarId
   dvar(const TpgNode* node) const;
-
-  /// @brief 十分条件を得る．
-  /// @param[in] sat_model SAT の割り当て結果
-  /// @param[in] fault 故障
-  /// @param[out] suf_list 十分条件の割り当てリスト
-  void
-  get_suf_list(const vector<SatBool3>& sat_model,
-	       const TpgFault* fault,
-	       NodeValList& suf_list) const;
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 指定されたノードの TFO の TFI に印をつける．
-  /// @param[in] node_list 起点となるノードのリスト
-  /// @param[in] use_dvar D-var を使う時 true にする．
-  void
-  mark_tfo_tfi(const vector<const TpgNode*>& node_list,
-	       bool use_dvar = true);
-
-  /// @brief 指定されたノードの TFO の TFI に印をつける．
-  /// @param[in] node 起点となるノード
-  /// @param[in] use_dvar D-var を使う時 true にする．
-  void
-  mark_tfo_tfi(const TpgNode* node,
-	       bool use_dvar = true);
 
   /// @brief node に関する故障伝搬条件を作る．
   /// @param[in] node 対象のノード
@@ -155,6 +154,12 @@ private:
 
   /// @brief tfo マークをつける．
   /// @param[in] node 対象のノード
+  ///
+  /// 実はいろいろなことをやっている．
+  /// - マークをつける．
+  /// - mNodeList に追加する．
+  /// - 外部出力の場合，mOutputList に追加して end-mark をつける．
+  /// - end-mark が付いたノードの場合，mOutputList に追加する．
   void
   set_tfo_mark(const TpgNode* node);
 
@@ -181,6 +186,9 @@ private:
   // struct SAT ソルバ
   StructSat& mStructSat;
 
+  // 故障検出フラグ
+  bool mDetect;
+
   // ノードのIDの最大値
   ymuint mMaxNodeId;
 
@@ -189,9 +197,6 @@ private:
 
   // 故障の TFO のノードリスト
   vector<const TpgNode*> mNodeList;
-
-  // TFO のノード数
-  ymuint mTfoNum;
 
   // 現在の故障に関係ありそうな外部出力のリスト
   vector<const TpgNode*> mOutputList;
@@ -222,7 +227,7 @@ inline
 ymuint
 FoCone::tfo_num() const
 {
-  return mTfoNum;
+  return mNodeList.size();
 }
 
 // @brief TFO ノードを得る．
@@ -233,6 +238,14 @@ FoCone::tfo_node(ymuint pos) const
 {
   ASSERT_COND( pos < tfo_num() );
   return mNodeList[pos];
+}
+
+// @brief TFO ノードのリストを得る．
+inline
+const vector<const TpgNode*>&
+FoCone::tfo_node_list() const
+{
+  return mNodeList;
 }
 
 // @brief このコーンに関係する出力数を得る．
@@ -266,7 +279,7 @@ inline
 const VidMap&
 FoCone::gvar_map() const
 {
-  return mStructSat.var_map();
+  return mStructSat.var_map(1);
 }
 
 // @brief 故障回路の変数マップを得る．
@@ -290,7 +303,7 @@ inline
 SatVarId
 FoCone::gvar(const TpgNode* node) const
 {
-  return mStructSat.var(node);
+  return mStructSat.var(node, 1);
 }
 
 // @brief 故障値の変数を得る．
@@ -346,7 +359,11 @@ FoCone::set_tfo_mark(const TpgNode* node)
 {
   mMarkArray[node->id()] |= 1U;
   mNodeList.push_back(node);
-  if ( node->is_ppo() || end_mark(node) ) {
+  if ( node->is_ppo() ) {
+    set_end_mark(node);
+    mOutputList.push_back(node);
+  }
+  else if ( end_mark(node) ) {
     mOutputList.push_back(node);
   }
 }

@@ -20,7 +20,7 @@
 #include "ym/SatStats.h"
 #include "ym/StopWatch.h"
 
-#include "GateLitMap_vid.h"
+#include "../struct_sat/GateLitMap_vid.h"
 
 #define DEBUG_OUT cout
 BEGIN_NONAMESPACE

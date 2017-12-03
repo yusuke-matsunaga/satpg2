@@ -10,13 +10,16 @@
 
 
 #include "satpg.h"
+#include "FaultType.h"
 #include "VidMap.h"
-#include "GateLitMap.h"
 #include "TpgNode.h"
+#include "NodeValList.h"
 #include "ym/SatSolver.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
+
+class FoCone;
 
 //////////////////////////////////////////////////////////////////////
 /// @class StructSat StructSat.h "StructSat.h"
@@ -51,27 +54,29 @@ public:
   SatSolver&
   solver();
 
+  /// @brief 故障の種類を返す．
+  FaultType
+  fault_type() const;
+
   /// @brief ノード番号の最大値を返す．
   ymuint
   max_node_id() const;
 
   /// @brief 変数マップを得る．
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
   const VidMap&
-  gvar_map() const;
+  var_map(int time) const;
 
   /// @brief 変数番号を得る．
   /// @param[in] node ノード
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
   SatVarId
-  gvar(const TpgNode* node) const;
-
-  /// @brief 1時刻前の変数マップを得る．
-  const VidMap&
-  hvar_map() const;
-
-  /// @brief 1時刻前の変数番号を得る．
-  /// @param[in] node ノード
-  SatVarId
-  hvar(const TpgNode* node) const;
+  var(const TpgNode* node,
+      int time) const;
 
 
 public:
@@ -81,39 +86,23 @@ public:
 
   /// @brief fault cone を追加する．
   /// @param[in] fnode 故障のあるノード
-  /// @param[in] detect 検出条件
+  /// @param[in] detect 故障を検出する時に true にするフラグ
+  ///
+  /// fnode から到達可能な外部出力までの故障伝搬条件を考える．
   const FoCone*
   add_focone(const TpgNode* fnode,
-	     Val3 detect);
+	     bool detect);
 
   /// @brief fault cone を追加する．
   /// @param[in] fnode 故障のあるノード
   /// @param[in] bnode ブロックノード
-  /// @param[in] detect 検出条件
+  /// @param[in] detect 故障を検出する時に true にするフラグ
   ///
   /// bnode までの故障伝搬条件を考える．
   const FoCone*
   add_focone(const TpgNode* fnode,
 	     const TpgNode* bnode,
-	     Val3 detect);
-
-  /// @brief fault cone を追加する．
-  /// @param[in] fault 故障
-  /// @param[in] detect 検出条件
-  const FoCone*
-  add_focone(const TpgFault* fault,
-	     Val3 detect);
-
-  /// @brief fault cone を追加する．
-  /// @param[in] fault 故障
-  /// @param[in] bnode ブロックノード
-  /// @param[in] detect 検出条件
-  ///
-  /// bnode までの故障伝搬条件を考える．
-  const FoCone*
-  add_focone(const TpgFault* fault,
-	     const TpgNode* bnode,
-	     Val3 detect);
+	     bool detect);
 
   /// @brief 故障の検出条件を割当リストに追加する．
   /// @param[in] fault 故障
@@ -160,10 +149,54 @@ public:
   conv_to_assumption(const NodeValList& assign_list,
 		     vector<SatLiteral>& assumptions);
 
+  /// @brief 関係あるノードに変数を割り当てる．
+  void
+  make_vars();
+
+  /// @brief 関係あるノードの入出力の関係を表すCNFを作る．
+  void
+  make_cnf();
+
+  /// @brief node の TFI の部分に変数を割り当てる．
+  /// @param[in] node 対象のノード
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  void
+  make_tfi_var(const TpgNode* node,
+	       int time);
+
   /// @brief node の TFI の CNF を作る．
   /// @param[in] node 対象のノード
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
   void
-  make_tfi_cnf(const TpgNode* node);
+  make_tfi_cnf(const TpgNode* node,
+	       int time);
+
+  /// @brief 変数マップを得る．
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  VidMap&
+  var_map(int time);
+
+  /// @brief ノードの入出力の関係を表すCNF式を作る．
+  /// @param[in] node 対象のノード
+  /// @param[in] var_map 変数マップ
+  void
+  make_node_cnf(const TpgNode* node,
+		const VidMap& var_map);
+
+  /// @brief ノードの入出力の関係を表すCNF式を作る．
+  /// @param[in] node 対象のノード
+  /// @param[in] var_map 変数マップ
+  /// @param[in] ovar 出力の変数
+  void
+  make_node_cnf(const TpgNode* node,
+		const VidMap& var_map,
+		SatVarId ovar);
 
 
 public:
@@ -213,13 +246,6 @@ public:
   check_sat(const NodeValList& assign_list1,
 	    const NodeValList& assign_list2);
 
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] litmap 入出力のリテラル
-  void
-  make_node_cnf(const TpgNode* node,
-		const GateLitMap& litmap);
-
   /// @brief デバッグ用のフラグをセットする．
   void
   set_debug(ymuint bits);
@@ -234,29 +260,89 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief ノードに正常値用の変数番号を割り当てる．
-  /// @param[in] node ノード
-  /// @param[in] var 変数番号
+  /// @brief 与えられたノード(のリスト)のTFIのリストを作る．
+  /// @param[in] node_list ノードのリスト
   void
-  set_gvar(const TpgNode* node,
+  make_tfi_list(const vector<const TpgNode*>& node_list);
+
+  /// @brief ノードの入出力の関係を表すCNF式を作る．
+  /// @param[in] node 対象のノード
+  /// @param[in] litmap 入出力のリテラル
+  void
+  _make_node_cnf(const TpgNode* node,
+		 const GateLitMap& litmap);
+
+  /// @brief ノードの値割り当てに対応するリテラルを返す．
+  /// @param[in] nv ノードの値割り当て
+  SatLiteral
+  nv_to_lit(NodeVal nv);
+
+  /// @brief ノードに新しい変数を割り当てる．
+  /// @param[in] node ノード
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  void
+  set_new_var(const TpgNode* node,
+	      int time);
+
+  /// @brief ノードに変数を割り当てる．
+  /// @param[in] node ノード
+  /// @param[in] time 時刻(0 or 1)
+  /// @param[in] var 変数
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  void
+  _set_var(const TpgNode* node,
+	   int time,
 	   SatVarId var);
 
-  /// @brief ノードに1時刻前の正常値用の変数番号を割り当てる．
+  /// @brief ノードの gvar が割り当てられているか調べる．
   /// @param[in] node ノード
-  /// @param[in] var 変数番号
-  void
-  set_hvar(const TpgNode* node,
-	   SatVarId var);
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  bool
+  var_mark(const TpgNode* node,
+	   int time) const;
 
-  /// @brief ノードのマークを調べる．
+  /// @brief ノードの CNF が作成済みか調べる．
+  /// @param[in] node ノード
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  bool
+  cnf_mark(const TpgNode* node,
+	   int time) const;
+
+  /// @brief ノードに CNF マークをつける．
+  /// @param[in] node ノード
+  /// @param[in] time 時刻(0 or 1)
+  ///
+  /// 縮退故障モードの場合の時刻は 1
+  void
+  set_cnf_mark(const TpgNode* node,
+	       int time);
+
+  /// @brief mCurNodeList に登録済みのマークを得る．
   /// @param[in] node ノード
   bool
-  mark(const TpgNode* node) const;
+  cur_mark(const TpgNode* node) const;
 
-  /// @brief ノードにマークをつける．
+  /// @brief mCurNodeList に登録する．
   /// @param[in] node ノード
   void
-  set_mark(const TpgNode* node);
+  add_cur_node(const TpgNode* node);
+
+  /// @brief mPrevNodeList に登録する．
+  /// @param[in] node ノード
+  bool
+  prev_mark(const TpgNode* node) const;
+
+  /// @brief mPrevNodeList に登録する．
+  /// @param[in] node ノード
+  void
+  add_prev_node(const TpgNode* node);
 
 
 private:
@@ -274,13 +360,22 @@ private:
   ymuint mMaxId;
 
   // 処理済みのノードの印
-  vector<bool> mMark;
+  // 0: gvar 割り当て済み
+  // 1: hvar 割り当て済み
+  // 2: CNF 作成済み
+  // 3: 1時刻前の CNF 作成済み
+  // 4: mCurNodeList に登録済み
+  // 5: mPrevNodeList に登録済み
+  vector<ymuint8> mMark;
+
+  // 関係するノードのリスト
+  vector<const TpgNode*> mCurNodeList;
+
+  // 関係する１時刻前のノードのリスト
+  vector<const TpgNode*> mPrevNodeList;
 
   // 変数マップ
-  VidMap mGvarMap;
-
-  // 1時刻前の変数マップ
-  VidMap mHvarMap;
+  VidMap mVarMap[2];
 
   // fanout cone のリスト
   vector<FoCone*> mFoConeList;
@@ -303,6 +398,14 @@ StructSat::solver()
   return mSolver;
 }
 
+// @brief 故障の種類を返す．
+inline
+FaultType
+StructSat::fault_type() const
+{
+  return mFaultType;
+}
+
 // @brief ノード番号の最大値を返す．
 inline
 ymuint
@@ -311,78 +414,164 @@ StructSat::max_node_id() const
   return mMaxId;
 }
 
+// @brief ノードの値割り当てに対応するリテラルを返す．
+// @param[in] nv ノードの値割り当て
+inline
+SatLiteral
+StructSat::nv_to_lit(NodeVal nv)
+{
+  const TpgNode* node = nv.node();
+  // node およびその TFI に関する節を追加する．
+  // すでに節が作られていた場合にはなにもしない．
+  int time = nv.time();
+  make_tfi_cnf(node, time);
+  bool inv = !nv.val();
+  return SatLiteral(var(node, time), inv);
+}
+
 // @brief 変数マップを得る．
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
 inline
 const VidMap&
-StructSat::gvar_map() const
+StructSat::var_map(int time) const
 {
-  return mGvarMap;
+  return mVarMap[time & 1];
+}
+
+// @brief 変数マップを得る．
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
+inline
+VidMap&
+StructSat::var_map(int time)
+{
+  return mVarMap[time & 1];
 }
 
 // @brief 変数番号を得る．
 // @param[in] node ノード
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
 inline
 SatVarId
-StructSat::gvar(const TpgNode* node) const
+StructSat::var(const TpgNode* node,
+	       int time) const
 {
-  return mGvarMap(node);
+  return var_map(time)(node);
 }
 
-// @brief 1時刻前の変数マップを得る．
-inline
-const VidMap&
-StructSat::hvar_map() const
-{
-  return mHvarMap;
-}
-
-// @brief 1時刻前の変数番号を得る．
+// @brief ノードの変数が割り当てられているか調べる．
 // @param[in] node ノード
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
 inline
-SatVarId
-StructSat::hvar(const TpgNode* node) const
+bool
+StructSat::var_mark(const TpgNode* node,
+		    int time) const
 {
-  return mHvarMap(node);
+  int sft = time ? 0 : 1;
+  return static_cast<bool>((mMark[node->id()] >> sft) & 1U);
 }
 
-// @brief ノードのマークを調べる．
+// @brief ノードに新しい変数番号を割り当てる．
+// @param[in] node ノード
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
+inline
+void
+StructSat::set_new_var(const TpgNode* node,
+		       int time)
+{
+  SatVarId var = mSolver.new_variable();
+  _set_var(node, time, var);
+}
+
+// @brief ノードに変数番号を割り当てる．
+// @param[in] node ノード
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
+inline
+void
+StructSat::_set_var(const TpgNode* node,
+		    int time,
+		    SatVarId var)
+{
+  var_map(time).set_vid(node, var);
+  int sft = time ? 0 : 1;
+  mMark[node->id()] |= (1U << sft);
+}
+
+// @brief ノードの CNF が作成済みか調べる．
+// @param[in] node ノード
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
+inline
+bool
+StructSat::cnf_mark(const TpgNode* node,
+		    int time) const
+{
+  int sft = time ? 2 : 3;
+  return static_cast<bool>((mMark[node->id()] >> sft) & 1U);
+}
+
+// @brief ノードに CNF マークをつける．
+// @param[in] node ノード
+// @param[in] time 時刻(0 or 1)
+//
+// 縮退故障モードの場合の時刻は 1
+inline
+void
+StructSat::set_cnf_mark(const TpgNode* node,
+			int time)
+{
+  int sft = time ? 2 : 3;
+  mMark[node->id()] |= (1U << sft);
+}
+
+// @brief mCurNodeList に登録済みのマークを得る．
 // @param[in] node ノード
 inline
 bool
-StructSat::mark(const TpgNode* node) const
+StructSat::cur_mark(const TpgNode* node) const
 {
-  return mMark[node->id()];
+  return static_cast<bool>((mMark[node->id()] >> 4) & 1U);
 }
 
-// @brief ノードにマークをつける．
+// @brief mCurNodeList に登録する．
 // @param[in] node ノード
 inline
 void
-StructSat::set_mark(const TpgNode* node)
+StructSat::add_cur_node(const TpgNode* node)
 {
-  mMark[node->id()] = true;
+  mCurNodeList.push_back(node);
+  mMark[node->id()] |= (1U << 4);
 }
 
-// @brief ノードに正常値用の変数番号を割り当てる．
+// @brief mPrevNodeList に登録する．
 // @param[in] node ノード
-// @param[in] var 変数番号
 inline
-void
-StructSat::set_gvar(const TpgNode* node,
-		    SatVarId var)
+bool
+StructSat::prev_mark(const TpgNode* node) const
 {
-  mGvarMap.set_vid(node, var);
+  return static_cast<bool>((mMark[node->id()] >> 5) & 1U);
 }
 
-// @brief ノードに1時刻前の正常値用の変数番号を割り当てる．
+// @brief mPrevNodeList に登録する．
 // @param[in] node ノード
-// @param[in] var 変数番号
 inline
 void
-StructSat::set_hvar(const TpgNode* node,
-		    SatVarId var)
+StructSat::add_prev_node(const TpgNode* node)
 {
-  mHvarMap.set_vid(node, var);
+  mPrevNodeList.push_back(node);
+  mMark[node->id()] |= (1U << 5);
 }
 
 // @brief チェックを行う．

@@ -10,8 +10,8 @@
 #include "FoCone.h"
 #include "StructSat.h"
 #include "TpgNode.h"
-#include "../../dtpg/GateLitMap_vid.h"
-#include "../../dtpg/ValMap_model.h"
+#include "../../struct_sat/GateLitMap_vid.h"
+#include "../../struct_sat/ValMap_model.h"
 #include "Extractor.h"
 #include "NodeValList.h"
 

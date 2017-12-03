@@ -9,7 +9,7 @@
 
 #include "Dtpg.h"
 
-#include "DtpgImpl.h"
+#include "DtpgImpl_new.h"
 #include "DtpgImplM.h"
 
 #include "TpgMFFC.h"

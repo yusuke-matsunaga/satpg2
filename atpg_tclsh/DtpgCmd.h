@@ -73,11 +73,11 @@ private:
   // print_stats オプションの解析用オブジェクト
   TclPopt* mPoptPrintStats;
 
-  // single0 オプションの解析用オブジェクト
-  TclPopt* mPoptSingle0;
-
   // single オプションの解析用オブジェクト
   TclPopt* mPoptSingle;
+
+  // ffr オプションの解析用オブジェクト
+  TclPopt* mPoptFFR;
 
   // mffc オプションの解析用オブジェクト
   TclPopt* mPoptMFFC;

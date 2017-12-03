@@ -10,7 +10,7 @@
 
 
 #include "sa/sa_nsdef.h"
-#include "../../dtpg/VidMap.h"
+#include "VidMap.h"
 #include "TpgNode.h"
 #include "ym/SatSolver.h"
 
