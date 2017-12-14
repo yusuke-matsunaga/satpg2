@@ -57,7 +57,7 @@ ReadBlif::cmd_proc(TclObjVector& objv)
   AtpgMsgHandler mh;
   MsgMgr::reg_handler(&mh);
 
-  bool stat = _network().read_blif(ex_filename, nullptr);
+  bool stat = _network().read_blif(ex_filename);
 
   MsgMgr::unreg_handler(&mh);
 

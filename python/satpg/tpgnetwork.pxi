@@ -30,7 +30,7 @@ cdef class TpgNetwork :
         if cell_library == None :
             stat = network._this.read_blif(c_filename)
         else :
-            stat = network._this.read_blif(c_filename, cell_library._this_ptr)
+            stat = network._this.read_blif(c_filename, cell_library._this)
         if stat :
             return network
         else :

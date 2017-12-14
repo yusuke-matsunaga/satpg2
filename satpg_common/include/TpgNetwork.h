@@ -207,11 +207,17 @@ public:
 
   /// @brief blif ファイルを読み込む．
   /// @param[in] filename ファイル名
+  /// @return 読み込みが成功したら true を返す．
+  bool
+  read_blif(const string& filename);
+
+  /// @brief blif ファイルを読み込む．
+  /// @param[in] filename ファイル名
   /// @param[in] cell_library セルライブラリ
   /// @return 読み込みが成功したら true を返す．
   bool
   read_blif(const string& filename,
-	    const ClibCellLibrary* cell_library = nullptr);
+	    const ClibCellLibrary& cell_library);
 
   /// @brief iscas89 形式のファイルを読み込む．
   /// @param[in] filename ファイル名

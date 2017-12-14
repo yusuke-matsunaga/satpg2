@@ -21,7 +21,7 @@ cdef extern from "TpgNetwork.h" namespace "nsYm::nsSatpg" :
     cdef cppclass TpgNetwork :
         TpgNetwork()
         bool read_blif(const string& filename)
-        bool read_blif(const string& filename, const ClibCellLibrary* cell_library)
+        bool read_blif(const string& filename, const ClibCellLibrary& cell_library)
         bool read_iscas89(const string& filename)
         ymuint node_num()
         const TpgNode* node(ymuint)

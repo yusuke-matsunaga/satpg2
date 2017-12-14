@@ -184,11 +184,26 @@ TpgNetwork::~TpgNetwork()
 
 // @brief blif ファイルを読み込む．
 // @param[in] filename ファイル名
+// @return 読み込みが成功したら true を返す．
+bool
+TpgNetwork::read_blif(const string& filename)
+{
+  BnNetwork network;
+  bool stat = BnBlifReader::read(network, filename);
+  if ( stat ) {
+    set(network);
+  }
+
+  return stat;
+}
+
+// @brief blif ファイルを読み込む．
+// @param[in] filename ファイル名
 // @param[in] cell_library セルライブラリ
 // @return 読み込みが成功したら true を返す．
 bool
 TpgNetwork::read_blif(const string& filename,
-		      const ClibCellLibrary* cell_library)
+		      const ClibCellLibrary& cell_library)
 {
   BnNetwork network;
   bool stat = BnBlifReader::read(network, filename, cell_library);
