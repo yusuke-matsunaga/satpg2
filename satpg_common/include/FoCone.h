@@ -27,16 +27,16 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] struct_sat StructSat ソルバ
-  /// @param[in] fnode 故障位置のノード
-  /// @param[in] bnode ブロックノード
+  /// @param[in] root_node FFRの根のノード
+  /// @param[in] block_node ブロックノード
   /// @param[in] detect 故障を検出する時に true にするフラグ
   ///
   /// ブロックノードより先のノードは含めない．
-  /// 通常 bnode は nullptr か fnode の dominator
+  /// 通常 block_node は nullptr か root_node の dominator
   /// となっているはず．
   FoCone(StructSat& struct_sat,
-	 const TpgNode* fnode,
-	 const TpgNode* bnode,
+	 const TpgNode* root_node,
+	 const TpgNode* block_node,
 	 bool detect);
 
   /// @brief デストラクタ
@@ -53,12 +53,36 @@ public:
   max_id() const;
 
   /// @brief 関係するノードの変数を作る．
+  virtual
   void
   make_vars();
 
   /// @brief 関係するノードの入出力の関係を表すCNFを作る．
+  virtual
   void
   make_cnf();
+
+  /// @brief 故障の影響伝搬させる条件を作る．
+  /// @param[in] root 起点となるノード
+  /// @param[out] assumptions 結果の仮定を表すリテラルのリスト
+  virtual
+  void
+  make_prop_condition(const TpgNode* root,
+		      vector<SatLiteral>& assumptions);
+
+  /// @brief 故障検出に必要な割り当てを求める．
+  /// @param[in] model SAT のモデル
+  /// @param[in] root 起点のノード
+  /// @param[out] 値の割り当て結果を入れるリスト
+  virtual
+  void
+  extract(const vector<SatBool3>& model,
+	  const TpgNode* root,
+	  NodeValList& assign_list);
+
+  /// @brief 根のノードを得る．
+  const TpgNode*
+  root_node() const;
 
   /// @brief TFO ノード数を得る．
   ymuint
@@ -86,23 +110,11 @@ public:
   const vector<const TpgNode*>&
   output_list() const;
 
-  /// @brief 十分条件を得る．
-  /// @param[in] sat_model SAT の割り当て結果
-  /// @param[out] assign_list 値の割り当てリスト
-  void
-  extract(const vector<SatBool3>& sat_model,
-	  NodeValList& assign_list) const;
 
-
-private:
+protected:
   //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
+  // 継承クラスから用いられる関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 指定されたノードの TFO に印をつける．
-  /// @param[in] node 起点となるノード
-  void
-  mark_tfo(const TpgNode* node);
 
   /// @brief 正常回路の変数マップを得る．
   const VidMap&
@@ -128,11 +140,6 @@ private:
   SatVarId
   dvar(const TpgNode* node) const;
 
-  /// @brief node に関する故障伝搬条件を作る．
-  /// @param[in] node 対象のノード
-  void
-  make_dchain_cnf(const TpgNode* node);
-
   /// @brief ノードに故障値用の変数番号を割り当てる．
   /// @param[in] node ノード
   /// @param[in] fvar 故障値の変数番号
@@ -146,6 +153,30 @@ private:
   void
   set_dvar(const TpgNode* node,
 	   SatVarId dvar);
+
+  /// @brief StructSat を得る．
+  StructSat&
+  struct_sat();
+
+  /// @brief SAT ソルバを得る．
+  SatSolver&
+  solver();
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる下請け関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 指定されたノードの TFO に印をつける．
+  /// @param[in] node 起点となるノード
+  void
+  mark_tfo(const TpgNode* node);
+
+  /// @brief node に関する故障伝搬条件を作る．
+  /// @param[in] node 対象のノード
+  void
+  make_dchain_cnf(const TpgNode* node);
 
   /// @brief tfo マークを読む．
   /// @param[in] node 対象のノード
@@ -172,10 +203,6 @@ private:
   /// @param[in] node 対象のノード
   void
   set_end_mark(const TpgNode* node);
-
-  /// @brief SAT ソルバを得る．
-  SatSolver&
-  solver();
 
 
 private:
@@ -220,6 +247,14 @@ ymuint
 FoCone::max_id() const
 {
   return mMaxNodeId;
+}
+
+// @brief 根のノードを得る．
+inline
+const TpgNode*
+FoCone::root_node() const
+{
+  return mNodeList[0];
 }
 
 // @brief TFO ノード数を得る．
@@ -384,6 +419,14 @@ void
 FoCone::set_end_mark(const TpgNode* node)
 {
   mMarkArray[node->id()] |= 2U;
+}
+
+// @brief StructSat を得る．
+inline
+StructSat&
+FoCone::struct_sat()
+{
+  return mStructSat;
 }
 
 // @brief SAT ソルバを得る．

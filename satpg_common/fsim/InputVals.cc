@@ -244,7 +244,7 @@ NvlInputVals::~NvlInputVals()
 {
 }
 
-// @brief 設定する．(遷移故障用)
+// @brief 値を設定する．(縮退故障用)
 // @param[in] fsim 故障シミュレータ
 void
 NvlInputVals::set_val(FSIM_CLASSNAME& fsim) const
@@ -259,6 +259,7 @@ NvlInputVals::set_val(FSIM_CLASSNAME& fsim) const
   ymuint n = mAssignList.size();
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = mAssignList[i];
+    ASSERT_COND( nv.time() == 1 );
     ymuint iid = nv.node()->input_id();
     SimNode* simnode = fsim.ppi(iid);
     simnode->set_val(int_to_packedval(nv.val()));

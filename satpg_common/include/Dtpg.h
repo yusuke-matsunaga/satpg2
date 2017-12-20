@@ -35,12 +35,12 @@ public:
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
   /// @param[in] fault_type 故障の種類
-  /// @param[in] bt バックトレーサー
+  /// @param[in] jt 正当化を行うファンクタ
   Dtpg(const string& sat_type,
        const string& sat_option,
        ostream* sat_outp,
        FaultType fault_type,
-       BackTracer& bt);
+       Justifier& jt);
 
   /// @brief デストラクタ
   ~Dtpg();
@@ -104,7 +104,7 @@ private:
   FaultType mFaultType;
 
   // バックトレーサー
-  BackTracer& mBackTracer;
+  Justifier& mJustifier;
 
   // 実装クラス
   DtpgImpl* mImpl;

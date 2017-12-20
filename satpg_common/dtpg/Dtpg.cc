@@ -10,7 +10,7 @@
 #include "Dtpg.h"
 
 #include "DtpgImpl_new.h"
-#include "DtpgImplM.h"
+//#include "DtpgImplM.h"
 
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
@@ -23,17 +23,17 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] sat_option SATソルバに渡すオプション文字列
 // @param[in] sat_outp SATソルバ用の出力ストリーム
 // @param[in] fault_type 故障の種類
-// @param[in] bt バックトレーサー
+// @param[in] jt 正当化を行うファンクタ
 Dtpg::Dtpg(const string& sat_type,
 	   const string& sat_option,
 	   ostream* sat_outp,
 	   FaultType fault_type,
-	   BackTracer& bt) :
+	   Justifier& jt) :
   mSatType(sat_type),
   mSatOption(sat_option),
   mSatOutP(sat_outp),
   mFaultType(fault_type),
-  mBackTracer(bt),
+  mJustifier(jt),
   mImpl(nullptr)
 {
 }
@@ -58,8 +58,8 @@ Dtpg::gen_ffr_cnf(const TpgNetwork& network,
     delete mImpl;
   }
 
-  mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mFaultType, mBackTracer, network, ffr->root());
-  mImpl->gen_cnf(stats);
+  mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mFaultType, mJustifier, network.node_num());
+  mImpl->gen_cnf(ffr->root(), stats);
 }
 
 // @brief 回路の構造を表すCNF式を作る(MfFCモード)．
@@ -79,13 +79,8 @@ Dtpg::gen_mffc_cnf(const TpgNetwork& network,
     delete mImpl;
   }
 
-  if ( mffc->elem_num() > 1 ) {
-    mImpl = new DtpgImplM(mSatType, mSatOption, mSatOutP, mFaultType, mBackTracer, network, mffc);
-  }
-  else {
-    mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mFaultType, mBackTracer, network, mffc->root());
-  }
-  mImpl->gen_cnf(stats);
+  mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mFaultType, mJustifier, network.node_num());
+  mImpl->gen_cnf(mffc, stats);
 }
 
 // @brief テスト生成を行なう．

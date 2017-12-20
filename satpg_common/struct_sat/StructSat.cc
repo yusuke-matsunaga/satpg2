@@ -9,11 +9,16 @@
 
 #include "StructSat.h"
 #include "FoCone.h"
+#include "MffcCone.h"
+#include "Justifier.h"
 #include "NodeValList.h"
 
 #include "TpgFault.h"
 #include "TpgNode.h"
 #include "TpgDff.h"
+#include "TpgMFFC.h"
+
+#include "ValMap_model.h"
 
 #include "GateLitMap_vid.h"
 #include "GateLitMap_vid2.h"
@@ -25,6 +30,8 @@ BEGIN_NONAMESPACE
 
 const ymuint debug_make_vars = 1U;
 const ymuint debug_make_node_cnf = 2U;
+const ymuint debug_extract = 32U;
+const ymuint debug_justify = 64U;
 
 END_NONAMESPACE
 
@@ -52,13 +59,18 @@ StructSat::StructSat(ymuint max_node_id,
     mVarMap[i].init(max_node_id);
   }
   mDebugFlag = 0;
+
+#if 0
+  mDebugFlag |= debug_extract;
+  mDebugFlag |= debug_justify;
+#endif
 }
 
 // @brief デストラクタ
 StructSat::~StructSat()
 {
-  for (ymuint i = 0; i < mFoConeList.size(); ++ i) {
-    FoCone* cone = mFoConeList[i];
+  for (ymuint i = 0; i < mConeList.size(); ++ i) {
+    FoCone* cone = mConeList[i];
     delete cone;
   }
 }
@@ -83,7 +95,7 @@ StructSat::add_focone(const TpgNode* fnode,
 		      bool detect)
 {
   FoCone* focone = new FoCone(*this, fnode, bnode, detect);
-  mFoConeList.push_back(focone);
+  mConeList.push_back(focone);
 
   if ( fault_type() == kFtTransitionDelay ) {
     add_prev_node(fnode);
@@ -93,22 +105,83 @@ StructSat::add_focone(const TpgNode* fnode,
   return focone;
 }
 
+// @brief MFFC cone を追加する．
+// @param[in] mffc MFFC の情報
+// @param[in] detect 故障を検出する時に true にするフラグ
+//
+// fnode から到達可能な外部出力までの故障伝搬条件を考える．
+const MffcCone*
+StructSat::add_mffccone(const TpgMFFC* mffc,
+			bool detect)
+{
+  return add_mffccone(mffc, nullptr, detect);
+}
+
+// @brief MFFC cone を追加する．
+// @param[in] mffc MFFC の情報
+// @param[in] bnode ブロックノード
+// @param[in] detect 故障を検出する時に true にするフラグ
+//
+// bnode までの故障伝搬条件を考える．
+const MffcCone*
+StructSat::add_mffccone(const TpgMFFC* mffc,
+			const TpgNode* bnode,
+			bool detect)
+{
+  MffcCone* mffccone = new MffcCone(*this, mffc, bnode, detect);
+  mConeList.push_back(mffccone);
+
+  if ( fault_type() == kFtTransitionDelay ) {
+    add_prev_node(mffc->root());
+  }
+  make_tfi_list(mffccone->tfo_node_list());
+
+  return mffccone;
+}
+
+// @brief 故障を検出する条件を作る．
+// @param[in] fault 故障
+// @param[in] cone_id コーン番号
+// @param[out] assumptions 結果の仮定を表すリテラルのリスト
+void
+StructSat::make_fault_condition(const TpgFault* fault,
+				ymuint cone_id,
+				vector<SatLiteral>& assumptions)
+{
+  // FFR 内の故障伝搬条件を assign_list に入れる．
+  NodeValList assign_list;
+  const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
+  add_ffr_condition(ffr_root, fault, assign_list);
+
+  /// FFR より出力側の故障伝搬条件を assumptions に入れる．
+  ASSERT_COND( cone_id < mConeList.size() );
+  mConeList[cone_id]->make_prop_condition(ffr_root, assumptions);
+
+  // assign_list を変換して assumptions に追加する．
+  assumptions.reserve(assumptions.size() + assign_list.size());
+  for (ymuint i = 0; i < assign_list.size(); ++ i) {
+    NodeVal nv = assign_list[i];
+    SatLiteral lit = nv_to_lit(nv);
+    assumptions.push_back(lit);
+  }
+}
+
 // @brief 故障の検出条件を割当リストに追加する．
 // @param[in] fault 故障
-// @param[out] assignment 割当リスト
+// @param[out] assign_list 条件を表す割当リスト
 void
 StructSat::add_fault_condition(const TpgFault* fault,
-			       NodeValList& assignment)
+			       NodeValList& assign_list)
 {
   // 故障の活性化条件
   const TpgNode* inode = fault->tpg_inode();
   // 0縮退故障の時 1にする．
   bool val = (fault->val() == 0);
-  assignment.add(inode, 1, val);
+  assign_list.add(inode, 1, val);
 
   if ( fault_type() == kFtTransitionDelay ) {
     // 1時刻前の値が逆の値である条件を作る．
-    assignment.add(inode, 0, !val);
+    assign_list.add(inode, 0, !val);
   }
 
   // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
@@ -125,7 +198,7 @@ StructSat::add_fault_condition(const TpgFault* fault,
 	if ( inode1 == inode ) {
 	  continue;
 	}
-	assignment.add(inode1, 1, val);
+	assign_list.add(inode1, 1, val);
       }
     }
   }
@@ -134,14 +207,14 @@ StructSat::add_fault_condition(const TpgFault* fault,
 // @brief FFR内の故障の伝搬条件を割当リストに追加する．
 // @param[in] root_node FFRの根のノード
 // @param[in] fault 故障
-// @param[out] assignment 割当リスト
+// @param[out] assign_list 条件を表す割当リスト
 void
 StructSat::add_ffr_condition(const TpgNode* root_node,
 			     const TpgFault* fault,
-			     NodeValList& assignment)
+			     NodeValList& assign_list)
 {
   // ノードに対する故障の伝搬条件
-  add_fault_condition(fault, assignment);
+  add_fault_condition(fault, assign_list);
 
   // FFR の根までの伝搬条件
   for (const TpgNode* node = fault->tpg_onode(); node != root_node;
@@ -167,7 +240,7 @@ StructSat::add_ffr_condition(const TpgNode* root_node,
       if ( inode == node ) {
 	continue;
       }
-      assignment.add(inode, 1, val);
+      assign_list.add(inode, 1, val);
     }
   }
 }
@@ -296,8 +369,8 @@ StructSat::make_vars()
     }
   }
 
-  for (ymuint i = 0; i < mFoConeList.size(); ++ i) {
-    FoCone* focone = mFoConeList[i];
+  for (ymuint i = 0; i < mConeList.size(); ++ i) {
+    FoCone* focone = mConeList[i];
     focone->make_vars();
   }
 }
@@ -321,8 +394,8 @@ StructSat::make_cnf()
     }
   }
 
-  for (ymuint i = 0; i < mFoConeList.size(); ++ i) {
-    FoCone* focone = mFoConeList[i];
+  for (ymuint i = 0; i < mConeList.size(); ++ i) {
+    FoCone* focone = mConeList[i];
     focone->make_cnf();
   }
 }
@@ -425,6 +498,61 @@ StructSat::check_sat(const NodeValList& assign_list1,
   conv_to_assumption(assign_list2, assumptions);
 
   return mSolver.solve(assumptions, sat_model);
+}
+
+/// @brief 結果のなかで必要なものだけを取り出す．
+// @param[in] model SAT のモデル
+// @param[in] fault 対象の故障
+// @param[in] cone_id コーン番号
+// @param[out] 値の割り当て結果を入れるリスト
+void
+StructSat::extract(const vector<SatBool3>& model,
+		   const TpgFault* fault,
+		   ymuint cone_id,
+		   NodeValList& assign_list)
+{
+  if ( debug() & debug_extract ) {
+    cout << endl
+	 << "StructSat::extract(" << fault->str() << ")" << endl;
+  }
+
+  // fault から FFR の根までの条件を求める．
+  const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
+  add_ffr_condition(ffr_root, fault, assign_list);
+
+  // ffr_root より先の条件を求める．
+  ASSERT_COND( cone_id < mConeList.size() );
+  mConeList[cone_id]->extract(model, ffr_root, assign_list);
+
+  if ( debug() & debug_extract ) {
+    cout << "  result = " << assign_list << endl;
+  }
+}
+
+// @brief 外部入力の値割り当てを求める．
+// @param[in] model SAT のモデル
+// @param[in] assign_list 値割り当てのリスト
+// @param[in] justifier 正当化を行うファンクタ
+// @param[out] pi_assign_list 外部入力における値割り当てのリスト
+//
+// このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
+// justifier を呼ぶこと．
+void
+StructSat::justify(const vector<SatBool3>& model,
+		   const NodeValList& assign_list,
+		   Justifier& justifier,
+		   NodeValList& pi_assign_list)
+{
+  if ( debug() & debug_justify ) {
+    cout << endl
+	 << "StructSat::justify(" << assign_list << ")" << endl;
+  }
+
+  ValMap_model val_map(var_map(0), var_map(1), var_map(1), model);
+  justifier(assign_list, val_map, pi_assign_list);
+  if ( debug() & debug_justify ) {
+    cout << " => " << pi_assign_list << endl;
+  }
 }
 
 // @brief ノードの入出力の関係を表すCNF式を作る．

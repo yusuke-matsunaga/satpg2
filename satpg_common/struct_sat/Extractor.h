@@ -49,15 +49,11 @@ public:
 
   /// @brief 値割当を求める．
   /// @param[in] root 起点となるノード
-  /// @param[in] gvar_map 正常回路の変数マップ
-  /// @param[in] fvar_map 故障回路の変数マップ
-  /// @param[in] model SATモデル
+  /// @param[in] val_map 値割り当ての結果を保持するオブジェクト
   /// @param[out] assign_list 値の割当リスト
   void
   operator()(const TpgNode* root,
-	     const VidMap& gvar_map,
-	     const VidMap& fvar_map,
-	     const vector<SatBool3>& model,
+	     const ValMap& val_map,
 	     NodeValList& assign_list);
 
 
@@ -114,7 +110,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 値割当を保持するクラス
-  const ValMap* mValMap;
+  const ValMap* mValMapPtr;
 
   // 故障の fanout cone のマーク
   HashSet<ymuint> mFconeMark;
@@ -133,8 +129,8 @@ inline
 Val3
 Extractor::gval(const TpgNode* node)
 {
-  ASSERT_COND( mValMap != nullptr );
-  return mValMap->gval(node);
+  ASSERT_COND( mValMapPtr != nullptr );
+  return mValMapPtr->gval(node);
 }
 
 // @brief 故障回路の値を返す．
@@ -143,8 +139,8 @@ inline
 Val3
 Extractor::fval(const TpgNode* node)
 {
-  ASSERT_COND( mValMap != nullptr );
-  return mValMap->fval(node);
+  ASSERT_COND( mValMapPtr != nullptr );
+  return mValMapPtr->fval(node);
 }
 
 END_NAMESPACE_YM_SATPG

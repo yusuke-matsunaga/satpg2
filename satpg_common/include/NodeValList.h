@@ -179,7 +179,18 @@ bool
 check_contain(const NodeValList& src_list1,
 	      const NodeValList& src_list2);
 
+/// @brief 割当の内容を出力する．
+/// @param[in] s 出力先のストリーム
+/// @param[in] nv 値の割り当て
+/// @return s を返す．
+ostream&
+operator<<(ostream& s,
+	   NodeVal nv);
+
 /// @brief 割当リストの内容を出力する．
+/// @param[in] s 出力先のストリーム
+/// @param[in] src_list 値の割り当てリスト
+/// @return s を返す．
 ostream&
 operator<<(ostream& s,
 	   const NodeValList& src_list);

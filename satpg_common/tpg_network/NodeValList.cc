@@ -168,6 +168,17 @@ check_contain(const NodeValList& src_list1,
   }
 }
 
+// @brief 割当の内容を出力する．
+ostream&
+operator<<(ostream& s,
+	   NodeVal nv)
+{
+  print_node(s, nv.node());
+  s << "@" << nv.time()
+    << " = " << nv.val();
+  return s;
+ }
+
 // @brief 割当リストの内容を出力する．
 ostream&
 operator<<(ostream& s,
@@ -177,11 +188,8 @@ operator<<(ostream& s,
   const char* comma = "";
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = src_list[i];
-    s << comma;
+    s << comma << nv;
     comma = ", ";
-    print_node(s, nv.node());
-    s << "@" << nv.time()
-      << " = " << nv.val();
   }
   return s;
 }

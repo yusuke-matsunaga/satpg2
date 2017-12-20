@@ -27,7 +27,7 @@ set (atpg_tclsh_SOURCES
   RtpgCmd.cc
   Rtpg1Cmd.cc
   DtpgCmd.cc
-  DtpgMinPowerCmd.cc
+  #DtpgMinPowerCmd.cc
   RandWsaCmd.cc
   MinPatCmd.cc
   )

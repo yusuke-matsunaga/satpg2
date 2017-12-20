@@ -57,6 +57,7 @@ class DopVerifyResult;
 class UntestOp;
 
 class BackTracer;
+class Justifier;
 
 class GateLitMap;
 class VidMap;

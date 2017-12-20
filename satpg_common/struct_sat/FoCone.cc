@@ -10,6 +10,7 @@
 #include "FoCone.h"
 #include "StructSat.h"
 #include "TpgNode.h"
+#include "TpgFault.h"
 #include "ValMap_model.h"
 #include "Extractor.h"
 #include "NodeValList.h"
@@ -36,16 +37,16 @@ END_NONAMESPACE
 
 // @brief コンストラクタ
 // @param[in] struct_sat StructSat ソルバ
-// @param[in] fnode 故障位置のノード
-// @param[in] bnode ブロックノード
+// @param[in] root_node FFRの根のノード
+// @param[in] block_node ブロックノード
 // @param[in] detect 故障を検出する時に true にするフラグ
 //
 // ブロックノードより先のノードは含めない．
-// 通常 bnode は fnode の dominator
+// 通常 block_node は nullptr か root_node の dominator
 // となっているはず．
 FoCone::FoCone(StructSat& struct_sat,
-	       const TpgNode* fnode,
-	       const TpgNode* bnode,
+	       const TpgNode* root_node,
+	       const TpgNode* block_node,
 	       bool detect) :
   mStructSat(struct_sat),
   mDetect(detect),
@@ -54,29 +55,17 @@ FoCone::FoCone(StructSat& struct_sat,
   mFvarMap(max_id()),
   mDvarMap(max_id())
 {
-  if ( bnode != nullptr ) {
-    set_end_mark(bnode);
+  if ( block_node != nullptr ) {
+    set_end_mark(block_node);
   }
 
   mNodeList.reserve(max_id());
-  mark_tfo(fnode);
+  mark_tfo(root_node);
 }
 
 // @brief デストラクタ
 FoCone::~FoCone()
 {
-}
-
-// @brief 十分条件を得る．
-// @param[in] sat_model SAT の割り当て結果
-// @param[out] assign_list 値の割り当てリスト
-void
-FoCone::extract(const vector<SatBool3>& sat_model,
-		NodeValList& assign_list) const
-{
-  // 実際の処理は Extractor が行う．
-  Extractor extractor;
-  extractor(mNodeList[0], gvar_map(), fvar_map(), sat_model, assign_list);
 }
 
 // @brief 指定されたノードの TFO に印をつける．
@@ -198,6 +187,30 @@ FoCone::make_cnf()
     // root の dlit が1でなければならない．
     solver().add_clause(SatLiteral(dvar(root)));
   }
+}
+
+// @brief 故障の影響伝搬させる条件を作る．
+// @param[in] root 起点となるノード
+// @param[out] assumptions 結果の仮定を表すリテラルのリスト
+void
+FoCone::make_prop_condition(const TpgNode* root,
+			    vector<SatLiteral>& assumptions)
+{
+}
+
+// @brief 故障検出に必要な割り当てを求める．
+// @param[in] model SAT のモデル
+// @param[in] root 起点のノード
+// @param[out] 値の割り当て結果を入れるリスト
+void
+FoCone::extract(const vector<SatBool3>& model,
+		const TpgNode* root,
+		NodeValList& assign_list)
+{
+  // 実際の処理は Extractor が行う．
+  ValMap_model val_map(gvar_map(), fvar_map(), model);
+  Extractor extractor;
+  extractor(root, val_map, assign_list);
 }
 
 // @brief node に関する故障伝搬条件を作る．

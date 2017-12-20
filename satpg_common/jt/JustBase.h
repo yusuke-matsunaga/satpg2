@@ -30,10 +30,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
   /// @param[in] max_id ID番号の最大値
-  /// @param[in] val_map ノードの値を保持するクラス
   JustBase(bool td_mode,
-	   ymuint max_id,
-	   const ValMap& val_map);
+	   ymuint max_id);
 
   /// @brief デストラクタ
   virtual
@@ -55,6 +53,11 @@ protected:
   bool
   td_mode() const;
 
+  /// @brief ValMap をセットする．
+  /// @param[in] val_map ノードの値を保持するクラス
+  void
+  set_val_map(const ValMap& val_map);
+
   /// @brief justified マークをつけ，mJustifiedNodeList に加える．
   /// @param[in] node 対象のノード
   /// @param[in] time タイムフレーム ( 0 or 1 )
@@ -68,6 +71,10 @@ protected:
   bool
   justified_mark(const TpgNode* node,
 		 int time) const;
+
+  /// @brief 全てのマークを消す．
+  void
+  clear_justified_mark();
 
   /// @brief ノードの正常値を返す．
   /// @param[in] node ノード
@@ -85,7 +92,6 @@ protected:
 	       int time,
 	       NodeValList& assign_list) const;
 
-
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
@@ -98,7 +104,7 @@ private:
   ymuint mMaxId;
 
   // ノードの値を保持するクラス
-  const ValMap& mValMap;
+  const ValMap* mValMapPtr;
 
   // 個々のノードのマークを表す配列
   vector<ymuint8> mMarkArray;
@@ -117,6 +123,16 @@ JustBase::td_mode() const
 {
   return mTdMode;
 }
+
+// @brief ValMap をセットする．
+// @param[in] val_map ノードの値を保持するクラス
+inline
+void
+JustBase::set_val_map(const ValMap& val_map)
+{
+  mValMapPtr = &val_map;
+}
+
 
 // @brief justified マークをつける．
 // @param[in] node 対象のノード
@@ -152,11 +168,13 @@ Val3
 JustBase::gval(const TpgNode* node,
 	       int time) const
 {
+  ASSERT_COND( mValMapPtr != nullptr );
+
   if ( time == 0 ) {
-    return mValMap.hval(node);
+    return mValMapPtr->hval(node);
   }
   else {
-    return mValMap.gval(node);
+    return mValMapPtr->gval(node);
   }
 }
 

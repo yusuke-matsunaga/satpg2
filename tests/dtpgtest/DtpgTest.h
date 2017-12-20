@@ -14,7 +14,7 @@
 #include "TpgFaultMgr.h"
 #include "Dtpg.h"
 #include "Fsim.h"
-#include "BackTracer.h"
+#include "Justifier.h"
 #include "DopList.h"
 #include "DopVerifyResult.h"
 #include "ym/StopWatch.h"
@@ -100,10 +100,10 @@ private:
   Fsim* mFsim;
 
   // バックトレーサー
-  BackTracer mBackTracer;
+  Justifier* mJustifier;
 
   // DTPGエンジン
-  Dtpg mDtpg;
+  Dtpg* mDtpg;
 
   // 故障検出時に起動されるファンクタのリスト
   DopList mDop;

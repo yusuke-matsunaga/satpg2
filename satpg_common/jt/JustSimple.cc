@@ -16,13 +16,11 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief JustSimple を生成する．
 // @param[in] td_mode 遷移故障モードの時 true にするフラグ
 // @param[in] max_id ID番号の最大値
-// @param[in] val_map ノードの値を保持するクラス
 Justifier*
 new_JustSimple(bool td_mode,
-	       ymuint max_id,
-	       const ValMap& val_map)
+	       ymuint max_id)
 {
-  return new JustSimple(td_mode, max_id, val_map);
+  return new JustSimple(td_mode, max_id);
 }
 
 
@@ -33,11 +31,9 @@ new_JustSimple(bool td_mode,
 // @brief コンストラクタ
 // @param[in] td_mode 遷移故障モードの時 true にするフラグ
 // @param[in] max_id ID番号の最大値
-// @param[in] val_map ノードの値を保持するクラス
 JustSimple::JustSimple(bool td_mode,
-		       ymuint max_id,
-		       const ValMap& val_map) :
-  JustBase(td_mode, max_id, val_map)
+		       ymuint max_id) :
+  JustBase(td_mode, max_id)
 {
 }
 
@@ -47,18 +43,24 @@ JustSimple::~JustSimple()
 }
 
 // @brief 正当化に必要な割当を求める．
-// @param[in] node_list 対象のノードのリスト
+// @param[in] assign_list 値の割り当てリスト
+// @param[in] val_map ノードの値を保持するクラス
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
-JustSimple::operator()(const vector<const TpgNode*>& node_list,
+JustSimple::operator()(const NodeValList& assign_list,
+		       const ValMap& val_map,
 		       NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
+  clear_justified_mark();
 
-  for (vector<const TpgNode*>::const_iterator p = node_list.begin();
-       p != node_list.end(); ++ p) {
-    const TpgNode* node = *p;
-    justify(node, 1, pi_assign_list);
+  set_val_map(val_map);
+
+  for (ymuint i = 0; i < assign_list.size(); ++ i) {
+    NodeVal nv = assign_list[i];
+    const TpgNode* node = nv.node();
+    int time = nv.time();
+    justify(node, time, pi_assign_list);
   }
 }
 

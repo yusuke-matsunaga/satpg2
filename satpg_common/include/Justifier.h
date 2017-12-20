@@ -33,11 +33,15 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 正当化に必要な割当を求める．
-  /// @param[in] node_list 対象のノードのリスト
+  /// @param[in] assign_list 値の割り当てリスト
+  /// @param[in] val_map 値の割り当て結果
   /// @param[out] pi_assign_list 外部入力上の値の割当リスト
+  ///
+  /// val_map は gval() しか用いない．
   virtual
   void
-  operator()(const vector<const TpgNode*>& node_list,
+  operator()(const NodeValList& assign_list,
+	     const ValMap& val_map,
 	     NodeValList& pi_assign_list) = 0;
 
 };
@@ -45,32 +49,26 @@ public:
 /// @brief JustSimple を生成する．
 /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
 /// @param[in] max_id ID番号の最大値
-/// @param[in] val_map ノードの値を保持するクラス
 extern
 Justifier*
 new_JustSimple(bool td_mode,
-	       ymuint max_id,
-	       const ValMap& val_map);
+	       ymuint max_id);
 
 /// @brief Just1 を生成する．
 /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
 /// @param[in] max_id ID番号の最大値
-/// @param[in] val_map ノードの値を保持するクラス
 extern
 Justifier*
 new_Just1(bool td_mode,
-	  ymuint max_id,
-	  const ValMap& val_map);
+	  ymuint max_id);
 
 /// @brief Just2 を生成する．
 /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
 /// @param[in] max_id ID番号の最大値
-/// @param[in] val_map ノードの値を保持するクラス
 extern
 Justifier*
 new_Just2(bool td_mode,
-	  ymuint max_id,
-	  const ValMap& val_map);
+	  ymuint max_id);
 
 END_NAMESPACE_YM_SATPG
 

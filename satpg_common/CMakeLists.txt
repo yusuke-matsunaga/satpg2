@@ -56,11 +56,11 @@ set (fsim_SOURCES
 
 set (struct_sat_SOURCES
   struct_sat/FoCone.cc
+  struct_sat/MffcCone.cc
   struct_sat/StructSat.cc
 
   struct_sat/Extractor.cc
 
-  #struct_sat/GateLitMap_vect.cc
   struct_sat/GateLitMap_vid.cc
   struct_sat/GateLitMap_vid2.cc
 
@@ -70,12 +70,12 @@ set (struct_sat_SOURCES
 set (dtpg_SOURCES
   dtpg/Dtpg.cc
   #dtpg/DtpgImpl.cc
-  dtpg/DtpgImplM.cc
+  #dtpg/DtpgImplM.cc
 
   dtpg/DtpgImpl_new.cc
 
-  dtpg/Dtpg2.cc
-  dtpg/Dtpg2Impl.cc
+  #dtpg/Dtpg2.cc
+  #dtpg/Dtpg2Impl.cc
   )
 
 set (dop_SOURCES

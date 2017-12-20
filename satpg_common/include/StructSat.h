@@ -20,6 +20,7 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 class FoCone;
+class MffcCone;
 
 //////////////////////////////////////////////////////////////////////
 /// @class StructSat StructSat.h "StructSat.h"
@@ -104,25 +105,34 @@ public:
 	     const TpgNode* bnode,
 	     bool detect);
 
-  /// @brief 故障の検出条件を割当リストに追加する．
-  /// @param[in] fault 故障
-  /// @param[out] assignment 割当リスト
+  /// @brief MFFC cone を追加する．
+  /// @param[in] mffc MFFC の情報
+  /// @param[in] detect 故障を検出する時に true にするフラグ
   ///
-  /// fault の影響がノードの出力に伝搬する条件を assignment に加える．
-  void
-  add_fault_condition(const TpgFault* fault,
-		      NodeValList& assignment);
+  /// fnode から到達可能な外部出力までの故障伝搬条件を考える．
+  const MffcCone*
+  add_mffccone(const TpgMFFC* mffc,
+	       bool detect);
 
-  /// @brief FFR内の故障の伝搬条件を割当リストに追加する．
-  /// @param[in] root_node FFRの根のノード
-  /// @param[in] fault 故障
-  /// @param[out] assignment 割当リスト
+  /// @brief MFFC cone を追加する．
+  /// @param[in] mffc MFFC の情報
+  /// @param[in] bnode ブロックノード
+  /// @param[in] detect 故障を検出する時に true にするフラグ
   ///
-  /// fault の影響が root_node の出力に伝搬する条件を assignment に加える．
+  /// bnode までの故障伝搬条件を考える．
+  const MffcCone*
+  add_mffccone(const TpgMFFC* mffc,
+	       const TpgNode* bnode,
+	       bool detect);
+
+  /// @brief 故障を検出する条件を作る．
+  /// @param[in] fault 故障
+  /// @param[in] cone_id コーン番号
+  /// @param[out] assign_list 条件を表す割当リスト
   void
-  add_ffr_condition(const TpgNode* root_node,
-		    const TpgFault* fault,
-		    NodeValList& assignment);
+  make_fault_condition(const TpgFault* fault,
+		       ymuint cone_id,
+		       vector<SatLiteral>& assumptions);
 
   /// @brief 割当リストの内容を節に加える．
   /// @param[in] assignment 割当リスト
@@ -246,6 +256,31 @@ public:
   check_sat(const NodeValList& assign_list1,
 	    const NodeValList& assign_list2);
 
+  /// @brief 結果のなかで必要なものだけを取り出す．
+  /// @param[in] model SAT のモデル
+  /// @param[in] fault 対象の故障
+  /// @param[in] cone_id コーン番号
+  /// @param[out] 値の割り当て結果を入れるリスト
+  void
+  extract(const vector<SatBool3>& model,
+	  const TpgFault* fault,
+	  ymuint cone_id,
+	  NodeValList& assign_list);
+
+  /// @brief 外部入力の値割り当てを求める．
+  /// @param[in] model SAT のモデル
+  /// @param[in] assign_list 値割り当てのリスト
+  /// @param[in] justifier 正当化を行うファンクタ
+  /// @param[out] pi_assign_list 外部入力における値割り当てのリスト
+  ///
+  /// このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
+  /// justifier を呼ぶこと．
+  void
+  justify(const vector<SatBool3>& model,
+	  const NodeValList& assign_list,
+	  Justifier& justifier,
+	  NodeValList& pi_assign_list);
+
   /// @brief デバッグ用のフラグをセットする．
   void
   set_debug(ymuint bits);
@@ -259,6 +294,26 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障の検出条件を割当リストに追加する．
+  /// @param[in] fault 故障
+  /// @param[out] assign_list 条件を表す割当リスト
+  ///
+  /// fault の影響がノードの出力に伝搬する条件を assumptions に加える．
+  void
+  add_fault_condition(const TpgFault* fault,
+		      NodeValList& assign_list);
+
+  /// @brief FFR内の故障の伝搬条件を割当リストに追加する．
+  /// @param[in] root_node FFRの根のノード
+  /// @param[in] fault 故障
+  /// @param[out] assign_list 条件を表す割当リスト
+  ///
+  /// fault の影響が root_node の出力に伝搬する条件を assumptions に加える．
+  void
+  add_ffr_condition(const TpgNode* root_node,
+		    const TpgFault* fault,
+		    NodeValList& assign_list);
 
   /// @brief 与えられたノード(のリスト)のTFIのリストを作る．
   /// @param[in] node_list ノードのリスト
@@ -276,6 +331,15 @@ private:
   /// @param[in] nv ノードの値割り当て
   SatLiteral
   nv_to_lit(NodeVal nv);
+
+  /// @brief ノードの値割り当てに対応するリテラルを返す．
+  /// @param[in] node ノード
+  /// @param[in] time 時刻 (0 or 1)
+  /// @param[in] val 値
+  SatLiteral
+  node_assign_to_lit(const TpgNode* node,
+		     int time,
+		     bool val);
 
   /// @brief ノードに新しい変数を割り当てる．
   /// @param[in] node ノード
@@ -377,8 +441,8 @@ private:
   // 変数マップ
   VidMap mVarMap[2];
 
-  // fanout cone のリスト
-  vector<FoCone*> mFoConeList;
+  // fanout cone / MFFC cone のリスト
+  vector<FoCone*> mConeList;
 
   // デバッグ用のフラグ
   ymuint mDebugFlag;
@@ -424,8 +488,23 @@ StructSat::nv_to_lit(NodeVal nv)
   // node およびその TFI に関する節を追加する．
   // すでに節が作られていた場合にはなにもしない．
   int time = nv.time();
+  return node_assign_to_lit(node, time, nv.val());
+}
+
+// @brief ノードの値割り当てに対応するリテラルを返す．
+// @param[in] node ノード
+// @param[in] time 時刻 (0 or 1)
+// @param[in] val 値
+inline
+SatLiteral
+StructSat::node_assign_to_lit(const TpgNode* node,
+			      int time,
+			      bool val)
+{
+  // node およびその TFI に関する節を追加する．
+  // すでに節が作られていた場合にはなにもしない．
   make_tfi_cnf(node, time);
-  bool inv = !nv.val();
+  bool inv = !val;
   return SatLiteral(var(node, time), inv);
 }
 

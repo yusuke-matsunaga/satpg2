@@ -19,6 +19,7 @@
 #include "Fsim.h"
 #include "NodeValList.h"
 #include "BackTracer.h"
+#include "Justifier.h"
 #include "DetectOp.h"
 #include "DopList.h"
 #include "DopVerifyResult.h"
@@ -256,7 +257,14 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     xmode = mPoptX->val();
   }
 
-  BackTracer bt(xmode, fault_type, _network().node_num());
+  bool td_mode = (fault_type == kFtTransitionDelay);
+  Justifier* jt = nullptr;
+  switch ( xmode ) {
+  case 0: jt = new_JustSimple(td_mode, _network().node_num()); break;
+  case 1: jt = new_Just1(td_mode, _network().node_num()); break;
+  case 2: jt = new_Just2(td_mode, _network().node_num()); break;
+  default: jt = new_Just2(td_mode, _network().node_num()); break;
+  }
 
   if ( mPoptDrop->is_specified() ) {
     dop_list.add(new_DopDrop(fault_mgr, fsim3));
@@ -280,7 +288,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
-  Dtpg dtpg(sat_type, sat_option, outp, fault_type, bt);
+  Dtpg dtpg(sat_type, sat_option, outp, fault_type, *jt);
 
   DtpgStats stats;
   if ( engine_type == "single" ) {
@@ -308,6 +316,8 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 	   << assign_list << endl;
     }
   }
+
+  delete jt;
 
   // -print_stats オプションの処理
   if ( print_stats ) {

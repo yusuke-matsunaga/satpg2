@@ -26,10 +26,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] td_mode 遷移故障モードの時 true にするフラグ
   /// @param[in] max_id ID番号の最大値
-  /// @param[in] val_map ノードの値を保持するクラス
   Just2(bool td_mode,
-	ymuint max_id,
-	const ValMap& val_map);
+	ymuint max_id);
 
   /// @brief デストラクタ
   virtual
@@ -42,10 +40,12 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 正当化に必要な割当を求める．
-  /// @param[in] node_list 対象のノードのリスト
+  /// @param[in] assign_list 値の割り当てリスト
+  /// @param[in] val_map ノードの値を保持するクラス
   /// @param[out] pi_assign_list 外部入力上の値の割当リスト
   void
-  operator()(const vector<const TpgNode*>& node_list,
+  operator()(const NodeValList& assign_list,
+	     const ValMap& val_map,
 	     NodeValList& pi_assign_list);
 
 
