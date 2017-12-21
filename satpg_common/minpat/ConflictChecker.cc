@@ -16,7 +16,7 @@
 #include "TestVector.h"
 #include "Fsim.h"
 
-#include "StructSat.h"
+#include "StructEnc.h"
 #include "FoCone.h"
 
 #include "ym/RandGen.h"
@@ -323,7 +323,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     mConflictStats.conf4_timer.stop();
   }
 #else
-  StructSat struct_sat(mMaxNodeId);
+  StructEnc struct_sat(mMaxNodeId);
 
   // f1 を検出する CNF を生成
   struct_sat.add_assignments(ma_list1);
@@ -382,7 +382,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     mConflictStats.conf4_timer.start();
     ++ mConflictStats.conf4_check_count;
     {
-      StructSat struct_sat(mMaxNodeId);
+      StructEnc struct_sat(mMaxNodeId);
 
       // f1 を検出する CNF を生成
       const FaultInfo& fi1 = mAnalyzer.fault_info(f1_id);

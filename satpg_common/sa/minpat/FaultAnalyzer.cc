@@ -19,7 +19,7 @@
 
 #include "StructSat.h"
 #include "FoCone.h"
-#include "../../struct_sat/ValMap_model.h"
+#include "../../struct_enc/ValMap_model.h"
 
 #include "BackTracer.h"
 

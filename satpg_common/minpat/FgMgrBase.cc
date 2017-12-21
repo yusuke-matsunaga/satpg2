@@ -9,7 +9,7 @@
 
 #include "FgMgrBase.h"
 
-#include "StructSat.h"
+#include "StructEnc.h"
 #include "FoCone.h"
 
 #include "TpgFault.h"
@@ -153,7 +153,7 @@ FgMgrBase::find_dom_group(ymuint fid,
 			  bool first_hit,
 			  vector<ymuint>& gid_list)
 {
-  StructSat struct_sat(max_node_id());
+  StructEnc struct_sat(max_node_id());
   const TpgFault* fault = _fault(fid);
   // fault が検出できない条件を追加
   struct_sat.add_focone(fault, kVal0);
@@ -199,7 +199,7 @@ FgMgrBase::find_group(ymuint fid0,
 
   ymuint first_gid = group_num();
 
-  StructSat struct_sat0(max_node_id());
+  StructEnc struct_sat0(max_node_id());
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
@@ -248,7 +248,7 @@ FgMgrBase::find_group(ymuint fid0,
     ++ mCheckCount;
 
     // 簡易検査ではわからなかったので正式に調べる．
-    StructSat struct_sat(max_node_id());
+    StructEnc struct_sat(max_node_id());
 
     // fid0 の必要割当を追加
     struct_sat.add_assignments(ma_list0);
@@ -318,7 +318,7 @@ FgMgrBase::find_group2(ymuint fid0,
   StopWatch local_timer;
   local_timer.start();
 
-  StructSat struct_sat0(max_node_id());
+  StructEnc struct_sat0(max_node_id());
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
@@ -355,7 +355,7 @@ FgMgrBase::find_group2(ymuint fid0,
 	  fg->add_fault(fid0, suf_list, ma_list0);
 	}
 	if ( verify_add_fault) {
-	  StructSat struct_sat(max_node_id());
+	  StructEnc struct_sat(max_node_id());
 	  // mSufList 単独で充足可能か調べておく．
 	  if ( struct_sat.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	    cout << "Error in FaultGroup::add_fault(2)" << endl
@@ -384,7 +384,7 @@ FgMgrBase::find_group2(ymuint fid0,
     ++ mCheckCount;
 
     // 簡易検査ではわからなかったので正式に調べる．
-    StructSat struct_sat(max_node_id());
+    StructEnc struct_sat(max_node_id());
 
     // fid0 の必要割当を追加
     struct_sat.add_assignments(ma_list0);
@@ -439,7 +439,7 @@ FgMgrBase::find_group2(ymuint fid0,
       fg->update();
 
       if ( verify_add_fault ) {
-	StructSat struct_sat(max_node_id());
+	StructEnc struct_sat(max_node_id());
 	// mSufList 単独で充足可能か調べておく．
 	if ( struct_sat.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	  cout << "Error in FaultGroup::update()" << endl
@@ -461,7 +461,7 @@ FgMgrBase::find_group2(ymuint fid0,
       ans_gid = gid;
 
       if ( verify_add_fault ) {
-	StructSat struct_sat(max_node_id());
+	StructEnc struct_sat(max_node_id());
 	// mSufList 単独で充足可能か調べておく．
 	if ( struct_sat.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	  cout << "Error in FaultGroup::update()" << endl
@@ -572,7 +572,7 @@ FgMgrBase::check_sufficient_assignment(ymuint gid)
   const NodeValList& suf_list = sufficient_assignment(gid);
   for (ymuint i = 0; i < fault_num(gid); ++ i) {
     ymuint fid = fault_id(gid, i);
-    StructSat struct_sat(max_node_id());
+    StructEnc struct_sat(max_node_id());
     // gid の十分条件を追加
     struct_sat.add_assignments(suf_list);
     // fid を検出しない条件を追加
@@ -588,7 +588,7 @@ FgMgrBase::check_sufficient_assignment(ymuint gid)
     const vector<ymuint>& dom_list = fi.dom_list();
     for (ymuint j = 0; j < dom_list.size(); ++ j) {
       ymuint fid1 = dom_list[j];
-      StructSat struct_sat1(max_node_id());
+      StructEnc struct_sat1(max_node_id());
       // gid の十分条件を追加
       struct_sat1.add_assignments(suf_list);
       // fid1 を検出しない条件を追加

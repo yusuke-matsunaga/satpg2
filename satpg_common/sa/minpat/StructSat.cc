@@ -13,7 +13,7 @@
 
 #include "TpgFault.h"
 #include "TpgNode.h"
-#include "../../struct_sat/GateLitMap_vid.h"
+#include "../../struct_enc/GateLitMap_vid.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

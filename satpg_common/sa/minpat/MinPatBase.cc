@@ -18,7 +18,7 @@
 #include "TvMgr.h"
 #include "TestVector.h"
 
-#include "../../struct_sat/ValMap_model.h"
+#include "../../struct_enc/ValMap_model.h"
 #include "StructSat.h"
 
 #include "FgMgrBase.h"

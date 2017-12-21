@@ -11,7 +11,7 @@
 
 
 #include "td/td_nsdef.h"
-#include "td/StructSat.h"
+#include "td/StructEnc.h"
 #include "TpgNode.h"
 
 
@@ -26,8 +26,8 @@ class ConeBase
 protected:
 
   /// @brief コンストラクタ
-  /// @param[in] struct_sat StructSat ソルバ
-  ConeBase(StructSat& struct_sat);
+  /// @param[in] struct_sat StructEnc ソルバ
+  ConeBase(StructEnc& struct_sat);
 
   /// @brief デストラクタ
   ~ConeBase();
@@ -166,7 +166,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // struct SAT ソルバ
-  StructSat& mStructSat;
+  StructEnc& mStructEnc;
 
   // ノードのIDの最大値
   ymuint mMaxNodeId;
@@ -253,7 +253,7 @@ inline
 const VidMap&
 ConeBase::hvar_map() const
 {
-  return mStructSat.hvar_map();
+  return mStructEnc.hvar_map();
 }
 
 // @brief 正常回路の変数マップを得る．
@@ -261,7 +261,7 @@ inline
 const VidMap&
 ConeBase::gvar_map() const
 {
-  return mStructSat.gvar_map();
+  return mStructEnc.gvar_map();
 }
 
 // @brief 故障回路の変数マップを得る．
@@ -285,7 +285,7 @@ inline
 SatVarId
 ConeBase::hvar(const TpgNode* node) const
 {
-  return mStructSat.hvar(node);
+  return mStructEnc.hvar(node);
 }
 
 // @brief 正常値の変数を得る．
@@ -293,7 +293,7 @@ inline
 SatVarId
 ConeBase::gvar(const TpgNode* node) const
 {
-  return mStructSat.gvar(node);
+  return mStructEnc.gvar(node);
 }
 
 // @brief 故障値の変数を得る．
@@ -377,7 +377,7 @@ inline
 SatSolver&
 ConeBase::solver()
 {
-  return mStructSat.solver();
+  return mStructEnc.solver();
 }
 
 END_NAMESPACE_YM_SATPG_TD

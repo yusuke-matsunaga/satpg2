@@ -15,7 +15,7 @@
 #include "TvMgr.h"
 #include "TestVector.h"
 #include "Fsim.h"
-#include "StructSat.h"
+#include "StructEnc.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -504,7 +504,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
 
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
 
-    StructSat struct_sat(mMaxNodeId);
+    StructEnc struct_sat(mMaxNodeId);
 
     // f1 を検出しない CNF を作成
     struct_sat.add_focone(f1, kVal0);

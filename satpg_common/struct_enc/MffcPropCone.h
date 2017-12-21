@@ -1,8 +1,8 @@
-﻿#ifndef MFFCCONE_H
-#define MFFCCONE_H
+﻿#ifndef MFFCPROPCONE_H
+#define MFFCPROPCONE_H
 
-/// @file MffcCone.h
-/// @brief MffcCone のヘッダファイル
+/// @file MffcPropCone.h
+/// @brief MffcPropCone のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -10,23 +10,23 @@
 /// All rights reserved.
 
 
-#include "FoCone.h"
+#include "PropCone.h"
 #include "ym/HashMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class MffcCone MffcCone.h "MffcCone.h"
-/// @brief MFFC内の故障をひとまとめに扱うためのクラス
+/// @class MffcPropCone MffcPropCone.h "MffcPropCone.h"
+/// @brief MFFC内の故障をひとまとめに扱う PropCone
 //////////////////////////////////////////////////////////////////////
-class MffcCone :
-  public FoCone
+class MffcPropCone :
+  public PropCone
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] struct_sat StructSat ソルバ
+  /// @param[in] struct_sat StructEnc ソルバ
   /// @param[in] mffc MFFC の情報
   /// @param[in] block_node ブロックノード
   /// @param[in] detect 故障を検出する時に true にするフラグ
@@ -34,13 +34,14 @@ public:
   /// ブロックノードより先のノードは含めeない．
   /// 通常 block_node は nullptr か root_node の dominator
   /// となっているはず．
-  MffcCone(StructSat& struct_sat,
+  MffcPropCone(StructEnc& struct_sat,
 	   const TpgMFFC* mffc,
 	   const TpgNode* block_node,
 	   bool detect);
 
   /// @brief デストラクタ
-  ~MffcCone();
+  virtual
+  ~MffcPropCone();
 
 
 public:
@@ -120,4 +121,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // MFFCCONE_H
+#endif // MFFCPROPCONE_H

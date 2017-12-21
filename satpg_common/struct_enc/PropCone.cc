@@ -1,14 +1,14 @@
 ﻿
-/// @file FoCone.cc
-/// @brief FoCone の実装ファイル
+/// @file PropCone.cc
+/// @brief PropCone の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2005-2010, 2012-2014, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "FoCone.h"
-#include "StructSat.h"
+#include "PropCone.h"
+#include "StructEnc.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
 #include "ValMap_model.h"
@@ -36,7 +36,7 @@ struct Lt
 END_NONAMESPACE
 
 // @brief コンストラクタ
-// @param[in] struct_sat StructSat ソルバ
+// @param[in] struct_sat StructEnc ソルバ
 // @param[in] root_node FFRの根のノード
 // @param[in] block_node ブロックノード
 // @param[in] detect 故障を検出する時に true にするフラグ
@@ -44,11 +44,11 @@ END_NONAMESPACE
 // ブロックノードより先のノードは含めない．
 // 通常 block_node は nullptr か root_node の dominator
 // となっているはず．
-FoCone::FoCone(StructSat& struct_sat,
-	       const TpgNode* root_node,
-	       const TpgNode* block_node,
-	       bool detect) :
-  mStructSat(struct_sat),
+PropCone::PropCone(StructEnc& struct_sat,
+		   const TpgNode* root_node,
+		   const TpgNode* block_node,
+		   bool detect) :
+  mStructEnc(struct_sat),
   mDetect(detect),
   mMaxNodeId(struct_sat.max_node_id()),
   mMarkArray(max_id()),
@@ -64,14 +64,14 @@ FoCone::FoCone(StructSat& struct_sat,
 }
 
 // @brief デストラクタ
-FoCone::~FoCone()
+PropCone::~PropCone()
 {
 }
 
 // @brief 指定されたノードの TFO に印をつける．
 // @param[in] node 起点となるノード
 void
-FoCone::mark_tfo(const TpgNode* node)
+PropCone::mark_tfo(const TpgNode* node)
 {
   set_tfo_mark(node);
 
@@ -97,7 +97,7 @@ FoCone::mark_tfo(const TpgNode* node)
 
 // @brief 関係するノードの変数を作る．
 void
-FoCone::make_vars()
+PropCone::make_vars()
 {
   // TFO のノードに変数を割り当てる．
   for (ymuint i = 0; i < mNodeList.size(); ++ i) {
@@ -157,13 +157,13 @@ FoCone::make_vars()
 
 // @brief 関係するノードの入出力の関係を表すCNFを作る．
 void
-FoCone::make_cnf()
+PropCone::make_cnf()
 {
   for (ymuint i = 0; i < mNodeList.size(); ++ i) {
     const TpgNode* node = mNodeList[i];
     if ( i > 0 ) {
       // 故障回路のゲートの入出力関係を表すCNFを作る．
-      mStructSat.make_node_cnf(node, fvar_map());
+      mStructEnc.make_node_cnf(node, fvar_map());
     }
 
     if ( mDetect ) {
@@ -189,23 +189,14 @@ FoCone::make_cnf()
   }
 }
 
-// @brief 故障の影響伝搬させる条件を作る．
-// @param[in] root 起点となるノード
-// @param[out] assumptions 結果の仮定を表すリテラルのリスト
-void
-FoCone::make_prop_condition(const TpgNode* root,
-			    vector<SatLiteral>& assumptions)
-{
-}
-
 // @brief 故障検出に必要な割り当てを求める．
 // @param[in] model SAT のモデル
 // @param[in] root 起点のノード
 // @param[out] 値の割り当て結果を入れるリスト
 void
-FoCone::extract(const vector<SatBool3>& model,
-		const TpgNode* root,
-		NodeValList& assign_list)
+PropCone::extract(const vector<SatBool3>& model,
+		  const TpgNode* root,
+		  NodeValList& assign_list)
 {
   // 実際の処理は Extractor が行う．
   ValMap_model val_map(gvar_map(), fvar_map(), model);
@@ -215,7 +206,7 @@ FoCone::extract(const vector<SatBool3>& model,
 
 // @brief node に関する故障伝搬条件を作る．
 void
-FoCone::make_dchain_cnf(const TpgNode* node)
+PropCone::make_dchain_cnf(const TpgNode* node)
 {
   SatLiteral glit(gvar(node), false);
   SatLiteral flit(fvar(node), false);

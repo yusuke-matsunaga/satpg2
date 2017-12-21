@@ -25,9 +25,9 @@ class MffcCone :
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] struct_sat StructSat ソルバ
+  /// @param[in] struct_sat StructEnc ソルバ
   /// @param[in] fnode MFFC の根のノード
-  MffcCone(StructSat& struct_sat,
+  MffcCone(StructEnc& struct_sat,
 	   const TpgNode* fnode);
 
   /// @brief デストラクタ

@@ -9,7 +9,7 @@
 
 #include "DtpgSatS.h"
 #include "td/DtpgStats.h"
-#include "td/StructSat.h"
+#include "td/StructEnc.h"
 #include "td/FoCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"

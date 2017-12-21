@@ -1,15 +1,15 @@
 
-/// @file StructSat.cc
-/// @brief StructSat の実装ファイル
+/// @file StructEnc.cc
+/// @brief StructEnc の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2015, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "StructSat.h"
-#include "FoCone.h"
-#include "MffcCone.h"
+#include "StructEnc.h"
+#include "SimplePropCone.h"
+#include "MffcPropCone.h"
 #include "Justifier.h"
 #include "NodeValList.h"
 
@@ -36,7 +36,7 @@ const ymuint debug_justify = 64U;
 END_NONAMESPACE
 
 //////////////////////////////////////////////////////////////////////
-// クラス StructSat
+// クラス StructEnc
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
@@ -45,7 +45,7 @@ END_NONAMESPACE
 // @param[in] sat_type SATソルバの種類を表す文字列
 // @param[in] sat_option SATソルバに渡すオプション文字列
 // @param[in] sat_outp SATソルバ用の出力ストリーム
-StructSat::StructSat(ymuint max_node_id,
+StructEnc::StructEnc(ymuint max_node_id,
 		     FaultType fault_type,
 		     const string& sat_type,
 		     const string& sat_option,
@@ -67,10 +67,10 @@ StructSat::StructSat(ymuint max_node_id,
 }
 
 // @brief デストラクタ
-StructSat::~StructSat()
+StructEnc::~StructEnc()
 {
   for (ymuint i = 0; i < mConeList.size(); ++ i) {
-    FoCone* cone = mConeList[i];
+    PropCone* cone = mConeList[i];
     delete cone;
   }
 }
@@ -78,23 +78,30 @@ StructSat::~StructSat()
 // @brief fault cone を追加する．
 // @param[in] fnode 故障のあるノード
 // @param[in] detect 故障を検出する時に true にするフラグ
-const FoCone*
-StructSat::add_focone(const TpgNode* fnode,
-		      bool detect)
+// @return 作成されたコーン番号を返す．
+//
+// fnode から到達可能な外部出力までの故障伝搬条件を考える．
+ymuint
+StructEnc::add_simple_cone(const TpgNode* fnode,
+			   bool detect)
 {
-  return add_focone(fnode, nullptr, detect);
+  return add_simple_cone(fnode, nullptr, detect);
 }
 
 // @brief fault cone を追加する．
 // @param[in] fnode 故障のあるノード
 // @param[in] bnode ブロックノード
 // @param[in] detect 故障を検出する時に true にするフラグ
-const FoCone*
-StructSat::add_focone(const TpgNode* fnode,
-		      const TpgNode* bnode,
-		      bool detect)
+// @return 作成されたコーン番号を返す．
+//
+// bnode までの故障伝搬条件を考える．
+ymuint
+StructEnc::add_simple_cone(const TpgNode* fnode,
+			   const TpgNode* bnode,
+			   bool detect)
 {
-  FoCone* focone = new FoCone(*this, fnode, bnode, detect);
+  PropCone* focone = new SimplePropCone(*this, fnode, bnode, detect);
+  ymuint cone_id = mConeList.size();
   mConeList.push_back(focone);
 
   if ( fault_type() == kFtTransitionDelay ) {
@@ -102,33 +109,36 @@ StructSat::add_focone(const TpgNode* fnode,
   }
   make_tfi_list(focone->tfo_node_list());
 
-  return focone;
+  return cone_id;
 }
 
 // @brief MFFC cone を追加する．
 // @param[in] mffc MFFC の情報
 // @param[in] detect 故障を検出する時に true にするフラグ
+// @return 作成されたコーン番号を返す．
 //
 // fnode から到達可能な外部出力までの故障伝搬条件を考える．
-const MffcCone*
-StructSat::add_mffccone(const TpgMFFC* mffc,
-			bool detect)
+ymuint
+StructEnc::add_mffc_cone(const TpgMFFC* mffc,
+			 bool detect)
 {
-  return add_mffccone(mffc, nullptr, detect);
+  return add_mffc_cone(mffc, nullptr, detect);
 }
 
 // @brief MFFC cone を追加する．
 // @param[in] mffc MFFC の情報
 // @param[in] bnode ブロックノード
 // @param[in] detect 故障を検出する時に true にするフラグ
+// @return 作成されたコーン番号を返す．
 //
 // bnode までの故障伝搬条件を考える．
-const MffcCone*
-StructSat::add_mffccone(const TpgMFFC* mffc,
-			const TpgNode* bnode,
-			bool detect)
+ymuint
+StructEnc::add_mffc_cone(const TpgMFFC* mffc,
+			 const TpgNode* bnode,
+			 bool detect)
 {
-  MffcCone* mffccone = new MffcCone(*this, mffc, bnode, detect);
+  PropCone* mffccone = new MffcPropCone(*this, mffc, bnode, detect);
+  ymuint cone_id = mConeList.size();
   mConeList.push_back(mffccone);
 
   if ( fault_type() == kFtTransitionDelay ) {
@@ -136,7 +146,7 @@ StructSat::add_mffccone(const TpgMFFC* mffc,
   }
   make_tfi_list(mffccone->tfo_node_list());
 
-  return mffccone;
+  return cone_id;
 }
 
 // @brief 故障を検出する条件を作る．
@@ -144,7 +154,7 @@ StructSat::add_mffccone(const TpgMFFC* mffc,
 // @param[in] cone_id コーン番号
 // @param[out] assumptions 結果の仮定を表すリテラルのリスト
 void
-StructSat::make_fault_condition(const TpgFault* fault,
+StructEnc::make_fault_condition(const TpgFault* fault,
 				ymuint cone_id,
 				vector<SatLiteral>& assumptions)
 {
@@ -170,7 +180,7 @@ StructSat::make_fault_condition(const TpgFault* fault,
 // @param[in] fault 故障
 // @param[out] assign_list 条件を表す割当リスト
 void
-StructSat::add_fault_condition(const TpgFault* fault,
+StructEnc::add_fault_condition(const TpgFault* fault,
 			       NodeValList& assign_list)
 {
   // 故障の活性化条件
@@ -209,7 +219,7 @@ StructSat::add_fault_condition(const TpgFault* fault,
 // @param[in] fault 故障
 // @param[out] assign_list 条件を表す割当リスト
 void
-StructSat::add_ffr_condition(const TpgNode* root_node,
+StructEnc::add_ffr_condition(const TpgNode* root_node,
 			     const TpgFault* fault,
 			     NodeValList& assign_list)
 {
@@ -248,7 +258,7 @@ StructSat::add_ffr_condition(const TpgNode* root_node,
 // @brief 割当リストに従って値を固定する．
 // @param[in] assignment 割当リスト
 void
-StructSat::add_assignments(const NodeValList& assignment)
+StructEnc::add_assignments(const NodeValList& assignment)
 {
   ymuint n = assignment.size();
   for (ymuint i = 0; i < n; ++ i) {
@@ -261,7 +271,7 @@ StructSat::add_assignments(const NodeValList& assignment)
 // @brief 割当リストの否定の節を加える．
 // @param[in] assignment 割当リスト
 void
-StructSat::add_negation(const NodeValList& assignment)
+StructEnc::add_negation(const NodeValList& assignment)
 {
   ymuint n = assignment.size();
   vector<SatLiteral> tmp_lits(n);
@@ -279,7 +289,7 @@ StructSat::add_negation(const NodeValList& assignment)
 //
 // 必要に応じて使われているリテラルに関するCNFを追加する．
 void
-StructSat::conv_to_assumption(const NodeValList& assign_list,
+StructEnc::conv_to_assumption(const NodeValList& assign_list,
 			      vector<SatLiteral>& assumptions)
 {
   ymuint n = assign_list.size();
@@ -293,7 +303,7 @@ StructSat::conv_to_assumption(const NodeValList& assign_list,
 // @brief 与えられたノード(のリスト)のTFIのリストを作る．
 // @param[in] node_list ノードのリスト
 void
-StructSat::make_tfi_list(const vector<const TpgNode*>& node_list)
+StructEnc::make_tfi_list(const vector<const TpgNode*>& node_list)
 {
   // node_list を mCurNodeList に入れる．
   for (ymuint i = 0; i < node_list.size(); ++ i) {
@@ -335,7 +345,7 @@ StructSat::make_tfi_list(const vector<const TpgNode*>& node_list)
 
 // @brief 関係あるノードに変数を割り当てる．
 void
-StructSat::make_vars()
+StructEnc::make_vars()
 {
   for (ymuint i = 0; i < mCurNodeList.size(); ++ i) {
     const TpgNode* node = mCurNodeList[i];
@@ -370,14 +380,14 @@ StructSat::make_vars()
   }
 
   for (ymuint i = 0; i < mConeList.size(); ++ i) {
-    FoCone* focone = mConeList[i];
+    PropCone* focone = mConeList[i];
     focone->make_vars();
   }
 }
 
 // @brief 関係あるノードの入出力の関係を表すCNFを作る．
 void
-StructSat::make_cnf()
+StructEnc::make_cnf()
 {
   for (ymuint i = 0; i < mCurNodeList.size(); ++ i) {
     const TpgNode* node = mCurNodeList[i];
@@ -395,7 +405,7 @@ StructSat::make_cnf()
   }
 
   for (ymuint i = 0; i < mConeList.size(); ++ i) {
-    FoCone* focone = mConeList[i];
+    PropCone* focone = mConeList[i];
     focone->make_cnf();
   }
 }
@@ -406,7 +416,7 @@ StructSat::make_cnf()
 //
 // 縮退故障モードの場合の時刻は 1
 void
-StructSat::make_tfi_var(const TpgNode* node,
+StructEnc::make_tfi_var(const TpgNode* node,
 			int time)
 {
   if ( var_mark(node, time) ) {
@@ -435,7 +445,7 @@ StructSat::make_tfi_var(const TpgNode* node,
 //
 // 縮退故障モードの場合の時刻は 1
 void
-StructSat::make_tfi_cnf(const TpgNode* node,
+StructEnc::make_tfi_cnf(const TpgNode* node,
 			int time)
 {
   if ( cnf_mark(node, time) ) {
@@ -466,7 +476,7 @@ StructSat::make_tfi_cnf(const TpgNode* node,
 // @brief チェックを行う．
 // @param[out] sat_model SATの場合の解
 SatBool3
-StructSat::check_sat(vector<SatBool3>& sat_model)
+StructEnc::check_sat(vector<SatBool3>& sat_model)
 {
   return mSolver.solve(sat_model);
 }
@@ -475,7 +485,7 @@ StructSat::check_sat(vector<SatBool3>& sat_model)
 // @param[in] assign_list 割当リスト
 // @param[out] sat_model SATの場合の解
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list,
+StructEnc::check_sat(const NodeValList& assign_list,
 		     vector<SatBool3>& sat_model)
 {
   vector<SatLiteral> assumptions;
@@ -488,7 +498,7 @@ StructSat::check_sat(const NodeValList& assign_list,
 // @param[in] assign_list1, assign_list2 割当リスト
 // @param[out] sat_model SATの場合の解
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list1,
+StructEnc::check_sat(const NodeValList& assign_list1,
 		     const NodeValList& assign_list2,
 		     vector<SatBool3>& sat_model)
 {
@@ -506,14 +516,14 @@ StructSat::check_sat(const NodeValList& assign_list1,
 // @param[in] cone_id コーン番号
 // @param[out] 値の割り当て結果を入れるリスト
 void
-StructSat::extract(const vector<SatBool3>& model,
+StructEnc::extract(const vector<SatBool3>& model,
 		   const TpgFault* fault,
 		   ymuint cone_id,
 		   NodeValList& assign_list)
 {
   if ( debug() & debug_extract ) {
     cout << endl
-	 << "StructSat::extract(" << fault->str() << ")" << endl;
+	 << "StructEnc::extract(" << fault->str() << ")" << endl;
   }
 
   // fault から FFR の根までの条件を求める．
@@ -538,14 +548,14 @@ StructSat::extract(const vector<SatBool3>& model,
 // このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
 // justifier を呼ぶこと．
 void
-StructSat::justify(const vector<SatBool3>& model,
+StructEnc::justify(const vector<SatBool3>& model,
 		   const NodeValList& assign_list,
 		   Justifier& justifier,
 		   NodeValList& pi_assign_list)
 {
   if ( debug() & debug_justify ) {
     cout << endl
-	 << "StructSat::justify(" << assign_list << ")" << endl;
+	 << "StructEnc::justify(" << assign_list << ")" << endl;
   }
 
   ValMap_model val_map(var_map(0), var_map(1), var_map(1), model);
@@ -559,7 +569,7 @@ StructSat::justify(const vector<SatBool3>& model,
 // @param[in] node 対象のノード
 // @param[in] var_map 変数マップ
 void
-StructSat::make_node_cnf(const TpgNode* node,
+StructEnc::make_node_cnf(const TpgNode* node,
 			 const VidMap& var_map)
 {
   GateLitMap_vid litmap(node, var_map);
@@ -571,7 +581,7 @@ StructSat::make_node_cnf(const TpgNode* node,
 // @param[in] var_map 変数マップ
 // @param[in] ovar 出力の変数
 void
-StructSat::make_node_cnf(const TpgNode* node,
+StructEnc::make_node_cnf(const TpgNode* node,
 			 const VidMap& var_map,
 			 SatVarId ovar)
 {
@@ -583,7 +593,7 @@ StructSat::make_node_cnf(const TpgNode* node,
 // @param[in] node 対象のノード
 // @param[in] litmap 入出力のリテラル
 void
-StructSat::_make_node_cnf(const TpgNode* node,
+StructEnc::_make_node_cnf(const TpgNode* node,
 			  const GateLitMap& litmap)
 {
   SatLiteral olit = litmap.output();

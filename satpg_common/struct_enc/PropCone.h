@@ -1,8 +1,8 @@
-﻿#ifndef FOCONE_H
-#define FOCONE_H
+﻿#ifndef PROPCONE_H
+#define PROPCONE_H
 
-/// @file FoCone.h
-/// @brief FoCone のヘッダファイル
+/// @file PropCone.h
+/// @brief PropCone のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -11,22 +11,22 @@
 
 
 #include "satpg.h"
-#include "StructSat.h"
+#include "StructEnc.h"
 #include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class FoCone FoCone.h "FoCone.h"
+/// @class PropCone PropCone.h "PropCone.h"
 /// @brief 故障箇所の TFO に印をつけるためのクラス
 //////////////////////////////////////////////////////////////////////
-class FoCone
+class PropCone
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] struct_sat StructSat ソルバ
+  /// @param[in] struct_sat StructEnc ソルバ
   /// @param[in] root_node FFRの根のノード
   /// @param[in] block_node ブロックノード
   /// @param[in] detect 故障を検出する時に true にするフラグ
@@ -34,13 +34,14 @@ public:
   /// ブロックノードより先のノードは含めない．
   /// 通常 block_node は nullptr か root_node の dominator
   /// となっているはず．
-  FoCone(StructSat& struct_sat,
-	 const TpgNode* root_node,
-	 const TpgNode* block_node,
-	 bool detect);
+  PropCone(StructEnc& struct_sat,
+	   const TpgNode* root_node,
+	   const TpgNode* block_node,
+	   bool detect);
 
   /// @brief デストラクタ
-  ~FoCone();
+  virtual
+  ~PropCone();
 
 
 public:
@@ -55,12 +56,12 @@ public:
   /// @brief 関係するノードの変数を作る．
   virtual
   void
-  make_vars();
+  make_vars() = 0;
 
   /// @brief 関係するノードの入出力の関係を表すCNFを作る．
   virtual
   void
-  make_cnf();
+  make_cnf() = 0;
 
   /// @brief 故障の影響伝搬させる条件を作る．
   /// @param[in] root 起点となるノード
@@ -68,7 +69,7 @@ public:
   virtual
   void
   make_prop_condition(const TpgNode* root,
-		      vector<SatLiteral>& assumptions);
+		      vector<SatLiteral>& assumptions) = 0;
 
   /// @brief 故障検出に必要な割り当てを求める．
   /// @param[in] model SAT のモデル
@@ -154,8 +155,8 @@ protected:
   set_dvar(const TpgNode* node,
 	   SatVarId dvar);
 
-  /// @brief StructSat を得る．
-  StructSat&
+  /// @brief StructEnc を得る．
+  StructEnc&
   struct_sat();
 
   /// @brief SAT ソルバを得る．
@@ -211,7 +212,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // struct SAT ソルバ
-  StructSat& mStructSat;
+  StructEnc& mStructEnc;
 
   // 故障検出フラグ
   bool mDetect;
@@ -244,7 +245,7 @@ private:
 // @brief ノード番号の最大値を返す．
 inline
 ymuint
-FoCone::max_id() const
+PropCone::max_id() const
 {
   return mMaxNodeId;
 }
@@ -252,7 +253,7 @@ FoCone::max_id() const
 // @brief 根のノードを得る．
 inline
 const TpgNode*
-FoCone::root_node() const
+PropCone::root_node() const
 {
   return mNodeList[0];
 }
@@ -260,7 +261,7 @@ FoCone::root_node() const
 // @brief TFO ノード数を得る．
 inline
 ymuint
-FoCone::tfo_num() const
+PropCone::tfo_num() const
 {
   return mNodeList.size();
 }
@@ -269,7 +270,7 @@ FoCone::tfo_num() const
 // @param[in] pos 位置番号 ( 0 <= pos < tfo_num() )
 inline
 const TpgNode*
-FoCone::tfo_node(ymuint pos) const
+PropCone::tfo_node(ymuint pos) const
 {
   ASSERT_COND( pos < tfo_num() );
   return mNodeList[pos];
@@ -278,7 +279,7 @@ FoCone::tfo_node(ymuint pos) const
 // @brief TFO ノードのリストを得る．
 inline
 const vector<const TpgNode*>&
-FoCone::tfo_node_list() const
+PropCone::tfo_node_list() const
 {
   return mNodeList;
 }
@@ -286,7 +287,7 @@ FoCone::tfo_node_list() const
 // @brief このコーンに関係する出力数を得る．
 inline
 ymuint
-FoCone::output_num() const
+PropCone::output_num() const
 {
   return mOutputList.size();
 }
@@ -295,7 +296,7 @@ FoCone::output_num() const
 // @param[in] pos 位置番号 ( 0 <= pos < output_num() )
 inline
 const TpgNode*
-FoCone::output_node(ymuint pos) const
+PropCone::output_node(ymuint pos) const
 {
   ASSERT_COND( pos < output_num() );
   return mOutputList[pos];
@@ -304,7 +305,7 @@ FoCone::output_node(ymuint pos) const
 // @brief 出力のノードのリストを返す．
 inline
 const vector<const TpgNode*>&
-FoCone::output_list() const
+PropCone::output_list() const
 {
   return mOutputList;
 }
@@ -312,15 +313,15 @@ FoCone::output_list() const
 // @brief 正常回路の変数マップを得る．
 inline
 const VidMap&
-FoCone::gvar_map() const
+PropCone::gvar_map() const
 {
-  return mStructSat.var_map(1);
+  return mStructEnc.var_map(1);
 }
 
 // @brief 故障回路の変数マップを得る．
 inline
 const VidMap&
-FoCone::fvar_map() const
+PropCone::fvar_map() const
 {
   return mFvarMap;
 }
@@ -328,7 +329,7 @@ FoCone::fvar_map() const
 // @brief 伝搬条件の変数マップを得る．
 inline
 const VidMap&
-FoCone::dvar_map() const
+PropCone::dvar_map() const
 {
   return mDvarMap;
 }
@@ -336,15 +337,15 @@ FoCone::dvar_map() const
 // @brief 正常値の変数を得る．
 inline
 SatVarId
-FoCone::gvar(const TpgNode* node) const
+PropCone::gvar(const TpgNode* node) const
 {
-  return mStructSat.var(node, 1);
+  return mStructEnc.var(node, 1);
 }
 
 // @brief 故障値の変数を得る．
 inline
 SatVarId
-FoCone::fvar(const TpgNode* node) const
+PropCone::fvar(const TpgNode* node) const
 {
   return mFvarMap(node);
 }
@@ -352,7 +353,7 @@ FoCone::fvar(const TpgNode* node) const
 // @brief 伝搬値の変数を得る．
 inline
 SatVarId
-FoCone::dvar(const TpgNode* node) const
+PropCone::dvar(const TpgNode* node) const
 {
   return mDvarMap(node);
 }
@@ -362,7 +363,7 @@ FoCone::dvar(const TpgNode* node) const
 // @param[in] fvar 故障値の変数番号
 inline
 void
-FoCone::set_fvar(const TpgNode* node,
+PropCone::set_fvar(const TpgNode* node,
 		 SatVarId fvar)
 {
   mFvarMap.set_vid(node, fvar);
@@ -373,7 +374,7 @@ FoCone::set_fvar(const TpgNode* node,
 // @param[in] dvar 伝搬値の変数番号
 inline
 void
-FoCone::set_dvar(const TpgNode* node,
+PropCone::set_dvar(const TpgNode* node,
 		 SatVarId dvar)
 {
   mDvarMap.set_vid(node, dvar);
@@ -382,7 +383,7 @@ FoCone::set_dvar(const TpgNode* node,
 // @brief tfo マークを読む．
 inline
 bool
-FoCone::tfo_mark(const TpgNode* node) const
+PropCone::tfo_mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
 }
@@ -390,7 +391,7 @@ FoCone::tfo_mark(const TpgNode* node) const
 // @brief tfo マークをつける．
 inline
 void
-FoCone::set_tfo_mark(const TpgNode* node)
+PropCone::set_tfo_mark(const TpgNode* node)
 {
   mMarkArray[node->id()] |= 1U;
   mNodeList.push_back(node);
@@ -407,7 +408,7 @@ FoCone::set_tfo_mark(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 bool
-FoCone::end_mark(const TpgNode* node) const
+PropCone::end_mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
 }
@@ -416,27 +417,27 @@ FoCone::end_mark(const TpgNode* node) const
 // @param[in] node 対象のノード
 inline
 void
-FoCone::set_end_mark(const TpgNode* node)
+PropCone::set_end_mark(const TpgNode* node)
 {
   mMarkArray[node->id()] |= 2U;
 }
 
-// @brief StructSat を得る．
+// @brief StructEnc を得る．
 inline
-StructSat&
-FoCone::struct_sat()
+StructEnc&
+PropCone::struct_sat()
 {
-  return mStructSat;
+  return mStructEnc;
 }
 
 // @brief SAT ソルバを得る．
 inline
 SatSolver&
-FoCone::solver()
+PropCone::solver()
 {
-  return mStructSat.solver();
+  return mStructEnc.solver();
 }
 
 END_NAMESPACE_YM_SATPG
 
-#endif // FOCONE_H
+#endif // PROPCONE_H

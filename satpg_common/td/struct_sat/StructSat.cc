@@ -1,13 +1,13 @@
 
-/// @file StructSat.cc
-/// @brief StructSat の実装ファイル
+/// @file StructEnc.cc
+/// @brief StructEnc の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "td/StructSat.h"
+#include "td/StructEnc.h"
 #include "td/FoCone.h"
 #include "td/MffcCone.h"
 #include "NodeValList.h"
@@ -21,7 +21,7 @@
 BEGIN_NAMESPACE_YM_SATPG_TD
 
 //////////////////////////////////////////////////////////////////////
-// クラス StructSat
+// クラス StructEnc
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
@@ -29,7 +29,7 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 // @param[in] sat_type SATソルバの種類を表す文字列
 // @param[in] sat_option SATソルバに渡すオプション文字列
 // @param[in] sat_outp SATソルバ用の出力ストリーム
-StructSat::StructSat(ymuint max_node_id,
+StructEnc::StructEnc(ymuint max_node_id,
 		     const string& sat_type,
 		     const string& sat_option,
 		     ostream* sat_outp) :
@@ -44,7 +44,7 @@ StructSat::StructSat(ymuint max_node_id,
 }
 
 // @brief デストラクタ
-StructSat::~StructSat()
+StructEnc::~StructEnc()
 {
   for (ymuint i = 0; i < mFoConeList.size(); ++ i) {
     FoCone* cone = mFoConeList[i];
@@ -60,7 +60,7 @@ StructSat::~StructSat()
 // @param[in] fnode 故障のあるノード
 // @param[in] detect 検出条件
 const FoCone*
-StructSat::add_focone(const TpgNode* fnode,
+StructEnc::add_focone(const TpgNode* fnode,
 		      Val3 detect)
 {
   FoCone* focone = new FoCone(*this, fnode, nullptr, detect);
@@ -73,7 +73,7 @@ StructSat::add_focone(const TpgNode* fnode,
 // @param[in] bnode ブロックノード
 // @param[in] detect 検出条件
 const FoCone*
-StructSat::add_focone(const TpgNode* fnode,
+StructEnc::add_focone(const TpgNode* fnode,
 		      const TpgNode* bnode,
 		      Val3 detect)
 {
@@ -86,7 +86,7 @@ StructSat::add_focone(const TpgNode* fnode,
 // @param[in] fault 故障
 // @param[in] detect 検出条件
 const FoCone*
-StructSat::add_focone(const TpgFault* fault,
+StructEnc::add_focone(const TpgFault* fault,
 		      Val3 detect)
 {
   const TpgNode* fnode = fault->tpg_onode();
@@ -122,7 +122,7 @@ StructSat::add_focone(const TpgFault* fault,
 // @param[in] bnode ブロックノード
 // @param[in] detect 検出条件
 const FoCone*
-StructSat::add_focone(const TpgFault* fault,
+StructEnc::add_focone(const TpgFault* fault,
 		      const TpgNode* bnode,
 		      Val3 detect)
 {
@@ -159,7 +159,7 @@ StructSat::add_focone(const TpgFault* fault,
 //
 // こちらは MFFC 内の故障を対象にする．
 const MffcCone*
-StructSat::add_mffccone(const TpgNode* fnode)
+StructEnc::add_mffccone(const TpgNode* fnode)
 {
   MffcCone* mffc_cone = new MffcCone(*this, fnode);
   mMffcConeList.push_back(mffc_cone);
@@ -170,7 +170,7 @@ StructSat::add_mffccone(const TpgNode* fnode)
 // @param[in] fault 故障
 // @param[out] assignment 割当リスト
 void
-StructSat::add_fault_condition(const TpgFault* fault,
+StructEnc::add_fault_condition(const TpgFault* fault,
 			       NodeValList& assignment)
 {
   // 故障の活性化条件
@@ -204,7 +204,7 @@ StructSat::add_fault_condition(const TpgFault* fault,
 // @param[in] fault 故障
 // @param[out] assignment 割当リスト
 void
-StructSat::add_ffr_condition(const TpgNode* root_node,
+StructEnc::add_ffr_condition(const TpgNode* root_node,
 			     const TpgFault* fault,
 			     NodeValList& assignment)
 {
@@ -238,7 +238,7 @@ StructSat::add_ffr_condition(const TpgNode* root_node,
 // @brief 割当リストに従って値を固定する．
 // @param[in] assignment 割当リスト
 void
-StructSat::add_assignments(const NodeValList& assignment)
+StructEnc::add_assignments(const NodeValList& assignment)
 {
   ymuint n = assignment.size();
   for (ymuint i = 0; i < n; ++ i) {
@@ -261,7 +261,7 @@ StructSat::add_assignments(const NodeValList& assignment)
 // @brief 割当リストの否定の節を加える．
 // @param[in] assignment 割当リスト
 void
-StructSat::add_negation(const NodeValList& assignment)
+StructEnc::add_negation(const NodeValList& assignment)
 {
   ymuint n = assignment.size();
   vector<SatLiteral> tmp_lits(n);
@@ -289,7 +289,7 @@ StructSat::add_negation(const NodeValList& assignment)
 //
 // 必要に応じて使われているリテラルに関するCNFを追加する．
 void
-StructSat::conv_to_assumption(const NodeValList& assign_list,
+StructEnc::conv_to_assumption(const NodeValList& assign_list,
 			      vector<SatLiteral>& assumptions)
 {
   ymuint n = assign_list.size();
@@ -313,7 +313,7 @@ StructSat::conv_to_assumption(const NodeValList& assign_list,
 // @brief node の TFI の CNF を作る．
 // @param[in] node 対象のノード
 void
-StructSat::make_tfi_cnf(const TpgNode* node)
+StructEnc::make_tfi_cnf(const TpgNode* node)
 {
   if ( mark(node) ) {
     return;
@@ -348,7 +348,7 @@ StructSat::make_tfi_cnf(const TpgNode* node)
 // @brief node の TFI の CNF を作る．
 // @param[in] node 対象のノード
 void
-StructSat::make_tfi_cnf0(const TpgNode* node)
+StructEnc::make_tfi_cnf0(const TpgNode* node)
 {
   if ( mark0(node) ) {
     return;
@@ -373,7 +373,7 @@ StructSat::make_tfi_cnf0(const TpgNode* node)
 // @brief チェックを行う．
 // @param[out] sat_model SATの場合の解
 SatBool3
-StructSat::check_sat(vector<SatBool3>& sat_model)
+StructEnc::check_sat(vector<SatBool3>& sat_model)
 {
   return mSolver.solve(sat_model);
 }
@@ -382,7 +382,7 @@ StructSat::check_sat(vector<SatBool3>& sat_model)
 // @param[in] assign_list 割当リスト
 // @param[out] sat_model SATの場合の解
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list,
+StructEnc::check_sat(const NodeValList& assign_list,
 		     vector<SatBool3>& sat_model)
 {
   vector<SatLiteral> assumptions;
@@ -395,7 +395,7 @@ StructSat::check_sat(const NodeValList& assign_list,
 // @param[in] assign_list1, assign_list2 割当リスト
 // @param[out] sat_model SATの場合の解
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list1,
+StructEnc::check_sat(const NodeValList& assign_list1,
 		     const NodeValList& assign_list2,
 		     vector<SatBool3>& sat_model)
 {

@@ -17,7 +17,7 @@
 #include "TestVector.h"
 #include "NodeValList.h"
 
-#include "StructSat.h"
+#include "StructEnc.h"
 #include "FoCone.h"
 #include "../../dtpg/ValMap_model.h"
 
@@ -257,7 +257,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault)
 
   fi.mFault = fault;
 
-  StructSat struct_sat(mMaxNodeId);
+  StructEnc struct_sat(mMaxNodeId);
   const FoCone* focone = struct_sat.add_focone(fault, kVal1);
 
   vector<SatBool3> sat_model;
@@ -475,7 +475,7 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
   const TpgNode* fnode2 = f2->tpg_onode();
   const TpgNode* dom_node = common_node(fnode1, fnode2);
 
-  StructSat struct_sat(mMaxNodeId);
+  StructEnc struct_sat(mMaxNodeId);
 
   // f1 の必要条件を追加する．
   const NodeValList& ma_list1 = fi1.mandatory_assignment();

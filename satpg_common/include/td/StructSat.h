@@ -1,8 +1,8 @@
 #ifndef TD_STRUCTSAT_H
 #define TD_STRUCTSAT_H
 
-/// @file td/StructSat.h
-/// @brief StructSat のヘッダファイル
+/// @file td/StructEnc.h
+/// @brief StructEnc のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
@@ -20,10 +20,10 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 class FoCone;
 
 //////////////////////////////////////////////////////////////////////
-/// @class StructSat StructSat.h "sa/StructSat.h"
+/// @class StructEnc StructEnc.h "sa/StructEnc.h"
 /// @brief TpgNetwork の構造に基づく SAT ソルバ
 //////////////////////////////////////////////////////////////////////
-class StructSat
+class StructEnc
 {
 public:
 
@@ -32,13 +32,13 @@ public:
   /// @param[in] sat_type SATソルバの種類を表す文字列
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
-  StructSat(ymuint max_node_id,
+  StructEnc(ymuint max_node_id,
 	    const string& sat_type = string(),
 	    const string& sat_option = string(),
 	    ostream* sat_outp = nullptr);
 
   /// @brief デストラクタ
-  ~StructSat();
+  ~StructEnc();
 
 
 public:
@@ -311,7 +311,7 @@ private:
 // @brief SATソルバを返す．
 inline
 SatSolver&
-StructSat::solver()
+StructEnc::solver()
 {
   return mSolver;
 }
@@ -319,7 +319,7 @@ StructSat::solver()
 // @brief ノード番号の最大値を返す．
 inline
 ymuint
-StructSat::max_node_id() const
+StructEnc::max_node_id() const
 {
   return mMaxId;
 }
@@ -327,7 +327,7 @@ StructSat::max_node_id() const
 // @brief 1時刻前の変数マップを得る．
 inline
 const VidMap&
-StructSat::hvar_map() const
+StructEnc::hvar_map() const
 {
   return mHvarMap;
 }
@@ -335,7 +335,7 @@ StructSat::hvar_map() const
 // @brief 現在の変数マップを得る．
 inline
 const VidMap&
-StructSat::gvar_map() const
+StructEnc::gvar_map() const
 {
   return mGvarMap;
 }
@@ -344,7 +344,7 @@ StructSat::gvar_map() const
 // @param[in] node ノード
 inline
 SatVarId
-StructSat::hvar(const TpgNode* node) const
+StructEnc::hvar(const TpgNode* node) const
 {
   return mHvarMap(node);
 }
@@ -353,7 +353,7 @@ StructSat::hvar(const TpgNode* node) const
 // @param[in] node ノード
 inline
 SatVarId
-StructSat::gvar(const TpgNode* node) const
+StructEnc::gvar(const TpgNode* node) const
 {
   return mGvarMap(node);
 }
@@ -362,7 +362,7 @@ StructSat::gvar(const TpgNode* node) const
 // @param[in] node ノード
 inline
 bool
-StructSat::mark(const TpgNode* node) const
+StructEnc::mark(const TpgNode* node) const
 {
   return mMark[node->id()];
 }
@@ -371,7 +371,7 @@ StructSat::mark(const TpgNode* node) const
 // @param[in] node ノード
 inline
 void
-StructSat::set_mark(const TpgNode* node)
+StructEnc::set_mark(const TpgNode* node)
 {
   mMark[node->id()] = true;
 }
@@ -380,7 +380,7 @@ StructSat::set_mark(const TpgNode* node)
 // @param[in] node ノード
 inline
 bool
-StructSat::mark0(const TpgNode* node) const
+StructEnc::mark0(const TpgNode* node) const
 {
   return mMark0[node->id()];
 }
@@ -389,7 +389,7 @@ StructSat::mark0(const TpgNode* node) const
 // @param[in] node ノード
 inline
 void
-StructSat::set_mark0(const TpgNode* node)
+StructEnc::set_mark0(const TpgNode* node)
 {
   mMark0[node->id()] = true;
 }
@@ -399,7 +399,7 @@ StructSat::set_mark0(const TpgNode* node)
 // @param[in] var 変数番号
 inline
 void
-StructSat::set_hvar(const TpgNode* node,
+StructEnc::set_hvar(const TpgNode* node,
 		    SatVarId var)
 {
   mHvarMap.set_vid(node, var);
@@ -410,7 +410,7 @@ StructSat::set_hvar(const TpgNode* node,
 // @param[in] var 変数番号
 inline
 void
-StructSat::set_gvar(const TpgNode* node,
+StructEnc::set_gvar(const TpgNode* node,
 		    SatVarId var)
 {
   mGvarMap.set_vid(node, var);
@@ -421,7 +421,7 @@ StructSat::set_gvar(const TpgNode* node,
 // こちらは結果のみを返す．
 inline
 SatBool3
-StructSat::check_sat()
+StructEnc::check_sat()
 {
   vector<SatBool3> model;
   return check_sat(model);
@@ -433,7 +433,7 @@ StructSat::check_sat()
 // こちらは結果のみを返す．
 inline
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list)
+StructEnc::check_sat(const NodeValList& assign_list)
 {
   vector<SatBool3> model;
   return check_sat(assign_list, model);
@@ -446,7 +446,7 @@ StructSat::check_sat(const NodeValList& assign_list)
 // こちらは結果のみを返す．
 inline
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list1,
+StructEnc::check_sat(const NodeValList& assign_list1,
 		     const NodeValList& assign_list2)
 {
   vector<SatBool3> model;
@@ -456,7 +456,7 @@ StructSat::check_sat(const NodeValList& assign_list1,
 // @brief デバッグ用のフラグをセットする．
 inline
 void
-StructSat::set_debug(ymuint bits)
+StructEnc::set_debug(ymuint bits)
 {
   mDebugFlag = bits;
 }
@@ -464,7 +464,7 @@ StructSat::set_debug(ymuint bits)
 // @brief デバッグ用のフラグを得る．
 inline
 ymuint
-StructSat::debug() const
+StructEnc::debug() const
 {
   return mDebugFlag;
 }

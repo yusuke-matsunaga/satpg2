@@ -17,7 +17,7 @@
 #include "DtpgStats.h"
 #include "NodeValList.h"
 #include "FaultType.h"
-#include "StructSat.h"
+#include "StructEnc.h"
 
 #include "ym/ym_sat.h"
 #include "ym/SatBool3.h"
@@ -117,8 +117,8 @@ protected:
   SatSolver&
   solver();
 
-  /// @brief StructSat を返す．
-  StructSat&
+  /// @brief StructEnc を返す．
+  StructEnc&
   struct_sat();
 
   /// @brief 対象のネットワークを返す．
@@ -145,8 +145,8 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // StructSat の本体
-  StructSat mStructSat;
+  // StructEnc の本体
+  StructEnc mStructEnc;
 
   // 故障の種類
   FaultType mFaultType;
@@ -173,15 +173,15 @@ inline
 SatSolver&
 DtpgImpl::solver()
 {
-  return mStructSat.solver();
+  return mStructEnc.solver();
 }
 
-// @brief StructSat を返す．
+// @brief StructEnc を返す．
 inline
-StructSat&
+StructEnc&
 DtpgImpl::struct_sat()
 {
-  return mStructSat;
+  return mStructEnc;
 }
 
 // @brief 故障のファンアウトコーンを返す．

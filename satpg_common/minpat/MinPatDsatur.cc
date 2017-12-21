@@ -13,7 +13,7 @@
 #include "EqChecker.h"
 #include "DomChecker.h"
 #include "FgMgr.h"
-#include "StructSat.h"
+#include "StructEnc.h"
 
 
 #include "ym/RandGen.h"
@@ -197,7 +197,7 @@ MinPatDsatur::get_next_fault(FgMgr& fgmgr,
       ymuint slack = max2 - max_satur;
       FaultStruct& fs = mFaultStructList[max2_pos];
 
-      StructSat struct_sat(mMaxNodeId);
+      StructEnc struct_sat(mMaxNodeId);
 
       ymuint fid = fs.mFaultId;
       const TpgFault* fault = analyzer().fault(fid);

@@ -8,7 +8,7 @@
 
 
 #include "td/MffcCone.h"
-#include "td/StructSat.h"
+#include "td/StructEnc.h"
 #include "TpgNode.h"
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
@@ -19,9 +19,9 @@
 BEGIN_NAMESPACE_YM_SATPG_TD
 
 // @brief コンストラクタ
-// @param[in] struct_sat StructSat ソルバ
+// @param[in] struct_sat StructEnc ソルバ
 // @param[in] fnode 故障位置のノード
-MffcCone::MffcCone(StructSat& struct_sat,
+MffcCone::MffcCone(StructEnc& struct_sat,
 		   const TpgNode* fnode) :
   ConeBase(struct_sat),
   mElemList(fnode->mffc()->elem_num()),

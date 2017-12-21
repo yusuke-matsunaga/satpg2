@@ -8,7 +8,7 @@
 
 
 #include "td/ConeBase.h"
-#include "td/StructSat.h"
+#include "td/StructEnc.h"
 #include "TpgNode.h"
 
 
@@ -31,9 +31,9 @@ struct Lt
 END_NONAMESPACE
 
 // @brief コンストラクタ
-// @param[in] struct_sat StructSat ソルバ
-ConeBase::ConeBase(StructSat& struct_sat) :
-  mStructSat(struct_sat),
+// @param[in] struct_sat StructEnc ソルバ
+ConeBase::ConeBase(StructEnc& struct_sat) :
+  mStructEnc(struct_sat),
   mMaxNodeId(struct_sat.max_node_id()),
   mMarkArray(max_id()),
   mFvarMap(max_id()),
@@ -99,7 +99,7 @@ ConeBase::mark_tfo_tfi(const vector<const TpgNode*>& node_list,
   // TFO のノードに変数を割り当てる．
   for (ymuint i = 0; i < mTfoNum; ++ i) {
     const TpgNode* node = mNodeList[i];
-    mStructSat.make_tfi_cnf(node);
+    mStructEnc.make_tfi_cnf(node);
     SatVarId fvar = solver().new_variable();
     set_fvar(node, fvar);
     if ( debug ) {

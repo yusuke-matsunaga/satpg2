@@ -1,14 +1,14 @@
 ﻿
-/// @file MffcCone.cc
-/// @brief MffcCone の実装ファイル
+/// @file MffcPropCone.cc
+/// @brief MffcPropCone の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2005-2010, 2012-2014, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "MffcCone.h"
-#include "StructSat.h"
+#include "MffcPropCone.h"
+#include "StructEnc.h"
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
 #include "TpgNode.h"
@@ -29,7 +29,7 @@ bool debug_mffccone = false;
 END_NONAMESPACE
 
 // @brief コンストラクタ
-// @param[in] struct_sat StructSat ソルバ
+// @param[in] struct_sat StructEnc ソルバ
 // @param[in] mffc MFFC の情報
 // @param[in] block_node ブロックノード
 // @param[in] detect 故障を検出する時に true にするフラグ
@@ -37,11 +37,11 @@ END_NONAMESPACE
 // ブロックノードより先のノードは含めない．
 // 通常 block_node は nullptr か root_node の dominator
 // となっているはず．
-MffcCone::MffcCone(StructSat& struct_sat,
-		   const TpgMFFC* mffc,
-		   const TpgNode* block_node,
-		   bool detect) :
-  FoCone(struct_sat, mffc->root(), block_node, detect),
+MffcPropCone::MffcPropCone(StructEnc& struct_sat,
+			   const TpgMFFC* mffc,
+			   const TpgNode* block_node,
+			   bool detect) :
+  PropCone(struct_sat, mffc->root(), block_node, detect),
   mElemArray(mffc->elem_num()),
   mElemVarArray(mffc->elem_num())
 {
@@ -59,7 +59,7 @@ MffcCone::MffcCone(StructSat& struct_sat,
 }
 
 // @brief デストラクタ
-MffcCone::~MffcCone()
+MffcPropCone::~MffcPropCone()
 {
 }
 
@@ -68,9 +68,9 @@ MffcCone::~MffcCone()
 // @param[in] root 起点のノード
 // @param[out] 値の割り当て結果を入れるリスト
 void
-MffcCone::extract(const vector<SatBool3>& model,
-		  const TpgNode* root,
-		  NodeValList& assign_list)
+MffcPropCone::extract(const vector<SatBool3>& model,
+		      const TpgNode* root,
+		      NodeValList& assign_list)
 {
   // 実際の処理は Extractor が行う．
   ValMap_model val_map(gvar_map(), fvar_map(), model);
@@ -80,16 +80,16 @@ MffcCone::extract(const vector<SatBool3>& model,
 
 // @brief 関係するノードの変数を作る．
 void
-MffcCone::make_vars()
+MffcPropCone::make_vars()
 {
-  FoCone::make_vars();
+  PropCone::make_vars();
 }
 
 // @brief 関係するノードの入出力の関係を表すCNFを作る．
 void
-MffcCone::make_cnf()
+MffcPropCone::make_cnf()
 {
-  FoCone::make_cnf();
+  PropCone::make_cnf();
 
   // 各FFRの根にXORゲートを挿入した故障回路を作る．
   // そのXORをコントロールする入力変数を作る．
@@ -196,8 +196,8 @@ MffcCone::make_cnf()
 // @param[in] elem_pos 要素番号
 // @param[in] ovar ゲートの出力の変数
 void
-MffcCone::inject_fault(ymuint elem_pos,
-		       SatVarId ovar)
+MffcPropCone::inject_fault(ymuint elem_pos,
+			   SatVarId ovar)
 {
   SatLiteral lit1(ovar);
   SatLiteral lit2(mElemVarArray[elem_pos]);
@@ -216,14 +216,14 @@ MffcCone::inject_fault(ymuint elem_pos,
 // @param[in] root 起点となるノード
 // @param[out] assumptions 結果の仮定を表すリテラルのリスト
 void
-MffcCone::make_prop_condition(const TpgNode* root,
-			      vector<SatLiteral>& assumptions)
+MffcPropCone::make_prop_condition(const TpgNode* root,
+				  vector<SatLiteral>& assumptions)
 {
   // root のある FFR を活性化する条件を作る．
   ymuint ffr_id;
   bool stat = mElemPosMap.find(root->id(), ffr_id);
   if ( !stat ) {
-    cerr << "Error[MffcCone::make_prop_condition()]: "
+    cerr << "Error[MffcPropCone::make_prop_condition()]: "
 	 << root->id() << " is not within the MFFC" << endl;
     return;
   }

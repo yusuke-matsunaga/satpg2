@@ -1,8 +1,8 @@
-#ifndef STRUCTSAT_H
-#define STRUCTSAT_H
+#ifndef STRUCTENC_H
+#define STRUCTENC_H
 
-/// @file StructSat.h
-/// @brief StructSat のヘッダファイル
+/// @file StructEnc.h
+/// @brief StructEnc のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2015, 2016, 2017 Yusuke Matsunaga
@@ -19,14 +19,13 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-class FoCone;
-class MffcCone;
+class PropCone;
 
 //////////////////////////////////////////////////////////////////////
-/// @class StructSat StructSat.h "StructSat.h"
+/// @class StructEnc StructEnc.h "StructEnc.h"
 /// @brief TpgNetwork の構造に基づく SAT ソルバ
 //////////////////////////////////////////////////////////////////////
-class StructSat
+class StructEnc
 {
 public:
 
@@ -36,14 +35,14 @@ public:
   /// @param[in] sat_type SATソルバの種類を表す文字列
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
-  StructSat(ymuint max_node_id,
+  StructEnc(ymuint max_node_id,
 	    FaultType fault_type,
 	    const string& sat_type = string(),
 	    const string& sat_option = string(),
 	    ostream* sat_outp = nullptr);
 
   /// @brief デストラクタ
-  ~StructSat();
+  ~StructEnc();
 
 
 public:
@@ -88,42 +87,46 @@ public:
   /// @brief fault cone を追加する．
   /// @param[in] fnode 故障のあるノード
   /// @param[in] detect 故障を検出する時に true にするフラグ
+  /// @return 作成されたコーン番号を返す．
   ///
   /// fnode から到達可能な外部出力までの故障伝搬条件を考える．
-  const FoCone*
-  add_focone(const TpgNode* fnode,
-	     bool detect);
+  ymuint
+  add_simple_cone(const TpgNode* fnode,
+		  bool detect);
 
   /// @brief fault cone を追加する．
   /// @param[in] fnode 故障のあるノード
   /// @param[in] bnode ブロックノード
   /// @param[in] detect 故障を検出する時に true にするフラグ
+  /// @return 作成されたコーン番号を返す．
   ///
   /// bnode までの故障伝搬条件を考える．
-  const FoCone*
-  add_focone(const TpgNode* fnode,
-	     const TpgNode* bnode,
-	     bool detect);
+  ymuint
+  add_simple_cone(const TpgNode* fnode,
+		  const TpgNode* bnode,
+		  bool detect);
 
   /// @brief MFFC cone を追加する．
   /// @param[in] mffc MFFC の情報
   /// @param[in] detect 故障を検出する時に true にするフラグ
+  /// @return 作成されたコーン番号を返す．
   ///
   /// fnode から到達可能な外部出力までの故障伝搬条件を考える．
-  const MffcCone*
-  add_mffccone(const TpgMFFC* mffc,
-	       bool detect);
+  ymuint
+  add_mffc_cone(const TpgMFFC* mffc,
+		bool detect);
 
   /// @brief MFFC cone を追加する．
   /// @param[in] mffc MFFC の情報
   /// @param[in] bnode ブロックノード
   /// @param[in] detect 故障を検出する時に true にするフラグ
+  /// @return 作成されたコーン番号を返す．
   ///
   /// bnode までの故障伝搬条件を考える．
-  const MffcCone*
-  add_mffccone(const TpgMFFC* mffc,
-	       const TpgNode* bnode,
-	       bool detect);
+  ymuint
+  add_mffc_cone(const TpgMFFC* mffc,
+		const TpgNode* bnode,
+		bool detect);
 
   /// @brief 故障を検出する条件を作る．
   /// @param[in] fault 故障
@@ -441,8 +444,8 @@ private:
   // 変数マップ
   VidMap mVarMap[2];
 
-  // fanout cone / MFFC cone のリスト
-  vector<FoCone*> mConeList;
+  // propagation cone のリスト
+  vector<PropCone*> mConeList;
 
   // デバッグ用のフラグ
   ymuint mDebugFlag;
@@ -457,7 +460,7 @@ private:
 // @brief SATソルバを返す．
 inline
 SatSolver&
-StructSat::solver()
+StructEnc::solver()
 {
   return mSolver;
 }
@@ -465,7 +468,7 @@ StructSat::solver()
 // @brief 故障の種類を返す．
 inline
 FaultType
-StructSat::fault_type() const
+StructEnc::fault_type() const
 {
   return mFaultType;
 }
@@ -473,7 +476,7 @@ StructSat::fault_type() const
 // @brief ノード番号の最大値を返す．
 inline
 ymuint
-StructSat::max_node_id() const
+StructEnc::max_node_id() const
 {
   return mMaxId;
 }
@@ -482,7 +485,7 @@ StructSat::max_node_id() const
 // @param[in] nv ノードの値割り当て
 inline
 SatLiteral
-StructSat::nv_to_lit(NodeVal nv)
+StructEnc::nv_to_lit(NodeVal nv)
 {
   const TpgNode* node = nv.node();
   // node およびその TFI に関する節を追加する．
@@ -497,7 +500,7 @@ StructSat::nv_to_lit(NodeVal nv)
 // @param[in] val 値
 inline
 SatLiteral
-StructSat::node_assign_to_lit(const TpgNode* node,
+StructEnc::node_assign_to_lit(const TpgNode* node,
 			      int time,
 			      bool val)
 {
@@ -514,7 +517,7 @@ StructSat::node_assign_to_lit(const TpgNode* node,
 // 縮退故障モードの場合の時刻は 1
 inline
 const VidMap&
-StructSat::var_map(int time) const
+StructEnc::var_map(int time) const
 {
   return mVarMap[time & 1];
 }
@@ -525,7 +528,7 @@ StructSat::var_map(int time) const
 // 縮退故障モードの場合の時刻は 1
 inline
 VidMap&
-StructSat::var_map(int time)
+StructEnc::var_map(int time)
 {
   return mVarMap[time & 1];
 }
@@ -537,7 +540,7 @@ StructSat::var_map(int time)
 // 縮退故障モードの場合の時刻は 1
 inline
 SatVarId
-StructSat::var(const TpgNode* node,
+StructEnc::var(const TpgNode* node,
 	       int time) const
 {
   return var_map(time)(node);
@@ -550,7 +553,7 @@ StructSat::var(const TpgNode* node,
 // 縮退故障モードの場合の時刻は 1
 inline
 bool
-StructSat::var_mark(const TpgNode* node,
+StructEnc::var_mark(const TpgNode* node,
 		    int time) const
 {
   int sft = time ? 0 : 1;
@@ -564,7 +567,7 @@ StructSat::var_mark(const TpgNode* node,
 // 縮退故障モードの場合の時刻は 1
 inline
 void
-StructSat::set_new_var(const TpgNode* node,
+StructEnc::set_new_var(const TpgNode* node,
 		       int time)
 {
   SatVarId var = mSolver.new_variable();
@@ -578,7 +581,7 @@ StructSat::set_new_var(const TpgNode* node,
 // 縮退故障モードの場合の時刻は 1
 inline
 void
-StructSat::_set_var(const TpgNode* node,
+StructEnc::_set_var(const TpgNode* node,
 		    int time,
 		    SatVarId var)
 {
@@ -594,7 +597,7 @@ StructSat::_set_var(const TpgNode* node,
 // 縮退故障モードの場合の時刻は 1
 inline
 bool
-StructSat::cnf_mark(const TpgNode* node,
+StructEnc::cnf_mark(const TpgNode* node,
 		    int time) const
 {
   int sft = time ? 2 : 3;
@@ -608,7 +611,7 @@ StructSat::cnf_mark(const TpgNode* node,
 // 縮退故障モードの場合の時刻は 1
 inline
 void
-StructSat::set_cnf_mark(const TpgNode* node,
+StructEnc::set_cnf_mark(const TpgNode* node,
 			int time)
 {
   int sft = time ? 2 : 3;
@@ -619,7 +622,7 @@ StructSat::set_cnf_mark(const TpgNode* node,
 // @param[in] node ノード
 inline
 bool
-StructSat::cur_mark(const TpgNode* node) const
+StructEnc::cur_mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMark[node->id()] >> 4) & 1U);
 }
@@ -628,7 +631,7 @@ StructSat::cur_mark(const TpgNode* node) const
 // @param[in] node ノード
 inline
 void
-StructSat::add_cur_node(const TpgNode* node)
+StructEnc::add_cur_node(const TpgNode* node)
 {
   mCurNodeList.push_back(node);
   mMark[node->id()] |= (1U << 4);
@@ -638,7 +641,7 @@ StructSat::add_cur_node(const TpgNode* node)
 // @param[in] node ノード
 inline
 bool
-StructSat::prev_mark(const TpgNode* node) const
+StructEnc::prev_mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMark[node->id()] >> 5) & 1U);
 }
@@ -647,7 +650,7 @@ StructSat::prev_mark(const TpgNode* node) const
 // @param[in] node ノード
 inline
 void
-StructSat::add_prev_node(const TpgNode* node)
+StructEnc::add_prev_node(const TpgNode* node)
 {
   mPrevNodeList.push_back(node);
   mMark[node->id()] |= (1U << 5);
@@ -658,7 +661,7 @@ StructSat::add_prev_node(const TpgNode* node)
 // こちらは結果のみを返す．
 inline
 SatBool3
-StructSat::check_sat()
+StructEnc::check_sat()
 {
   vector<SatBool3> model;
   return check_sat(model);
@@ -670,7 +673,7 @@ StructSat::check_sat()
 // こちらは結果のみを返す．
 inline
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list)
+StructEnc::check_sat(const NodeValList& assign_list)
 {
   vector<SatBool3> model;
   return check_sat(assign_list, model);
@@ -683,7 +686,7 @@ StructSat::check_sat(const NodeValList& assign_list)
 // こちらは結果のみを返す．
 inline
 SatBool3
-StructSat::check_sat(const NodeValList& assign_list1,
+StructEnc::check_sat(const NodeValList& assign_list1,
 		     const NodeValList& assign_list2)
 {
   vector<SatBool3> model;
@@ -693,7 +696,7 @@ StructSat::check_sat(const NodeValList& assign_list1,
 // @brief デバッグ用のフラグをセットする．
 inline
 void
-StructSat::set_debug(ymuint bits)
+StructEnc::set_debug(ymuint bits)
 {
   mDebugFlag = bits;
 }
@@ -701,11 +704,11 @@ StructSat::set_debug(ymuint bits)
 // @brief デバッグ用のフラグを得る．
 inline
 ymuint
-StructSat::debug() const
+StructEnc::debug() const
 {
   return mDebugFlag;
 }
 
 END_NAMESPACE_YM_SATPG
 
-#endif // STRUCTSAT_H
+#endif // STRUCTENC_H

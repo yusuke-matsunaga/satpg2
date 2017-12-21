@@ -19,7 +19,7 @@
 #include "TestVector.h"
 
 #include "../../dtpg/ValMap_model.h"
-#include "StructSat.h"
+#include "StructEnc.h"
 
 #include "FgMgrBase.h"
 #include "Compactor.h"
@@ -317,7 +317,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
 			    const NodeValList& suf_list,
 			    TestVector* tv)
 {
-  StructSat struct_sat(mMaxNodeId);
+  StructEnc struct_sat(mMaxNodeId);
 
   if ( !suf_list.sanity_check() ) {
     cout << "Error in suf_list: ";

@@ -44,7 +44,7 @@ DtpgImpl::DtpgImpl(const string& sat_type,
 		   FaultType fault_type,
 		   Justifier& jt,
 		   ymuint max_node_id) :
-  mStructSat(max_node_id, fault_type, sat_type, sat_option, sat_outp),
+  mStructEnc(max_node_id, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
   mJustifier(jt),
   mTimerEnable(true)
@@ -68,11 +68,11 @@ DtpgImpl::gen_cnf(const TpgNode* root,
 {
   cnf_begin();
 
-  mStructSat.add_focone(root, true);
+  mStructEnc.add_simple_cone(root, true);
 
-  mStructSat.make_vars();
+  mStructEnc.make_vars();
 
-  mStructSat.make_cnf();
+  mStructEnc.make_cnf();
 
   cnf_end(stats);
 }
@@ -89,15 +89,15 @@ DtpgImpl::gen_cnf(const TpgMFFC* mffc,
   cnf_begin();
 
   if ( mffc->elem_num() > 1 ) {
-    mStructSat.add_mffccone(mffc, true);
+    mStructEnc.add_mffc_cone(mffc, true);
   }
   else {
-    mStructSat.add_focone(mffc->root(), true);
+    mStructEnc.add_simple_cone(mffc->root(), true);
   }
 
-  mStructSat.make_vars();
+  mStructEnc.make_vars();
 
-  mStructSat.make_cnf();
+  mStructEnc.make_cnf();
 
   cnf_end(stats);
 }
@@ -124,19 +124,19 @@ DtpgImpl::dtpg(const TpgFault* fault,
   timer.start();
 
   SatStats prev_stats;
-  mStructSat.solver().get_stats(prev_stats);
+  mStructEnc.solver().get_stats(prev_stats);
 
   vector<SatLiteral> assumptions;
-  mStructSat.make_fault_condition(fault, 0, assumptions);
+  mStructEnc.make_fault_condition(fault, 0, assumptions);
 
   vector<SatBool3> model;
-  SatBool3 ans = mStructSat.solver().solve(assumptions, model);
+  SatBool3 ans = mStructEnc.solver().solve(assumptions, model);
 
   timer.stop();
   USTime time = timer.time();
 
   SatStats sat_stats;
-  mStructSat.solver().get_stats(sat_stats);
+  mStructEnc.solver().get_stats(sat_stats);
   //sat_stats -= prev_stats;
 
   if ( ans == kB3True ) {
@@ -147,9 +147,9 @@ DtpgImpl::dtpg(const TpgFault* fault,
 
     // バックトレースを行う．
     NodeValList assign_list;
-    mStructSat.extract(model, fault, 0, assign_list);
+    mStructEnc.extract(model, fault, 0, assign_list);
 
-    mStructSat.justify(model, assign_list, mJustifier, nodeval_list);
+    mStructEnc.justify(model, assign_list, mJustifier, nodeval_list);
 #if 0
     //mFoCone->extract(model, assign_list);
 
