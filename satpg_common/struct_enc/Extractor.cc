@@ -26,8 +26,13 @@ END_NONAMESPACE
 // クラス Extractor
 //////////////////////////////////////////////////////////////////////
 
-// @brief コンストラクタ
-Extractor::Extractor()
+// @param[in] gvar_map 正常値の変数番号のマップ
+// @param[in] fvar_map 故障値の変数番号のマップ
+// @param[in] model SATソルバの作ったモデル
+Extractor::Extractor(const VidMap& gvar_map,
+		     const VidMap& fvar_map,
+		     const vector<SatBool3>& model) :
+  mValMap(gvar_map, fvar_map, model)
 {
 }
 
@@ -38,15 +43,11 @@ Extractor::~Extractor()
 
 // @brief 値割当を求める．
 // @param[in] root 起点となるノード
-// @param[in] val_map 値割り当ての結果を保持するオブジェクト
 // @param[out] assign_list 値の割当リスト
 void
 Extractor::operator()(const TpgNode* root,
-		      const ValMap& val_map,
 		      NodeValList& assign_list)
 {
-  mValMapPtr = &val_map;
-
   // root の TFO (fault cone) に印をつける．
   // 同時に故障差の伝搬している外部出力のリストを作る．
   mFconeMark.clear();

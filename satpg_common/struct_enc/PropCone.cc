@@ -196,9 +196,8 @@ PropCone::extract(const vector<SatBool3>& model,
 		  NodeValList& assign_list)
 {
   // 実際の処理は Extractor が行う．
-  ValMap_model val_map(gvar_map(), fvar_map(), model);
-  Extractor extractor;
-  extractor(root, val_map, assign_list);
+  Extractor extractor(gvar_map(), fvar_map(), model);
+  extractor(root, assign_list);
 }
 
 // @brief node に関する故障伝搬条件を作る．
