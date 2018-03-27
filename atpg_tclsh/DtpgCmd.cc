@@ -30,7 +30,11 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 void
-run_single(Dtpg& dtpg,
+run_single(const string& sat_type,
+	   const string& sat_option,
+	   ostream* sat_outp,
+	   FaultType fault_type,
+	   Justifier& jt,
 	   const TpgNetwork& network,
 	   TpgFaultMgr& fmgr,
 	   DetectOp& dop,
@@ -42,7 +46,7 @@ run_single(Dtpg& dtpg,
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == FaultStatus::Undetected ) {
       const TpgFFR* ffr = fault->ffr();
-      dtpg.gen_ffr_cnf(network, ffr, stats);
+      Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == SatBool3::True ) {
@@ -56,7 +60,11 @@ run_single(Dtpg& dtpg,
 }
 
 void
-run_ffr(Dtpg& dtpg,
+run_ffr(const string& sat_type,
+	const string& sat_option,
+	ostream* sat_outp,
+	FaultType fault_type,
+	Justifier& jt,
 	const TpgNetwork& network,
 	TpgFaultMgr& fmgr,
 	DetectOp& dop,
@@ -66,7 +74,7 @@ run_ffr(Dtpg& dtpg,
   int nffr = network.ffr_num();
   for (int i = 0; i < nffr; ++ i) {
     const TpgFFR* ffr = network.ffr(i);
-    dtpg.gen_ffr_cnf(network, ffr, stats);
+    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
     int nf = ffr->fault_num();
     for (int j = 0; j < nf; ++ j) {
       const TpgFault* fault = ffr->fault(j);
@@ -85,7 +93,11 @@ run_ffr(Dtpg& dtpg,
 }
 
 void
-run_mffc(Dtpg& dtpg,
+run_mffc(const string& sat_type,
+	 const string& sat_option,
+	 ostream* sat_outp,
+	 FaultType fault_type,
+	 Justifier& jt,
 	 const TpgNetwork& network,
 	 TpgFaultMgr& fmgr,
 	 DetectOp& dop,
@@ -95,9 +107,7 @@ run_mffc(Dtpg& dtpg,
   int n = network.mffc_num();
   for (int i = 0; i < n; ++ i) {
     const TpgMFFC* mffc = network.mffc(i);
-
-    dtpg.gen_mffc_cnf(network, mffc, stats);
-
+    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc, stats);
     int nf = mffc->fault_num();
     for (int j = 0; j < nf; ++ j) {
       const TpgFault* fault = mffc->fault(j);
@@ -288,20 +298,22 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
-  Dtpg dtpg(sat_type, sat_option, outp, fault_type, *jt);
-
   DtpgStats stats;
   if ( engine_type == "single" ) {
-    run_single(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);
+    run_single(sat_type, sat_option, outp, fault_type, *jt,
+	       _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else if ( engine_type == "ffr" ) {
-    run_ffr(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);
+    run_ffr(sat_type, sat_option, outp, fault_type, *jt,
+	    _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else if ( engine_type == "mffc" ) {
-    run_mffc(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);
+    run_mffc(sat_type, sat_option, outp, fault_type, *jt,
+	     _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else {
-    run_single(dtpg, _network(), fault_mgr, dop_list, uop_list, stats);
+    run_single(sat_type, sat_option, outp, fault_type, *jt,
+	       _network(), fault_mgr, dop_list, uop_list, stats);
   }
 
   after_update_faults();

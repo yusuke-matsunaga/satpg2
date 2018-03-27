@@ -15,14 +15,12 @@
 #include "FaultType.h"
 #include "DtpgStats.h"
 #include "FaultStatus.h"
+#include "StructEnc.h"
 #include "ym/SatBool3.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
-
-namespace nsDtpg {
-  class DtpgImpl;
-}
 
 //////////////////////////////////////////////////////////////////////
 /// @class Dtpg Dtpg.h "sa/Dtpg.h"
@@ -32,17 +30,44 @@ class Dtpg
 {
 public:
 
-  /// @brief コンストラクタ
+  /// @brief コンストラクタ(ffrモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
   /// @param[in] fault_type 故障の種類
   /// @param[in] jt 正当化を行うファンクタ
+  /// @param[in] network 対象のネットワーク
+  /// @param[in] ffr 故障伝搬の起点となる FFR
+  /// @param[out] stats DTPGの統計情報
   Dtpg(const string& sat_type,
        const string& sat_option,
        ostream* sat_outp,
        FaultType fault_type,
-       Justifier& jt);
+       Justifier& jt,
+       const TpgNetwork& network,
+       const TpgFFR* ffr,
+       DtpgStats& stats);
+
+  /// @brief コンストラクタ(mffcモード)
+  /// @param[in] sat_type SATソルバの種類を表す文字列
+  /// @param[in] sat_option SATソルバに渡すオプション文字列
+  /// @param[in] sat_outp SATソルバ用の出力ストリーム
+  /// @param[in] fault_type 故障の種類
+  /// @param[in] jt 正当化を行うファンクタ
+  /// @param[in] network 対象のネットワーク
+  /// @param[in] mffc 故障伝搬の起点となる MFFC
+  /// @param[out] stats DTPGの統計情報
+  ///
+  /// この MFFC に含まれるすべての FFR が対象となる．
+  /// FFR と MFFC が一致している場合は ffr モードと同じことになる．
+  Dtpg(const string& sat_type,
+       const string& sat_option,
+       ostream* sat_outp,
+       FaultType fault_type,
+       Justifier& jt,
+       const TpgNetwork& network,
+       const TpgMFFC* mffc,
+       DtpgStats& stats);
 
   /// @brief デストラクタ
   ~Dtpg();
@@ -53,35 +78,11 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 回路の構造を表すCNF式を作る(FFRモード)．
-  /// @param[in] network 対象のネットワーク
-  /// @param[in] ffr 故障伝搬の起点となる FFR
-  /// @param[out] stats DTPGの統計情報
-  void
-  gen_ffr_cnf(const TpgNetwork& network,
-	      const TpgFFR* ffr,
-	      DtpgStats& stats);
-
-  /// @brief 回路の構造を表すCNF式を作る(MfFCモード)．
-  /// @param[in] network 対象のネットワーク
-  /// @param[in] mffc 故障伝搬の起点となる MFFC
-  /// @param[out] stats DTPGの統計情報
-  ///
-  /// この MFFC に含まれるすべての FFR が対象となる．
-  /// FFR と MFFC が一致している場合は gen_ffr_cnf と同じことになる．
-  void
-  gen_mffc_cnf(const TpgNetwork& network,
-	       const TpgMFFC* mffc,
-	       DtpgStats& stats);
-
   /// @brief テスト生成を行なう．
   /// @param[in] fault 対象の故障
   /// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
   /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
-  ///
-  /// 直前にどちらのモードでCNFを作っていたかで動作は異なる．<br>
-  /// どちらの関数も呼んでいなければなにもしないで kB3X を返す．
   SatBool3
   dtpg(const TpgFault* fault,
        NodeValList& nodeval_list,
@@ -90,17 +91,33 @@ public:
 
 private:
   //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief CNF 作成を開始する．
+  void
+  cnf_begin();
+
+  /// @brief CNF 作成を終了する．
+  void
+  cnf_end(DtpgStats& stats);
+
+  /// @brief 時間計測を開始する．
+  void
+  timer_start();
+
+  /// @brief 時間計測を終了する．
+  USTime
+  timer_stop();
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // SATタイプ
-  string mSatType;
-
-  // SATオプション
-  string mSatOption;
-
-  // SATのログ出力
-  ostream* mSatOutP;
+  // StructEnc の本体
+  StructEnc mStructEnc;
 
   // 故障の種類
   FaultType mFaultType;
@@ -108,8 +125,11 @@ private:
   // バックトレーサー
   Justifier& mJustifier;
 
-  // 実装クラス
-  nsDtpg::DtpgImpl* mImpl;
+  // 時間計測を行なうかどうかの制御フラグ
+  bool mTimerEnable;
+
+  // 時間計測用のタイマー
+  StopWatch mTimer;
 
 };
 

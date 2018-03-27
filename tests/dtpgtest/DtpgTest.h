@@ -87,6 +87,15 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+  // SAT ソルバの種類
+  string mSatType;
+
+  // SAT ソルバのオプション
+  string mSatOption;
+
+  // SAT ソルバのログ出力
+  ostream* mSatOutP;
+
   // 故障の種類
   FaultType mFaultType;
 
@@ -101,9 +110,6 @@ private:
 
   // バックトレーサー
   Justifier* mJustifier;
-
-  // DTPGエンジン
-  Dtpg* mDtpg;
 
   // 故障検出時に起動されるファンクタのリスト
   DopList mDop;

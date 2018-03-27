@@ -71,12 +71,6 @@ set (struct_enc_SOURCES
 
 set (dtpg_SOURCES
   dtpg/Dtpg.cc
-  #dtpg/DtpgImpl.cc
-
-  dtpg/DtpgImpl_new.cc
-
-  #dtpg/Dtpg2.cc
-  #dtpg/Dtpg2Impl.cc
   )
 
 set (dtpg_old_SOURCES
