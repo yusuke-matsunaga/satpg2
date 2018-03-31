@@ -56,13 +56,13 @@ TpgPPI::input_id() const
 // @brief ゲートタイプを得る．
 //
 // - is_logic() が true の時はゲートタイプを返す．
-// - is_ppi() が true の時は GateType::INPUT を返す．
-// - is_ppo() が true の時は GateType::BUFF を返す．
+// - is_ppi() が true の時は GateType::Input を返す．
+// - is_ppo() が true の時は GateType::Buff を返す．
 // - それ以外の返り値は不定
 GateType
 TpgPPI::gate_type() const
 {
-  return GateType::INPUT;
+  return GateType::Input;
 }
 
 // @brief ファンイン数を得る．

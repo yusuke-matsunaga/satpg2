@@ -49,7 +49,7 @@ SnOr::~SnOr()
 GateType
 SnOr::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief 出力値の計算を行う．
@@ -99,7 +99,7 @@ SnOr2::~SnOr2()
 GateType
 SnOr2::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief 出力値の計算を行う．
@@ -143,7 +143,7 @@ SnOr3::~SnOr3()
 GateType
 SnOr3::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief 出力値の計算を行う．
@@ -196,7 +196,7 @@ SnOr4::~SnOr4()
 GateType
 SnOr4::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief 出力値の計算を行う．
@@ -253,7 +253,7 @@ SnNor::~SnNor()
 GateType
 SnNor::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief 出力値の計算を行う．
@@ -289,7 +289,7 @@ SnNor2::~SnNor2()
 GateType
 SnNor2::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief 出力値の計算を行う．
@@ -325,7 +325,7 @@ SnNor3::~SnNor3()
 GateType
 SnNor3::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief 出力値の計算を行う．(3値版)
@@ -363,7 +363,7 @@ SnNor4::~SnNor4()
 GateType
 SnNor4::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief 出力値の計算を行う．

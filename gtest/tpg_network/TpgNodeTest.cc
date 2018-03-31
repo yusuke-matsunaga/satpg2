@@ -96,7 +96,7 @@ TEST_F(TpgNodeTest, CONST0)
 {
   int id = 10;
   string name = "abc";
-  auto node = mFactory.make_logic(id, name, GateType::CONST0, vector<TpgNode*>(0), 0);
+  auto node = mFactory.make_logic(id, name, GateType::Const0, vector<TpgNode*>(0), 0);
 
   ASSERT_TRUE( node != nullptr );
 }
@@ -105,7 +105,7 @@ TEST_F(TpgNodeTest, CONST1)
 {
   int id = 10;
   string name = "abc";
-  auto node = mFactory.make_logic(id, name, GateType::CONST1, vector<TpgNode*>(0), 0);
+  auto node = mFactory.make_logic(id, name, GateType::Const1, vector<TpgNode*>(0), 0);
 
   ASSERT_TRUE( node != nullptr );
 }
@@ -114,7 +114,7 @@ TEST_F(TpgNodeTest, BUFF)
 {
   int id = 10;
   string name = "abc";
-  auto node = mFactory.make_logic(id, name, GateType::BUFF, vector<TpgNode*>(1, mInputNodeList[0]), 0);
+  auto node = mFactory.make_logic(id, name, GateType::Buff, vector<TpgNode*>(1, mInputNodeList[0]), 0);
 
   ASSERT_TRUE( node != nullptr );
 
@@ -125,7 +125,7 @@ TEST_F(TpgNodeTest, NOT)
 {
   int id = 10;
   string name = "abc";
-  auto node = mFactory.make_logic(id, name, GateType::NOT, vector<TpgNode*>(1, mInputNodeList[0]), 0);
+  auto node = mFactory.make_logic(id, name, GateType::Not, vector<TpgNode*>(1, mInputNodeList[0]), 0);
 
   ASSERT_TRUE( node != nullptr );
 
@@ -141,11 +141,11 @@ TEST_F(TpgNodeTest, AND2)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::AND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::And, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::AND, node->gate_type() );
+  EXPECT_EQ( GateType::And, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_0, Val3::_1);
 }
 
@@ -158,11 +158,11 @@ TEST_F(TpgNodeTest, AND3)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::AND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::And, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::AND, node->gate_type() );
+  EXPECT_EQ( GateType::And, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_0, Val3::_1);
 }
 
@@ -175,11 +175,11 @@ TEST_F(TpgNodeTest, AND4)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::AND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::And, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::AND, node->gate_type() );
+  EXPECT_EQ( GateType::And, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_0, Val3::_1);
 }
 
@@ -192,11 +192,11 @@ TEST_F(TpgNodeTest, AND5)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::AND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::And, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::AND, node->gate_type() );
+  EXPECT_EQ( GateType::And, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_0, Val3::_1);
 }
 
@@ -209,11 +209,11 @@ TEST_F(TpgNodeTest, NAND2)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NAND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nand, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NAND, node->gate_type() );
+  EXPECT_EQ( GateType::Nand, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_1, Val3::_0);
 }
 
@@ -226,7 +226,7 @@ TEST_F(TpgNodeTest, NAND3)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NAND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nand, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
@@ -242,11 +242,11 @@ TEST_F(TpgNodeTest, NAND4)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NAND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nand, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NAND, node->gate_type() );
+  EXPECT_EQ( GateType::Nand, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_1, Val3::_0);
 }
 
@@ -259,11 +259,11 @@ TEST_F(TpgNodeTest, NAND5)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NAND, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nand, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NAND, node->gate_type() );
+  EXPECT_EQ( GateType::Nand, node->gate_type() );
   cval_test(node, Val3::_0, Val3::_1, Val3::_1, Val3::_0);
 }
 
@@ -276,11 +276,11 @@ TEST_F(TpgNodeTest, OR2)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::OR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Or, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::OR, node->gate_type() );
+  EXPECT_EQ( GateType::Or, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_1, Val3::_0);
 }
 
@@ -293,11 +293,11 @@ TEST_F(TpgNodeTest, OR3)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::OR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Or, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::OR, node->gate_type() );
+  EXPECT_EQ( GateType::Or, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_1, Val3::_0);
 }
 
@@ -310,11 +310,11 @@ TEST_F(TpgNodeTest, OR4)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::OR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Or, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::OR, node->gate_type() );
+  EXPECT_EQ( GateType::Or, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_1, Val3::_0);
 }
 
@@ -327,11 +327,11 @@ TEST_F(TpgNodeTest, OR5)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::OR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Or, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::OR, node->gate_type() );
+  EXPECT_EQ( GateType::Or, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_1, Val3::_0);
 }
 
@@ -344,11 +344,11 @@ TEST_F(TpgNodeTest, NOR2)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NOR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nor, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NOR, node->gate_type() );
+  EXPECT_EQ( GateType::Nor, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_0, Val3::_1);
 }
 
@@ -361,11 +361,11 @@ TEST_F(TpgNodeTest, NOR3)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NOR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nor, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NOR, node->gate_type() );
+  EXPECT_EQ( GateType::Nor, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_0, Val3::_1);
 }
 
@@ -378,11 +378,11 @@ TEST_F(TpgNodeTest, NOR4)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NOR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nor, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NOR, node->gate_type() );
+  EXPECT_EQ( GateType::Nor, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_0, Val3::_1);
 }
 
@@ -395,11 +395,11 @@ TEST_F(TpgNodeTest, NOR5)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::NOR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Nor, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::NOR, node->gate_type() );
+  EXPECT_EQ( GateType::Nor, node->gate_type() );
   cval_test(node, Val3::_1, Val3::_0, Val3::_0, Val3::_1);
 }
 
@@ -412,11 +412,11 @@ TEST_F(TpgNodeTest, XOR2)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::XOR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Xor, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::XOR, node->gate_type() );
+  EXPECT_EQ( GateType::Xor, node->gate_type() );
   cval_test(node, Val3::_X, Val3::_X, Val3::_X, Val3::_X);
 }
 
@@ -429,11 +429,11 @@ TEST_F(TpgNodeTest, XNOR2)
   for ( int i = 0; i < ni; ++ i ) {
     fanin_list[i] = mInputNodeList[i];
   }
-  auto node = mFactory.make_logic(id, name, GateType::XNOR, fanin_list, 0);
+  auto node = mFactory.make_logic(id, name, GateType::Xnor, fanin_list, 0);
 
   ASSERT_TRUE( node != nullptr );
 
-  EXPECT_EQ( GateType::XNOR, node->gate_type() );
+  EXPECT_EQ( GateType::Xnor, node->gate_type() );
   cval_test(node, Val3::_X, Val3::_X, Val3::_X, Val3::_X);
 }
 

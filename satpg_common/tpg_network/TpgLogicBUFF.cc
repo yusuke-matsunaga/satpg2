@@ -38,7 +38,7 @@ TpgLogicBUFF::~TpgLogicBUFF()
 GateType
 TpgLogicBUFF::gate_type() const
 {
-  return GateType::BUFF;
+  return GateType::Buff;
 }
 
 // @brief controling value を得る．

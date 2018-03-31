@@ -176,7 +176,7 @@ TEST_F(SimNodeTest, BUFF)
     1,
   };
 
-  test_gate(1, GateType::BUFF, vals);
+  test_gate(1, GateType::Buff, vals);
 }
 
 TEST_F(SimNodeTest, NOT)
@@ -186,7 +186,7 @@ TEST_F(SimNodeTest, NOT)
     0,
   };
 
-  test_gate(1, GateType::NOT, vals);
+  test_gate(1, GateType::Not, vals);
 }
 
 TEST_F(SimNodeTest, AND2)
@@ -198,7 +198,7 @@ TEST_F(SimNodeTest, AND2)
     1,
   };
 
-  test_gate(2, GateType::AND, vals);
+  test_gate(2, GateType::And, vals);
 }
 
 TEST_F(SimNodeTest, AND3)
@@ -214,7 +214,7 @@ TEST_F(SimNodeTest, AND3)
     1,
   };
 
-  test_gate(3, GateType::AND, vals);
+  test_gate(3, GateType::And, vals);
 }
 
 TEST_F(SimNodeTest, AND4)
@@ -238,7 +238,7 @@ TEST_F(SimNodeTest, AND4)
     1,
   };
 
-  test_gate(4, GateType::AND, vals);
+  test_gate(4, GateType::And, vals);
 }
 
 TEST_F(SimNodeTest, AND5)
@@ -278,7 +278,7 @@ TEST_F(SimNodeTest, AND5)
     1,
   };
 
-  test_gate(5, GateType::AND, vals);
+  test_gate(5, GateType::And, vals);
 }
 
 TEST_F(SimNodeTest, NAND2)
@@ -290,7 +290,7 @@ TEST_F(SimNodeTest, NAND2)
     0,
   };
 
-  test_gate(2, GateType::NAND, vals);
+  test_gate(2, GateType::Nand, vals);
 }
 
 TEST_F(SimNodeTest, NAND3)
@@ -306,7 +306,7 @@ TEST_F(SimNodeTest, NAND3)
     0,
   };
 
-  test_gate(3, GateType::NAND, vals);
+  test_gate(3, GateType::Nand, vals);
 }
 
 TEST_F(SimNodeTest, NAND4)
@@ -330,7 +330,7 @@ TEST_F(SimNodeTest, NAND4)
     0,
   };
 
-  test_gate(4, GateType::NAND, vals);
+  test_gate(4, GateType::Nand, vals);
 }
 
 TEST_F(SimNodeTest, NAND5)
@@ -370,7 +370,7 @@ TEST_F(SimNodeTest, NAND5)
     0,
   };
 
-  test_gate(5, GateType::NAND, vals);
+  test_gate(5, GateType::Nand, vals);
 }
 
 TEST_F(SimNodeTest, OR2)
@@ -382,7 +382,7 @@ TEST_F(SimNodeTest, OR2)
     1,
   };
 
-  test_gate(2, GateType::OR, vals);
+  test_gate(2, GateType::Or, vals);
 }
 
 TEST_F(SimNodeTest, OR3)
@@ -398,7 +398,7 @@ TEST_F(SimNodeTest, OR3)
     1,
   };
 
-  test_gate(3, GateType::OR, vals);
+  test_gate(3, GateType::Or, vals);
 }
 
 TEST_F(SimNodeTest, OR4)
@@ -422,7 +422,7 @@ TEST_F(SimNodeTest, OR4)
     1,
   };
 
-  test_gate(4, GateType::OR, vals);
+  test_gate(4, GateType::Or, vals);
 }
 
 TEST_F(SimNodeTest, OR5)
@@ -462,7 +462,7 @@ TEST_F(SimNodeTest, OR5)
     1,
   };
 
-  test_gate(5, GateType::OR, vals);
+  test_gate(5, GateType::Or, vals);
 }
 
 TEST_F(SimNodeTest, NOR2)
@@ -474,7 +474,7 @@ TEST_F(SimNodeTest, NOR2)
     0,
   };
 
-  test_gate(2, GateType::NOR, vals);
+  test_gate(2, GateType::Nor, vals);
 }
 
 TEST_F(SimNodeTest, NOR3)
@@ -490,7 +490,7 @@ TEST_F(SimNodeTest, NOR3)
     0,
   };
 
-  test_gate(3, GateType::NOR, vals);
+  test_gate(3, GateType::Nor, vals);
 }
 
 TEST_F(SimNodeTest, NOR4)
@@ -514,7 +514,7 @@ TEST_F(SimNodeTest, NOR4)
     0,
   };
 
-  test_gate(4, GateType::NOR, vals);
+  test_gate(4, GateType::Nor, vals);
 }
 
 TEST_F(SimNodeTest, NOR5)
@@ -554,7 +554,7 @@ TEST_F(SimNodeTest, NOR5)
     0,
   };
 
-  test_gate(5, GateType::NOR, vals);
+  test_gate(5, GateType::Nor, vals);
 }
 
 TEST_F(SimNodeTest, XOR2)
@@ -566,7 +566,7 @@ TEST_F(SimNodeTest, XOR2)
     0,
   };
 
-  test_gate(2, GateType::XOR, vals);
+  test_gate(2, GateType::Xor, vals);
 }
 
 TEST_F(SimNodeTest, XOR3)
@@ -582,7 +582,7 @@ TEST_F(SimNodeTest, XOR3)
     1,
   };
 
-  test_gate(3, GateType::XOR, vals);
+  test_gate(3, GateType::Xor, vals);
 }
 
 TEST_F(SimNodeTest, XNOR2)
@@ -594,7 +594,7 @@ TEST_F(SimNodeTest, XNOR2)
     1,
   };
 
-  test_gate(2, GateType::XNOR, vals);
+  test_gate(2, GateType::Xnor, vals);
 }
 
 TEST_F(SimNodeTest, XNOR3)
@@ -610,7 +610,7 @@ TEST_F(SimNodeTest, XNOR3)
     0,
   };
 
-  test_gate(3, GateType::XNOR, vals);
+  test_gate(3, GateType::Xnor, vals);
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

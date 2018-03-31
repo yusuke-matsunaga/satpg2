@@ -207,35 +207,35 @@ TpgNodeFactory::make_logic(int id,
   int ni = inode_list.size();
   TpgNode* node = nullptr;
   switch ( gate_type ) {
-  case GateType::CONST0:
+  case GateType::Const0:
     ASSERT_COND( ni == 0 );
 
     p = mAlloc.get_memory(sizeof(TpgLogicC0));
     node = new (p) TpgLogicC0(id);
     break;
 
-  case GateType::CONST1:
+  case GateType::Const1:
     ASSERT_COND( ni == 0 );
 
     p = mAlloc.get_memory(sizeof(TpgLogicC1));
     node = new (p) TpgLogicC1(id);
     break;
 
-  case GateType::BUFF:
+  case GateType::Buff:
     ASSERT_COND( ni == 1 );
 
     p = mAlloc.get_memory(sizeof(TpgLogicBUFF));
     node = new (p) TpgLogicBUFF(id, inode_list[0]);
     break;
 
-  case GateType::NOT:
+  case GateType::Not:
     ASSERT_COND( ni == 1 );
 
     p = mAlloc.get_memory(sizeof(TpgLogicNOT));
     node = new (p) TpgLogicNOT(id, inode_list[0]);
     break;
 
-  case GateType::AND:
+  case GateType::And:
     switch ( ni ) {
     case 2:
       p = mAlloc.get_memory(sizeof(TpgLogicAND2));
@@ -260,7 +260,7 @@ TpgNodeFactory::make_logic(int id,
     }
     break;
 
-  case GateType::NAND:
+  case GateType::Nand:
     switch ( ni ) {
     case 2:
       p = mAlloc.get_memory(sizeof(TpgLogicNAND2));
@@ -285,7 +285,7 @@ TpgNodeFactory::make_logic(int id,
     }
     break;
 
-  case GateType::OR:
+  case GateType::Or:
     switch ( ni ) {
     case 2:
       p = mAlloc.get_memory(sizeof(TpgLogicOR2));
@@ -310,7 +310,7 @@ TpgNodeFactory::make_logic(int id,
     }
     break;
 
-  case GateType::NOR:
+  case GateType::Nor:
     switch ( ni ) {
     case 2:
       p = mAlloc.get_memory(sizeof(TpgLogicNOR2));
@@ -335,14 +335,14 @@ TpgNodeFactory::make_logic(int id,
     }
     break;
 
-  case GateType::XOR:
+  case GateType::Xor:
     ASSERT_COND( ni == 2 );
 
     p = mAlloc.get_memory(sizeof(TpgLogicXOR2));
     node = new (p) TpgLogicXOR2(id, inode_list);
     break;
 
-  case GateType::XNOR:
+  case GateType::Xnor:
     ASSERT_COND( ni == 2 );
 
     p = mAlloc.get_memory(sizeof(TpgLogicXNOR2));

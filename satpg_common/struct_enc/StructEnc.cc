@@ -603,25 +603,25 @@ StructEnc::_make_node_cnf(const TpgNode* node,
   SatLiteral olit = litmap.output();
   int ni = litmap.input_size();
   switch ( node->gate_type() ) {
-  case GateType::CONST0:
+  case GateType::Const0:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(CONST0): " << "| " << olit << endl;
     }
     mSolver.add_clause(~olit);
     break;
 
-  case GateType::CONST1:
+  case GateType::Const1:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(CONST1): " << "| " << olit << endl;
     }
     mSolver.add_clause( olit);
     break;
 
-  case GateType::INPUT:
+  case GateType::Input:
     // なにもしない．
     break;
 
-  case GateType::BUFF:
+  case GateType::Buff:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(BUFF): " << litmap.input(0) << "| " << olit << endl;
     }
@@ -631,7 +631,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::NOT:
+  case GateType::Not:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(NOT):  " << litmap.input(0) << "| " << olit << endl;
     }
@@ -641,7 +641,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::AND:
+  case GateType::And:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(AND):  ";
       for (int i = 0; i < ni; ++ i) {
@@ -690,7 +690,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::NAND:
+  case GateType::Nand:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(NAND):  ";
       for (int i = 0; i < ni; ++ i) {
@@ -739,7 +739,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::OR:
+  case GateType::Or:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(OR):  ";
       for (int i = 0; i < ni; ++ i) {
@@ -788,7 +788,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::NOR:
+  case GateType::Nor:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(NOR):  ";
       for (int i = 0; i < ni; ++ i) {
@@ -837,7 +837,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::XOR:
+  case GateType::Xor:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(XOR):  ";
       for (int i = 0; i < ni; ++ i) {
@@ -853,7 +853,7 @@ StructEnc::_make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::XNOR:
+  case GateType::Xnor:
     if ( debug() & debug_make_node_cnf ) {
       cout << "_make_node_cnf(XNOR):  ";
       for (int i = 0; i < ni; ++ i) {

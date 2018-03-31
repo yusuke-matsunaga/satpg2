@@ -48,7 +48,7 @@ SnAnd::~SnAnd()
 GateType
 SnAnd::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief 故障値の計算を行う．
@@ -98,7 +98,7 @@ SnAnd2::~SnAnd2()
 GateType
 SnAnd2::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief 出力値の計算を行う．
@@ -142,7 +142,7 @@ SnAnd3::~SnAnd3()
 GateType
 SnAnd3::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief 出力値の計算を行う．
@@ -195,7 +195,7 @@ SnAnd4::~SnAnd4()
 GateType
 SnAnd4::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief 出力値の計算を行う．
@@ -252,7 +252,7 @@ SnNand::~SnNand()
 GateType
 SnNand::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief 出力値の計算を行う．
@@ -288,7 +288,7 @@ SnNand2::~SnNand2()
 GateType
 SnNand2::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief 出力値の計算を行う．
@@ -324,7 +324,7 @@ SnNand3::~SnNand3()
 GateType
 SnNand3::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief 出力値の計算を行う．
@@ -362,7 +362,7 @@ SnNand4::~SnNand4()
 GateType
 SnNand4::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief 出力値の計算を行う．

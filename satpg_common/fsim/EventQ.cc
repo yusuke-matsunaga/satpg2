@@ -74,7 +74,7 @@ EventQ::put_trigger(SimNode* node,
 		    PackedVal valmask,
 		    bool immediate)
 {
-  if ( immediate || node->gate_type() == GateType::INPUT ) {
+  if ( immediate || node->gate_type() == GateType::Input ) {
     // 入力の場合，他のイベントの干渉は受けないので
     // 今計算してしまう．
     // もしくは ppsfp のようにイベントが単独であると

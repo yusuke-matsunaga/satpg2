@@ -38,7 +38,7 @@ TpgLogicXNOR2::~TpgLogicXNOR2()
 GateType
 TpgLogicXNOR2::gate_type() const
 {
-  return GateType::XNOR;
+  return GateType::Xnor;
 }
 
 // @brief controling value を得る．

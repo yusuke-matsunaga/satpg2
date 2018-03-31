@@ -38,7 +38,7 @@ TpgLogicNOT::~TpgLogicNOT()
 GateType
 TpgLogicNOT::gate_type() const
 {
-  return GateType::NOT;
+  return GateType::Not;
 }
 
 // @brief controling value を得る．

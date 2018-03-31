@@ -36,7 +36,7 @@ SnInput::~SnInput()
 GateType
 SnInput::gate_type() const
 {
-  return GateType::INPUT;
+  return GateType::Input;
 }
 
 // @brief ファンイン数を得る．

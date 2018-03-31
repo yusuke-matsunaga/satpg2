@@ -38,7 +38,7 @@ TpgLogicNOR2::~TpgLogicNOR2()
 GateType
 TpgLogicNOR2::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief controling value を得る．
@@ -106,7 +106,7 @@ TpgLogicNOR3::~TpgLogicNOR3()
 GateType
 TpgLogicNOR3::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief controling value を得る．
@@ -174,7 +174,7 @@ TpgLogicNOR4::~TpgLogicNOR4()
 GateType
 TpgLogicNOR4::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief controling value を得る．
@@ -240,7 +240,7 @@ TpgLogicNORN::~TpgLogicNORN()
 GateType
 TpgLogicNORN::gate_type() const
 {
-  return GateType::NOR;
+  return GateType::Nor;
 }
 
 // @brief controling value を得る．

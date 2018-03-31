@@ -38,7 +38,7 @@ TpgLogicXOR2::~TpgLogicXOR2()
 GateType
 TpgLogicXOR2::gate_type() const
 {
-  return GateType::XOR;
+  return GateType::Xor;
 }
 
 // @brief controling value を得る．

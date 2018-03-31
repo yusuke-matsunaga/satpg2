@@ -148,13 +148,13 @@ Just2::justify(const TpgNode* node,
   Val3 oval = gval(node, time);
 
   switch ( node->gate_type() ) {
-  case GateType::BUFF:
-  case GateType::NOT:
+  case GateType::Buff:
+  case GateType::Not:
     // 無条件で唯一のファンインをたどる．
     just_all(node, time, pi_assign_list);
     break;
 
-  case GateType::AND:
+  case GateType::And:
     if ( oval == Val3::_1 ) {
       // すべてのファンインノードをたどる．
       just_all(node, time, pi_assign_list);
@@ -165,7 +165,7 @@ Just2::justify(const TpgNode* node,
     }
     break;
 
-  case GateType::NAND:
+  case GateType::Nand:
     if ( oval == Val3::_1 ) {
       // 0の値を持つ最初のノードをたどる．
       just_one(node, Val3::_0, time, pi_assign_list);
@@ -176,7 +176,7 @@ Just2::justify(const TpgNode* node,
     }
     break;
 
-  case GateType::OR:
+  case GateType::Or:
     if ( oval == Val3::_1 ) {
       // 1の値を持つ最初のノードをたどる．
       just_one(node, Val3::_1, time, pi_assign_list);
@@ -187,7 +187,7 @@ Just2::justify(const TpgNode* node,
     }
     break;
 
-  case GateType::NOR:
+  case GateType::Nor:
     if ( oval == Val3::_1 ) {
       // すべてのファンインノードをたどる．
       just_all(node, time, pi_assign_list);
@@ -198,8 +198,8 @@ Just2::justify(const TpgNode* node,
     }
     break;
 
-  case GateType::XOR:
-  case GateType::XNOR:
+  case GateType::Xor:
+  case GateType::Xnor:
     // すべてのファンインノードをたどる．
     just_all(node, time, pi_assign_list);
     break;
@@ -298,13 +298,13 @@ Just2::add_weight(const TpgNode* node,
     Val3 oval = gval(node, time);
 
     switch ( node->gate_type() ) {
-    case GateType::BUFF:
-    case GateType::NOT:
+    case GateType::Buff:
+    case GateType::Not:
       // 唯一のファンインノードをたどる．
       aw_all(node, time);
       break;
 
-    case GateType::AND:
+    case GateType::And:
       if ( oval == Val3::_1 ) {
 	// すべてのファンインノードをたどる．
 	aw_all(node, time);
@@ -315,7 +315,7 @@ Just2::add_weight(const TpgNode* node,
       }
       break;
 
-    case GateType::NAND:
+    case GateType::Nand:
       if ( oval == Val3::_1 ) {
 	// 0の値を持つノードをたどる．
 	aw_one(node, Val3::_0, time);
@@ -326,7 +326,7 @@ Just2::add_weight(const TpgNode* node,
       }
       break;
 
-    case GateType::OR:
+    case GateType::Or:
       if ( oval == Val3::_1 ) {
 	// 1の値を持つノードをたどる．
 	aw_one(node, Val3::_1, time);
@@ -337,7 +337,7 @@ Just2::add_weight(const TpgNode* node,
       }
       break;
 
-    case GateType::NOR:
+    case GateType::Nor:
       if ( oval == Val3::_1 ) {
 	// すべてのファンインノードをたどる．
 	aw_all(node, time);
@@ -348,8 +348,8 @@ Just2::add_weight(const TpgNode* node,
       }
       break;
 
-    case GateType::XOR:
-    case GateType::XNOR:
+    case GateType::Xor:
+    case GateType::Xnor:
       // すべてのファンインノードをたどる．
       aw_all(node, time);
       break;
@@ -426,13 +426,13 @@ Just2::calc_value(const TpgNode* node,
   Val3 oval = gval(node, time);
 
   switch ( node->gate_type() ) {
-  case GateType::BUFF:
-  case GateType::NOT:
+  case GateType::Buff:
+  case GateType::Not:
     // 唯一のファンインノードをたどる．
     cv_all(node, time);
     break;
 
-  case GateType::AND:
+  case GateType::And:
     if ( oval == Val3::_1 ) {
       // すべてのファンインノードをたどる．
       cv_all(node, time);
@@ -443,7 +443,7 @@ Just2::calc_value(const TpgNode* node,
     }
     break;
 
-  case GateType::NAND:
+  case GateType::Nand:
     if ( oval == Val3::_1 ) {
       // 0の値を持つノードをたどる．
       cv_one(node, Val3::_0, time);
@@ -454,7 +454,7 @@ Just2::calc_value(const TpgNode* node,
     }
     break;
 
-  case GateType::OR:
+  case GateType::Or:
     if ( oval == Val3::_1 ) {
       // 1の値を持つノードをたどる．
       cv_one(node, Val3::_1, time);
@@ -465,7 +465,7 @@ Just2::calc_value(const TpgNode* node,
     }
     break;
 
-  case GateType::NOR:
+  case GateType::Nor:
     if ( oval == Val3::_1 ) {
       // すべてのファンインノードをたどる．
       cv_all(node, time);
@@ -476,8 +476,8 @@ Just2::calc_value(const TpgNode* node,
     }
     break;
 
-  case GateType::XOR:
-  case GateType::XNOR:
+  case GateType::Xor:
+  case GateType::Xnor:
     // すべてのファンインノードをたどる．
     cv_all(node, time);
     break;

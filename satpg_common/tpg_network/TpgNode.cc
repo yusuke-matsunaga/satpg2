@@ -21,17 +21,17 @@ operator<<(ostream& s,
 	   GateType gate_type)
 {
   switch ( gate_type ) {
-  case GateType::CONST0: s << "CONST-0"; break;
-  case GateType::CONST1: s << "CONST-1"; break;
-  case GateType::INPUT:  s << "INPUT"; break;
-  case GateType::BUFF:   s << "BUFF"; break;
-  case GateType::NOT:    s << "NOT"; break;
-  case GateType::AND:    s << "AND"; break;
-  case GateType::NAND:   s << "NAND"; break;
-  case GateType::OR:     s << "OR"; break;
-  case GateType::NOR:    s << "NOR"; break;
-  case GateType::XOR:    s << "XOR"; break;
-  case GateType::XNOR:   s << "XNOR"; break;
+  case GateType::Const0: s << "CONST-0"; break;
+  case GateType::Const1: s << "CONST-1"; break;
+  case GateType::Input:  s << "INPUT"; break;
+  case GateType::Buff:   s << "BUFF"; break;
+  case GateType::Not:    s << "NOT"; break;
+  case GateType::And:    s << "AND"; break;
+  case GateType::Nand:   s << "NAND"; break;
+  case GateType::Or:     s << "OR"; break;
+  case GateType::Nor:    s << "NOR"; break;
+  case GateType::Xor:    s << "XOR"; break;
+  case GateType::Xnor:   s << "XNOR"; break;
   default:               s << "---"; break;
   }
   return s;
@@ -186,7 +186,7 @@ GateType
 TpgNode::gate_type() const
 {
   ASSERT_NOT_REACHED;
-  return GateType::CONST0;
+  return GateType::Const0;
 }
 
 // @brief controling value を得る．

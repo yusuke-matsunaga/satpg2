@@ -38,7 +38,7 @@ TpgLogicNAND2::~TpgLogicNAND2()
 GateType
 TpgLogicNAND2::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief controling value を得る．
@@ -106,7 +106,7 @@ TpgLogicNAND3::~TpgLogicNAND3()
 GateType
 TpgLogicNAND3::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief controling value を得る．
@@ -174,7 +174,7 @@ TpgLogicNAND4::~TpgLogicNAND4()
 GateType
 TpgLogicNAND4::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief controling value を得る．
@@ -240,7 +240,7 @@ TpgLogicNANDN::~TpgLogicNANDN()
 GateType
 TpgLogicNANDN::gate_type() const
 {
-  return GateType::NAND;
+  return GateType::Nand;
 }
 
 // @brief controling value を得る．

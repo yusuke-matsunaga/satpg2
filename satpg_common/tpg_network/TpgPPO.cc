@@ -69,7 +69,7 @@ TpgPPO::output_id2() const
 GateType
 TpgPPO::gate_type() const
 {
-  return GateType::BUFF;
+  return GateType::Buff;
 }
 
 // @brief ファンイン数を得る．

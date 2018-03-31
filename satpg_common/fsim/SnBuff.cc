@@ -33,7 +33,7 @@ SnBuff::~SnBuff()
 GateType
 SnBuff::gate_type() const
 {
-  return GateType::BUFF;
+  return GateType::Buff;
 }
 
 // @brief 出力値の計算を行う．
@@ -72,7 +72,7 @@ SnNot::~SnNot()
 GateType
 SnNot::gate_type() const
 {
-  return GateType::NOT;
+  return GateType::Not;
 }
 
 // @brief 出力値の計算を行う．

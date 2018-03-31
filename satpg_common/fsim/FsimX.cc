@@ -135,7 +135,7 @@ FSIM_CLASSNAME::set_network(const TpgNetwork& network)
       // 外部出力に対応する SimNode の生成
       SimNode* inode = simmap[tpgnode->fanin(0)->id()];
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
-      node = make_gate(GateType::BUFF, vector<SimNode*>(1, inode));
+      node = make_gate(GateType::Buff, vector<SimNode*>(1, inode));
       node->set_output();
       mPPOArray[tpgnode->output_id()] = node;
     }
@@ -145,7 +145,7 @@ FSIM_CLASSNAME::set_network(const TpgNetwork& network)
       // DFFの制御端子に対応する SimNode の生成
       SimNode* inode = simmap[tpgnode->fanin(0)->id()];
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
-      node = make_gate(GateType::BUFF, vector<SimNode*>(1, inode));
+      node = make_gate(GateType::Buff, vector<SimNode*>(1, inode));
       node->set_output();
     }
     else if ( tpgnode->is_logic() ) {

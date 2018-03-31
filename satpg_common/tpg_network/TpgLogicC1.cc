@@ -35,7 +35,7 @@ TpgLogicC1::~TpgLogicC1()
 GateType
 TpgLogicC1::gate_type() const
 {
-  return GateType::CONST1;
+  return GateType::Const1;
 }
 
 END_NAMESPACE_YM_SATPG

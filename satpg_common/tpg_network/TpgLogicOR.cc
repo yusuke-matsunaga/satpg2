@@ -38,7 +38,7 @@ TpgLogicOR2::~TpgLogicOR2()
 GateType
 TpgLogicOR2::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief controling value を得る．
@@ -106,7 +106,7 @@ TpgLogicOR3::~TpgLogicOR3()
 GateType
 TpgLogicOR3::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief controling value を得る．
@@ -174,7 +174,7 @@ TpgLogicOR4::~TpgLogicOR4()
 GateType
 TpgLogicOR4::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief controling value を得る．
@@ -240,7 +240,7 @@ TpgLogicORN::~TpgLogicORN()
 GateType
 TpgLogicORN::gate_type() const
 {
-  return GateType::OR;
+  return GateType::Or;
 }
 
 // @brief controling value を得る．

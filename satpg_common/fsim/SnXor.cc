@@ -33,7 +33,7 @@ SnXor::~SnXor()
 GateType
 SnXor::gate_type() const
 {
-  return GateType::XOR;
+  return GateType::Xor;
 }
 
 // @brief 出力値の計算を行う．(3値版)
@@ -95,7 +95,7 @@ SnXor2::~SnXor2()
 GateType
 SnXor2::gate_type() const
 {
-  return GateType::XOR;
+  return GateType::Xor;
 }
 
 // @brief 出力値の計算を行う．
@@ -147,7 +147,7 @@ SnXnor::~SnXnor()
 GateType
 SnXnor::gate_type() const
 {
-  return GateType::XNOR;
+  return GateType::Xnor;
 }
 
 // @brief 出力値の計算を行う．
@@ -183,7 +183,7 @@ SnXnor2::~SnXnor2()
 GateType
 SnXnor2::gate_type() const
 {
-  return GateType::XNOR;
+  return GateType::Xnor;
 }
 
 // @brief 出力値の計算を行う．

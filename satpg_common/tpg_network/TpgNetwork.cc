@@ -24,8 +24,6 @@
 #include "NodeMap.h"
 #include "AuxNodeInfo.h"
 
-#include "ym/BnBlifReader.h"
-#include "ym/BnIscas89Reader.h"
 #include "ym/BnNetwork.h"
 #include "ym/BnPort.h"
 #include "ym/BnDff.h"
@@ -43,20 +41,20 @@ GateType
 conv_to_gate_type(BnNodeType type)
 {
   switch ( type ) {
-  case BnNodeType::Logic_C0:   return GateType::CONST0;
-  case BnNodeType::Logic_C1:   return GateType::CONST1;
-  case BnNodeType::Logic_BUFF: return GateType::BUFF;
-  case BnNodeType::Logic_NOT:  return GateType::NOT;
-  case BnNodeType::Logic_AND:  return GateType::AND;
-  case BnNodeType::Logic_NAND: return GateType::NAND;
-  case BnNodeType::Logic_OR:   return GateType::OR;
-  case BnNodeType::Logic_NOR:  return GateType::NOR;
-  case BnNodeType::Logic_XOR:  return GateType::XOR;
-  case BnNodeType::Logic_XNOR: return GateType::XNOR;
+  case BnNodeType::C0:   return GateType::Const0;
+  case BnNodeType::C1:   return GateType::Const1;
+  case BnNodeType::Buff: return GateType::Buff;
+  case BnNodeType::Not:  return GateType::Not;
+  case BnNodeType::And:  return GateType::And;
+  case BnNodeType::Nand: return GateType::Nand;
+  case BnNodeType::Or:   return GateType::Or;
+  case BnNodeType::Nor:  return GateType::Nor;
+  case BnNodeType::Xor:  return GateType::Xor;
+  case BnNodeType::Xnor: return GateType::Xnor;
   default: break;
   }
   ASSERT_NOT_REACHED;
-  return GateType::CONST0;
+  return GateType::Const0;
 }
 
 // immediate dominator リストをマージする．
@@ -193,7 +191,7 @@ bool
 TpgNetwork::read_blif(const string& filename)
 {
   BnNetwork network;
-  bool stat = BnBlifReader::read(network, filename);
+  bool stat = nsBnet::read_blif(network, filename);
   if ( stat ) {
     set(network);
   }
@@ -210,7 +208,7 @@ TpgNetwork::read_blif(const string& filename,
 		      const ClibCellLibrary& cell_library)
 {
   BnNetwork network;
-  bool stat = BnBlifReader::read(network, filename, cell_library);
+  bool stat = nsBnet::read_blif(network, filename, cell_library);
   if ( stat ) {
     set(network);
   }
@@ -225,7 +223,7 @@ bool
 TpgNetwork::read_iscas89(const string& filename)
 {
   BnNetwork network;
-  bool stat = BnIscas89Reader::read(network, filename);
+  bool stat = nsBnet::read_iscas89(network, filename);
   if ( stat ) {
     set(network);
   }
@@ -340,11 +338,11 @@ TpgNetwork::set(const BnNetwork& network)
   for ( int i = 0; i < nl; ++ i ) {
     const BnNode* src_node = network.logic(i);
     BnNodeType logic_type = src_node->type();
-    if ( logic_type == BnNodeType::Logic_EXPR ) {
+    if ( logic_type == BnNodeType::Expr ) {
       const TpgGateInfo* node_info = node_info_list[src_node->func_id()];
       extra_node_num += node_info->extra_node_num();
     }
-    else if ( logic_type == BnNodeType::Logic_XOR || logic_type == BnNodeType::Logic_XNOR ) {
+    else if ( logic_type == BnNodeType::Xor || logic_type == BnNodeType::Xnor ) {
       int ni = src_node->fanin_num();
       extra_node_num += (ni - 2);
     }
@@ -459,11 +457,11 @@ TpgNetwork::set(const BnNetwork& network)
     const BnNode* src_node = network.logic(i);
     const TpgGateInfo* node_info = nullptr;
     BnNodeType logic_type = src_node->type();
-    if ( logic_type == BnNodeType::Logic_EXPR ) {
+    if ( logic_type == BnNodeType::Expr ) {
       node_info = node_info_list[src_node->func_id()];
     }
     else {
-      ASSERT_COND( logic_type != BnNodeType::Logic_TV );
+      ASSERT_COND( logic_type != BnNodeType::TvFunc );
       GateType gate_type = conv_to_gate_type(logic_type);
       node_info = node_info_mgr.simple_type(gate_type);
     }
@@ -952,41 +950,41 @@ TpgNetwork::make_logic_node(const string& src_name,
     // 組み込み型の場合．
     // 2入力以上の XOR/XNOR ゲートを2入力に分解する．
     GateType gate_type = node_info->gate_type();
-    if ( gate_type == GateType::XOR && ni > 2 ) {
+    if ( gate_type == GateType::Xor && ni > 2 ) {
       vector<TpgNode*> tmp_list(2);
       tmp_list[0] = fanin_list[0];
       tmp_list[1] = fanin_list[1];
-      TpgNode* tmp_node = make_prim_node(string(), GateType::XOR, tmp_list, 1);
+      TpgNode* tmp_node = make_prim_node(string(), GateType::Xor, tmp_list, 1);
       inode_array[0].set(tmp_node, 0);
       inode_array[1].set(tmp_node, 1);
       for ( int i = 2; i < ni; ++ i ) {
 	tmp_list[0] = tmp_node;
 	tmp_list[1] = fanin_list[i];
 	if ( i < ni - 1 ) {
-	  tmp_node = make_prim_node(string(), GateType::XOR, tmp_list, 1);
+	  tmp_node = make_prim_node(string(), GateType::Xor, tmp_list, 1);
 	}
 	else {
-	  tmp_node = make_prim_node(src_name, GateType::XOR, tmp_list, fanout_num);
+	  tmp_node = make_prim_node(src_name, GateType::Xor, tmp_list, fanout_num);
 	}
 	inode_array[i].set(tmp_node, 1);
       }
       node = tmp_node;
     }
-    else if ( gate_type == GateType::XNOR && ni > 2 ) {
+    else if ( gate_type == GateType::Xnor && ni > 2 ) {
       vector<TpgNode*> tmp_list(2);
       tmp_list[0] = fanin_list[0];
       tmp_list[1] = fanin_list[1];
-      TpgNode* tmp_node = make_prim_node(string(), GateType::XOR, tmp_list, 1);
+      TpgNode* tmp_node = make_prim_node(string(), GateType::Xor, tmp_list, 1);
       inode_array[0].set(tmp_node, 0);
       inode_array[1].set(tmp_node, 1);
       for ( int i = 2; i < ni; ++ i ) {
 	tmp_list[0] = tmp_node;
 	tmp_list[1] = fanin_list[i];
 	if ( i < ni - 1 ) {
-	  tmp_node = make_prim_node(string(), GateType::XOR, tmp_list, 1);
+	  tmp_node = make_prim_node(string(), GateType::Xor, tmp_list, 1);
 	}
 	else {
-	  tmp_node = make_prim_node(src_name, GateType::XNOR, tmp_list, fanout_num);
+	  tmp_node = make_prim_node(src_name, GateType::Xnor, tmp_list, fanout_num);
 	}
 	inode_array[i].set(tmp_node, i);
       }
@@ -1113,13 +1111,13 @@ TpgNetwork::make_cplx_node(const string& name,
 
   GateType gate_type;
   if ( expr.is_and() ) {
-    gate_type = GateType::AND;
+    gate_type = GateType::And;
   }
   else if ( expr.is_or() ) {
-    gate_type = GateType::OR;
+    gate_type = GateType::Or;
   }
   else if ( expr.is_xor() ) {
-    gate_type = GateType::XOR;
+    gate_type = GateType::Xor;
   }
   else {
     ASSERT_NOT_REACHED;
@@ -1188,7 +1186,7 @@ TpgNode*
 TpgNetwork::make_buff_node(TpgNode* fanin,
 			   int fanout_num)
 {
-  return make_prim_node(string(), GateType::BUFF, vector<TpgNode*>(1, fanin), fanout_num);
+  return make_prim_node(string(), GateType::Buff, vector<TpgNode*>(1, fanin), fanout_num);
 }
 
 // @brief インバーターを生成する．
@@ -1199,7 +1197,7 @@ TpgNode*
 TpgNetwork::make_not_node(TpgNode* fanin,
 			  int fanout_num)
 {
-  return make_prim_node(string(), GateType::NOT, vector<TpgNode*>(1, fanin), fanout_num);
+  return make_prim_node(string(), GateType::Not, vector<TpgNode*>(1, fanin), fanout_num);
 }
 
 // @brief 出力の故障を作る．

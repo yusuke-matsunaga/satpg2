@@ -39,7 +39,7 @@ TpgLogicAND2::~TpgLogicAND2()
 GateType
 TpgLogicAND2::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief controling value を得る．
@@ -107,7 +107,7 @@ TpgLogicAND3::~TpgLogicAND3()
 GateType
 TpgLogicAND3::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief controling value を得る．
@@ -175,7 +175,7 @@ TpgLogicAND4::~TpgLogicAND4()
 GateType
 TpgLogicAND4::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief controling value を得る．
@@ -241,7 +241,7 @@ TpgLogicANDN::~TpgLogicANDN()
 GateType
 TpgLogicANDN::gate_type() const
 {
-  return GateType::AND;
+  return GateType::And;
 }
 
 // @brief controling value を得る．

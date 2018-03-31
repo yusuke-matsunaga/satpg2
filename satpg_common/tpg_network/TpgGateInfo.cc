@@ -156,37 +156,37 @@ c_val(GateType gate_type,
       Val3 ival)
 {
   switch ( gate_type ) {
-  case GateType::CONST0:
-  case GateType::CONST1:
+  case GateType::Const0:
+  case GateType::Const1:
     // 常に X
     return Val3::_X;
 
-  case GateType::BUFF:
+  case GateType::Buff:
     // そのまま返す．
     return ival;
 
-  case GateType::NOT:
+  case GateType::Not:
     // 反転して返す．
     return ~ival;
 
-  case GateType::AND:
+  case GateType::And:
     // 0 の時のみ 0
     return ival == Val3::_0 ? Val3::_0 : Val3::_X;
 
-  case GateType::NAND:
+  case GateType::Nand:
     // 0 の時のみ 1
     return ival == Val3::_0 ? Val3::_1 : Val3::_X;
 
-  case GateType::OR:
+  case GateType::Or:
     // 1 の時のみ 1
     return ival == Val3::_1 ? Val3::_1 : Val3::_X;
 
-  case GateType::NOR:
+  case GateType::Nor:
     // 1 の時のみ 0
     return ival == Val3::_1 ? Val3::_0 : Val3::_X;
 
-  case GateType::XOR:
-  case GateType::XNOR:
+  case GateType::Xor:
+  case GateType::Xnor:
     // 常に X
     return Val3::_X;
 
@@ -294,7 +294,7 @@ GateType
 CplxGateInfo::gate_type() const
 {
   // ダミー
-  return GateType::CONST0;
+  return GateType::Const0;
 }
 
 // @brief 論理式を返す．
@@ -330,16 +330,16 @@ CplxGateInfo::cval(int pos,
 // @brief コンストラクタ
 TpgGateInfoMgr::TpgGateInfoMgr()
 {
-  mSimpleType[0] = new SimpleGateInfo(GateType::CONST0);
-  mSimpleType[1] = new SimpleGateInfo(GateType::CONST1);
-  mSimpleType[2] = new SimpleGateInfo(GateType::BUFF);
-  mSimpleType[3] = new SimpleGateInfo(GateType::NOT);
-  mSimpleType[4] = new SimpleGateInfo(GateType::AND);
-  mSimpleType[5] = new SimpleGateInfo(GateType::NAND);
-  mSimpleType[6] = new SimpleGateInfo(GateType::OR);
-  mSimpleType[7] = new SimpleGateInfo(GateType::NOR);
-  mSimpleType[8] = new SimpleGateInfo(GateType::XOR);
-  mSimpleType[9] = new SimpleGateInfo(GateType::XNOR);
+  mSimpleType[0] = new SimpleGateInfo(GateType::Const0);
+  mSimpleType[1] = new SimpleGateInfo(GateType::Const1);
+  mSimpleType[2] = new SimpleGateInfo(GateType::Buff);
+  mSimpleType[3] = new SimpleGateInfo(GateType::Not);
+  mSimpleType[4] = new SimpleGateInfo(GateType::And);
+  mSimpleType[5] = new SimpleGateInfo(GateType::Nand);
+  mSimpleType[6] = new SimpleGateInfo(GateType::Or);
+  mSimpleType[7] = new SimpleGateInfo(GateType::Nor);
+  mSimpleType[8] = new SimpleGateInfo(GateType::Xor);
+  mSimpleType[9] = new SimpleGateInfo(GateType::Xnor);
 }
 
 // @brief デストラクタ
@@ -359,16 +359,16 @@ const TpgGateInfo*
 TpgGateInfoMgr::simple_type(GateType gate_type)
 {
   switch ( gate_type ) {
-  case GateType::CONST0: return mSimpleType[0];
-  case GateType::CONST1: return mSimpleType[1];
-  case GateType::BUFF:   return mSimpleType[2];
-  case GateType::NOT:    return mSimpleType[3];
-  case GateType::AND:    return mSimpleType[4];
-  case GateType::NAND:   return mSimpleType[5];
-  case GateType::OR:     return mSimpleType[6];
-  case GateType::NOR:    return mSimpleType[7];
-  case GateType::XOR:    return mSimpleType[8];
-  case GateType::XNOR:   return mSimpleType[9];
+  case GateType::Const0: return mSimpleType[0];
+  case GateType::Const1: return mSimpleType[1];
+  case GateType::Buff:   return mSimpleType[2];
+  case GateType::Not:    return mSimpleType[3];
+  case GateType::And:    return mSimpleType[4];
+  case GateType::Nand:   return mSimpleType[5];
+  case GateType::Or:     return mSimpleType[6];
+  case GateType::Nor:    return mSimpleType[7];
+  case GateType::Xor:    return mSimpleType[8];
+  case GateType::Xnor:   return mSimpleType[9];
   default: break;
   }
   ASSERT_NOT_REACHED;

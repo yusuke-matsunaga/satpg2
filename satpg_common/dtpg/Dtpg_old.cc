@@ -324,33 +324,33 @@ Dtpg_old::make_node_cnf(const TpgNode* node,
   SatLiteral olit = litmap.output();
   int ni = litmap.input_size();
   switch ( node->gate_type() ) {
-  case GateType::CONST0:
+  case GateType::Const0:
     mSolver.add_clause(~olit);
     break;
 
-  case GateType::CONST1:
+  case GateType::Const1:
     mSolver.add_clause( olit);
     break;
 
-  case GateType::INPUT:
+  case GateType::Input:
     // なにもしない．
     break;
 
-  case GateType::BUFF:
+  case GateType::Buff:
     {
       SatLiteral ilit = litmap.input(0);
       mSolver.add_eq_rel( ilit,  olit);
     }
     break;
 
-  case GateType::NOT:
+  case GateType::Not:
     {
       SatLiteral ilit = litmap.input(0);
       mSolver.add_eq_rel( ilit, ~olit);
     }
     break;
 
-  case GateType::AND:
+  case GateType::And:
     switch ( ni ) {
     case 2:
       {
@@ -392,7 +392,7 @@ Dtpg_old::make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::NAND:
+  case GateType::Nand:
     switch ( ni ) {
     case 2:
       {
@@ -434,7 +434,7 @@ Dtpg_old::make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::OR:
+  case GateType::Or:
     switch ( ni ) {
     case 2:
       {
@@ -476,7 +476,7 @@ Dtpg_old::make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::NOR:
+  case GateType::Nor:
     switch ( ni ) {
     case 2:
       {
@@ -518,7 +518,7 @@ Dtpg_old::make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::XOR:
+  case GateType::Xor:
     ASSERT_COND( ni == 2 );
     {
       SatLiteral ilit0 = litmap.input(0);
@@ -527,7 +527,7 @@ Dtpg_old::make_node_cnf(const TpgNode* node,
     }
     break;
 
-  case GateType::XNOR:
+  case GateType::Xnor:
     ASSERT_COND( ni == 2 );
     {
       SatLiteral ilit0 = litmap.input(0);
