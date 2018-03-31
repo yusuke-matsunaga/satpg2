@@ -17,7 +17,6 @@
 #include "DtpgStats.h"
 #include "Dtpg.h"
 #include "Dtpg_old.h"
-#include "sa/DtpgOld.h"
 #include "Fsim.h"
 #include "NodeValList.h"
 #include "BackTracer.h"

@@ -148,11 +148,6 @@ Dtpg_old::gen_cnf_base()
   set_tfo_mark(mRoot);
   for (int rpos = 0; rpos < mNodeList.size(); ++ rpos) {
     const TpgNode* node = mNodeList[rpos];
-#if 0
-    if ( mFaultType == FaultType::TransitionDelay && node->is_dff_output() ) {
-      mDffList.push_back(node->dff());
-    }
-#endif
     int nfo = node->fanout_num();
     for (int i = 0; i < nfo; ++ i) {
       const TpgNode* onode = node->fanout(i);
@@ -210,8 +205,7 @@ Dtpg_old::gen_cnf_base()
   }
 
   // TFI の部分に変数を割り当てる．
-  for (int rpos = tfo_num; rpos < tfi_num; ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
+  for ( auto node: mNodeList ) {
     SatVarId gvar = mSolver.new_variable();
 
     mGvarMap.set_vid(node, gvar);
@@ -224,8 +218,7 @@ Dtpg_old::gen_cnf_base()
   }
 
   // TFI2 の部分に変数を割り当てる．
-  for (int rpos = 0; rpos < tfi2_num; ++ rpos) {
-    const TpgNode* node = mNodeList2[rpos];
+  for ( auto node: mNodeList2 ) {
     SatVarId hvar = mSolver.new_variable();
 
     mHvarMap.set_vid(node, hvar);
@@ -239,8 +232,7 @@ Dtpg_old::gen_cnf_base()
   //////////////////////////////////////////////////////////////////////
   // 正常回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
-  for (int i = 0; i < tfi_num; ++ i) {
-    const TpgNode* node = mNodeList[i];
+  for ( auto node: mNodeList ) {
     make_node_cnf(node, GateLitMap_vid(node, mGvarMap));
 
     if ( debug_dtpg ) {
@@ -255,8 +247,7 @@ Dtpg_old::gen_cnf_base()
     }
   }
 
-  for (int i = 0; i < mDffList.size(); ++ i) {
-    const TpgDff* dff = mDffList[i];
+  for ( auto dff: mDffList ) {
     const TpgNode* onode = dff->output();
     const TpgNode* inode = dff->input();
     // DFF の入力の1時刻前の値と出力の値が等しい．
@@ -265,8 +256,7 @@ Dtpg_old::gen_cnf_base()
     mSolver.add_eq_rel(olit, ilit);
   }
 
-  for (int i = 0; i < tfi2_num; ++ i) {
-    const TpgNode* node = mNodeList2[i];
+  for ( auto node: mNodeList2 ) {
     make_node_cnf(node, GateLitMap_vid(node, mHvarMap));
 
     if ( debug_dtpg ) {
@@ -285,7 +275,7 @@ Dtpg_old::gen_cnf_base()
   //////////////////////////////////////////////////////////////////////
   // 故障回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
-  for (int i = 0; i < tfo_num; ++ i) {
+  for ( int i = 0; i < tfo_num; ++ i ) {
     const TpgNode* node = mNodeList[i];
     if ( node != mRoot ) {
       make_node_cnf(node, GateLitMap_vid(node, mFvarMap));

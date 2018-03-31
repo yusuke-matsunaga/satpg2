@@ -158,7 +158,6 @@ ym_add_object_library ( satpg_common
   ${uop_SOURCES}
   ${bt_SOURCES}
   ${jt_SOURCES}
-  sa/dtpg/DtpgOld.cc
 #  ${sa_SOURCES}
 #  ${td_SOURCES}
   )
