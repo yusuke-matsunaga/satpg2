@@ -28,12 +28,12 @@ class StructEnc
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] max_node_id ノード番号の最大値
+  /// @param[in] network 対象のネットワーク
   /// @param[in] fault_type 故障の種類
   /// @param[in] sat_type SATソルバの種類を表す文字列
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
-  StructEnc(int max_node_id,
+  StructEnc(const TpgNetwork& network,
 	    FaultType fault_type,
 	    const string& sat_type = string(),
 	    const string& sat_option = string(),
@@ -414,6 +414,9 @@ private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // 対象のネットワーク
+  const TpgNetwork& mNetwork;
 
   // 故障の種類
   FaultType mFaultType;

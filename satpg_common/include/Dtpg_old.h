@@ -235,7 +235,7 @@ private:
   /// @brief TFO マークをつける．
   /// @param[in] node 対象のノード
   ///
-  /// と同時に mNodeList に入れる．<br>
+  /// と同時に mTfoList に入れる．<br>
   /// 出力ノードの場合は mOutputList にも入れる．<br>
   /// すでにマークされていたら何もしない．
   void
@@ -244,14 +244,14 @@ private:
   /// @brief TFI マークをつける．
   /// @param[in] node 対象のノード
   ///
-  /// と同時に mNodeList に入れる．
+  /// と同時に mTfiList に入れる．
   void
   set_tfi_mark(const TpgNode* node);
 
   /// @brief TFI2 マークをつける．
   /// @param[in] node 対象のノード
   ///
-  /// と同時に mNodeList に入れる．
+  /// と同時に mTfi2List に入れる．
   void
   set_tfi2_mark(const TpgNode* node);
 
@@ -284,14 +284,17 @@ private:
   // サイズは mElemNum
   vector<SatVarId> mElemVarArray;
 
-  // 関係するノードを入れておくリスト
-  vector<const TpgNode*> mNodeList;
+  // TFOノードを入れておくリスト
+  vector<const TpgNode*> mTfoList;
+
+  // TFIノードを入れておくリスト
+  vector<const TpgNode*> mTfiList;
 
   // TFI に含まれる DFF 入れておくリスト
   vector<const TpgDff*> mDffList;
 
   // 1時刻前関係するノードを入れておくリスト
-  vector<const TpgNode*> mNodeList2;
+  vector<const TpgNode*> mTfi2List;
 
   // 関係する出力ノードを入れておくリスト
   vector<const TpgNode*> mOutputList;
@@ -466,22 +469,6 @@ Dtpg_old::fvar_map() const
   return mFvarMap;
 }
 
-// @brief 関係するノードのリストを返す．
-inline
-const vector<const TpgNode*>&
-Dtpg_old::cur_node_list() const
-{
-  return mNodeList;
-}
-
-// @brief 関係する１時刻前のノードのリストを返す．
-inline
-const vector<const TpgNode*>&
-Dtpg_old::prev_node_list() const
-{
-  return mNodeList2;
-}
-
 // @brief TFO マークをつける．
 inline
 void
@@ -490,7 +477,7 @@ Dtpg_old::set_tfo_mark(const TpgNode* node)
   int id = node->id();
   if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
     mMarkArray[id] |= 1U;
-    mNodeList.push_back(node);
+    mTfoList.push_back(node);
     if ( node->is_ppo() ) {
       mOutputList.push_back(node);
     }
@@ -505,10 +492,12 @@ Dtpg_old::set_tfi_mark(const TpgNode* node)
   int id = node->id();
   if ( (mMarkArray[id] & 3U) == 0U ) {
     mMarkArray[id] |= 2U;
-    mNodeList.push_back(node);
+    mTfiList.push_back(node);
+#if 0
     if ( mFaultType == FaultType::TransitionDelay && node->is_dff_output() ) {
       mDffList.push_back(node->dff());
     }
+#endif
   }
 }
 
@@ -520,7 +509,7 @@ Dtpg_old::set_tfi2_mark(const TpgNode* node)
   int id = node->id();
   if ( ((mMarkArray[id] >> 2) & 1U) == 0U ) {
     mMarkArray[id] |= 4U;
-    mNodeList2.push_back(node);
+    mTfi2List.push_back(node);
   }
 }
 

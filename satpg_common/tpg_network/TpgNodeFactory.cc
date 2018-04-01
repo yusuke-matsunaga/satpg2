@@ -52,19 +52,16 @@ TpgNodeFactory::~TpgNodeFactory()
 
 // @brief 入力ノードを作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] iid 入力番号
 // @param[in] fanout_num ファンアウト数
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_input(int id,
-			   const string& name,
 			   int iid,
 			   int fanout_num)
 {
   void* p = mAlloc.get_memory(sizeof(TpgInput));
   TpgNode* node = new (p) TpgInput(id, iid);
-  node->set_name(name, mAlloc);
   node->set_fanout_num(fanout_num, mAlloc);
 
   return node;
@@ -72,61 +69,52 @@ TpgNodeFactory::make_input(int id,
 
 // @brief 出力ノードを作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] oid 出力番号
 // @param[in] inode 入力ノード
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_output(int id,
-			    const string& name,
 			    int oid,
 			    TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgOutput));
   TpgNode* node = new (p) TpgOutput(id, oid, inode);
-  node->set_name(name, mAlloc);
 
   return node;
 }
 
 // @brief DFFの入力ノードを作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] oid 出力番号
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_input(int id,
-			       const string& name,
 			       int oid,
 			       TpgDff* dff,
 			       TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffInput));
   TpgNode* node = new (p) TpgDffInput(id, oid, dff, inode);
-  node->set_name(name, mAlloc);
 
   return node;
 }
 
 // @brief DFFの出力ノードを作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] iid 入力番号
 // @param[in] dff 接続しているDFF
 // @param[in] fanout_num ファンアウト数
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_output(int id,
-				const string& name,
 				int iid,
 				TpgDff* dff,
 				int fanout_num)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffOutput));
   TpgNode* node = new (p) TpgDffOutput(id, iid, dff);
-  node->set_name(name, mAlloc);
   node->set_fanout_num(fanout_num, mAlloc);
 
   return node;
@@ -134,71 +122,60 @@ TpgNodeFactory::make_dff_output(int id,
 
 // @brief DFFのクロック端子を作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_clock(int id,
-			       const string& name,
 			       TpgDff* dff,
 			       TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffClock));
   TpgNode* node = new (p) TpgDffClock(id, dff, inode);
-  node->set_name(name, mAlloc);
 
   return node;
 }
 
 // @brief DFFのクリア端子を作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_clear(int id,
-			       const string& name,
 			       TpgDff* dff,
 			       TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffClear));
   TpgNode* node = new (p) TpgDffClear(id, dff, inode);
-  node->set_name(name, mAlloc);
 
   return node;
 }
 
 // @brief DFFのプリセット端子を作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_preset(int id,
-				const string& name,
 				TpgDff* dff,
 				TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffPreset));
   TpgNode* node = new (p) TpgDffPreset(id, dff, inode);
-  node->set_name(name, mAlloc);
 
   return node;
 }
 
 // @brief 論理ノードを作る．
 // @param[in] id ノード番号
-// @param[in] name ノード名
 // @param[in] gate_type ゲートタイプ
 // @param[in] inode_list 入力ノードのリスト
 // @param[in] fanout_num ファンアウト数
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_logic(int id,
-			   const string& name,
 			   GateType gate_type,
 			   const vector<TpgNode*>& inode_list,
 			   int fanout_num)
@@ -352,7 +329,6 @@ TpgNodeFactory::make_logic(int id,
   default:
     ASSERT_NOT_REACHED;
   }
-  node->set_name(name, mAlloc);
   node->set_fanout_num(fanout_num, mAlloc);
 
   return node;

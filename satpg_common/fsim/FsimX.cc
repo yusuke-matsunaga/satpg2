@@ -122,7 +122,7 @@ FSIM_CLASSNAME::set_network(const TpgNetwork& network)
   int nf = 0;
   for (int i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = network.node(i);
-    nf += tpgnode->fault_num();
+    nf += network.node_rep_fault_num(tpgnode->id());
 
     SimNode* node = nullptr;
 
@@ -243,9 +243,9 @@ FSIM_CLASSNAME::set_network(const TpgNetwork& network)
     const TpgNode* tpgnode = network.node(i);
     SimNode* simnode = simmap[tpgnode->id()];
     SimFFR* ffr = mFFRMap[simnode->id()];
-    int nf1 = tpgnode->fault_num();
+    int nf1 = network.node_rep_fault_num(tpgnode->id());
     for (int j = 0; j < nf1; ++ j) {
-      const TpgFault* fault = tpgnode->fault(j);
+      const TpgFault* fault = network.node_rep_fault(tpgnode->id(), j);
       SimNode* isimnode = nullptr;
       int ipos = 0;
       if ( fault->is_branch_fault() ) {

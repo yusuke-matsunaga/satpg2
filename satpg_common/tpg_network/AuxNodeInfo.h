@@ -35,6 +35,35 @@ public:
   // 情報を取得する関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief 名前を返す．
+  const char*
+  name() const;
+
+  /// @brief FFRの根の場合にFFRを返す．
+  ///
+  /// そうでなければ nullptr を返す．
+  const TpgFFR*
+  ffr() const;
+
+  /// @brief MFFCの根の場合にMFFCを返す．
+  ///
+  /// そうでなければ nullptr を返す．
+  const TpgMFFC*
+  mffc() const;
+
+  /// @brief このノードに含まれる代表故障の数を返す．
+  int
+  fault_num() const;
+
+  /// @brief このノードに含まれる代表故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  const TpgFault*
+  fault(int pos) const;
+
+  /// @brief このノードが持っている代表故障をリストに追加する．
+  void
+  fault_list(vector<TpgFault*>& fault_list);
+
   /// @brief 出力の故障を返す．
   /// @param[in] val 故障値 ( 0 / 1 )
   TpgFault*
@@ -54,11 +83,28 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 初期化する．
+  /// @param[in] name 名前
   /// @param[in] ni ファンイン数
   /// @param[in] alloc メモリアロケータ
   void
-  init(int ni,
+  init(const string& name,
+       int ni,
        Alloc& alloc);
+
+  /// @brief FFR を設定する．
+  /// @param[in] ffr このノードを根とするFFR
+  void
+  set_ffr(TpgFFR* ffr);
+
+  /// @brief MFFC を設定する．
+  /// @param[in] mffc このノードを根とするMFFC
+  void
+  set_mffc(const TpgMFFC* mffc);
+
+  /// @brief 故障リストを設定する．
+  void
+  set_fault_list(const vector<TpgFault*>& fault_list,
+		 Alloc& alloc);
 
   /// @brief 出力の故障を設定する．
   /// @param[in] val 故障値 ( 0 / 1 )
@@ -88,6 +134,21 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ノード名
+  char* mName;
+
+  /// @brief FFR
+  const TpgFFR* mFfr;
+
+  /// @brief MFFC
+  const TpgMFFC* mMffc;
+
+  /// @brief 代表故障数
+  int mFaultNum;
+
+  /// @brief 代表故障のリスト
+  TpgFault** mFaultList;
+
   /// @brief 出力の故障
   TpgFault* mOutputFaults[2];
 
@@ -105,6 +166,53 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief 名前を返す．
+inline
+const char*
+AuxNodeInfo::name() const
+{
+  return mName;
+}
+
+// @brief FFRの根の場合にFFRを返す．
+//
+// そうでなければ nullptr を返す．
+inline
+const TpgFFR*
+AuxNodeInfo::ffr() const
+{
+  return mFfr;
+}
+
+// @brief MFFCの根の場合にMFFCを返す．
+//
+// そうでなければ nullptr を返す．
+inline
+const TpgMFFC*
+AuxNodeInfo::mffc() const
+{
+  return mMffc;
+}
+
+// @brief このノードに含まれる代表故障の数を返す．
+inline
+int
+AuxNodeInfo::fault_num() const
+{
+  return mFaultNum;
+}
+
+// @brief このノードに含まれる代表故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+inline
+const TpgFault*
+AuxNodeInfo::fault(int pos) const
+{
+  ASSERT_COND( pos < fault_num() );
+
+  return mFaultList[pos];
+}
 
 // @brief 出力の故障を返す．
 // @param[in] val 故障値 ( 0 / 1 )

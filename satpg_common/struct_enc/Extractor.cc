@@ -66,7 +66,7 @@ Extractor::operator()(const TpgNode* root,
 
   if ( debug ) {
     ostream& dbg_out = cout;
-    dbg_out << "Extract at " << root->name() << endl;
+    dbg_out << "Extract at Node#" << root->id() << endl;
     int n = assign_list.size();
     const char* comma = "";
     for (int i = 0; i < n; ++ i) {

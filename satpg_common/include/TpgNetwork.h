@@ -78,6 +78,11 @@ public:
   const TpgNode*
   node(int id) const;
 
+  /// @brief ノード名を得る．
+  /// @param[in] id ID番号 ( 0 <= id < node_num() )
+  const char*
+  node_name(int id) const;
+
   /// @brief 外部入力数を得る．
   int
   input_num() const;
@@ -192,6 +197,18 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < rep_fault_num() )
   const TpgFault*
   rep_fault(int pos) const;
+
+  /// @brief ノードに関係した代表故障数を返す．
+  /// @param[in] id ID番号 ( 0 <= id < node_num() )
+  int
+  node_rep_fault_num(int id) const;
+
+  /// @brief ノードに関係した代表故障を返す．
+  /// @param[in] id ID番号 ( 0 <= id < node_num() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < node_rep_fault_num(id) )
+  const TpgFault*
+  node_rep_fault(int id,
+		 int pos) const;
 
 
 public:
@@ -381,19 +398,23 @@ private:
 		 int fanout_num);
 
   /// @brief バッファを生成する．
+  /// @param[in] name ノード名
   /// @param[in] fanin ファンインのノード
   /// @param[in] fanout_num ファンアウト数
   /// @return 生成したノードを返す．
   TpgNode*
-  make_buff_node(TpgNode* fanin,
+  make_buff_node(const string& name,
+		 TpgNode* fanin,
 		 int fanout_num);
 
   /// @brief インバーターを生成する．
+  /// @param[in] name ノード名
   /// @param[in] fanin ファンインのノード
   /// @param[in] fanout_num ファンアウト数
   /// @return 生成したノードを返す．
   TpgNode*
-  make_not_node(TpgNode* fanin,
+  make_not_node(const string& name,
+		TpgNode* fanin,
 		int fanout_num);
 
   /// @brief 出力の故障を作る．
@@ -440,7 +461,7 @@ private:
 
   /// @brief 代表故障を設定する．
   /// @param[in] node 対象のノード
-  void
+  int
   set_rep_faults(TpgNode* node);
 
   /// @brief FFR の情報を設定する．

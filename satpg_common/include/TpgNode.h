@@ -55,10 +55,6 @@ public:
   int
   id() const;
 
-  /// @brief ノード名を返す．
-  const char*
-  name() const;
-
   /// @brief 外部入力タイプの時 true を返す．
   virtual
   bool
@@ -216,38 +212,17 @@ public:
   const TpgNode*
   ffr_root() const;
 
-  /// @brief FFRの根の場合にFFRを返す．
-  ///
-  /// そうでなければ nullptr を返す．
-  const TpgFFR*
-  ffr() const;
-
   /// @brief MFFCの根のノードを得る．
   ///
   /// 自分が根の場合には自分自身を返す．
   const TpgNode*
   mffc_root() const;
 
-  /// @brief MFFCの根の場合にMFFCを返す．
-  ///
-  /// そうでなければ nullptr を返す．
-  const TpgMFFC*
-  mffc() const;
-
   /// @brief 直近の dominator を得る．
   ///
   /// これが nullptr の場合は MFFC の根のノードだということ．
   const TpgNode*
   imm_dom() const;
-
-  /// @brief このノードに含まれる代表故障の数を返す．
-  int
-  fault_num() const;
-
-  /// @brief このノードに含まれる代表故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  const TpgFault*
-  fault(int pos) const;
 
 
 public:
@@ -263,6 +238,15 @@ public:
   void
   set_output_id2(int id);
 
+  /// @brief ファンアウト数を設定する．
+  /// @param[in] fanout_num
+  /// @param[in] alloc メモリアロケータ
+  ///
+  /// 同時にファンアウト用の配列も確保する．
+  void
+  set_fanout_num(int fanout_num,
+		 Alloc& alloc);
+
   /// @brief ファンアウトを設定する．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
   /// @param[in] fo_node ファンアウト先のノード
@@ -275,13 +259,6 @@ public:
   void
   set_imm_dom(const TpgNode* dom);
 
-  /// @brief ノード名を設定する．
-  /// @param[in] name ノード名
-  /// @param[in] alloc メモリアロケータ
-  void
-  set_name(const string& name,
-	   Alloc& alloc);
-
   /// @brief ファンインを設定する．
   /// @param[in] inode_list ファンインのリスト
   ///
@@ -292,44 +269,11 @@ public:
   set_fanin(const vector<TpgNode*>& inode_list,
 	    Alloc& alloc);
 
-  /// @brief ファンアウト数を設定する．
-  /// @param[in] fanout_num
-  /// @param[in] alloc メモリアロケータ
-  ///
-  /// 同時にファンアウト用の配列も確保する．
-  void
-  set_fanout_num(int fanout_num,
-		 Alloc& alloc);
-
-  /// @brief 故障リストを設定する．
-  void
-  set_fault_list(const vector<TpgFault*>& fault_list,
-		 Alloc& alloc);
-
-  /// @brief MFFC を設定する．
-  /// @param[in] mffc このノードを根とするMFFC
-  void
-  set_mffc(const TpgMFFC* mffc);
-
-  /// @brief FFR を設定する．
-  /// @param[in] ffr このノードを根とするFFR
-  void
-  set_ffr(TpgFFR* ffr);
-
-  /// @brief このノードが持っている代表故障をリストに追加する．
-  void
-  add_to_fault_list(vector<TpgFault*>& fault_list);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief DFS を行い FFR 内のノードと故障を求める．
-  /// @param[out] fault_list 故障のリスト
-  void
-  dfs_ffr(vector<TpgFault*>& fault_list);
 
 
 private:
@@ -340,9 +284,6 @@ private:
   // ID 番号
   int mId;
 
-  // ノード名
-  char* mName;
-
   // ファンアウト数
   int mFanoutNum;
 
@@ -352,26 +293,16 @@ private:
   // immediate dominator
   const TpgNode* mImmDom;
 
-  // FFR
-  const TpgFFR* mFfr;
-
-  // MFFC
-  const TpgMFFC* mMffc;
-
-  // 故障数
-  int mFaultNum;
-
-  // 故障のリスト
-  TpgFault** mFaultList;
-
 };
 
 /// @relates TpgNode
 /// @brief ノード名を出力する
 /// @param[in] s 出力先のストリーム
+/// @param[in] network 対象のネットワーク
 /// @param[in] node 対象のノード
 void
 print_node(ostream& s,
+	   const TpgNetwork& network,
 	   const TpgNode* node);
 
 
@@ -385,14 +316,6 @@ int
 TpgNode::id() const
 {
   return mId;
-}
-
-// @brief ノード名を返す．
-inline
-const char*
-TpgNode::name() const
-{
-  return mName;
 }
 
 // @brief ファンアウト数を得る．
@@ -426,16 +349,6 @@ TpgNode::ffr_root() const
   return fanout(0)->ffr_root();
 }
 
-// @brief FFRの根の場合にFFRを返す．
-//
-// そうでなければ nullptr を返す．
-inline
-const TpgFFR*
-TpgNode::ffr() const
-{
-  return mFfr;
-}
-
 // @brief MFFCの根のノードを得る．
 //
 // 自分が根の場合には自分自身を返す．
@@ -449,41 +362,12 @@ TpgNode::mffc_root() const
   return imm_dom()->mffc_root();
 }
 
-// @brief MFFCの根の場合にMFFCを返す．
-//
-// そうでなければ nullptr を返す．
-inline
-const TpgMFFC*
-TpgNode::mffc() const
-{
-  return mMffc;
-}
-
 // @brief 直近の dominator を得る．
 inline
 const TpgNode*
 TpgNode::imm_dom() const
 {
   return mImmDom;
-}
-
-// @brief このノードに含まれる代表故障の数を返す．
-inline
-int
-TpgNode::fault_num() const
-{
-  return mFaultNum;
-}
-
-// @brief このノードに含まれる代表故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-inline
-const TpgFault*
-TpgNode::fault(int pos) const
-{
-  ASSERT_COND( pos < fault_num() );
-
-  return mFaultList[pos];
 }
 
 END_NAMESPACE_YM_SATPG

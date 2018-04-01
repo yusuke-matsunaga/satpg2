@@ -46,14 +46,9 @@ operator<<(ostream& s,
 // @param[in] id ID番号
 TpgNode::TpgNode(int id) :
   mId(id),
-  mName(nullptr),
   mFanoutNum(0),
   mFanoutList(nullptr),
-  mFfr(nullptr),
-  mMffc(nullptr),
-  mImmDom(nullptr),
-  mFaultNum(0),
-  mFaultList(nullptr)
+  mImmDom(nullptr)
 {
 }
 
@@ -145,6 +140,7 @@ int
 TpgNode::input_id() const
 {
   ASSERT_NOT_REACHED;
+
   return 0;
 }
 
@@ -157,6 +153,7 @@ int
 TpgNode::output_id() const
 {
   ASSERT_NOT_REACHED;
+
   return 0;
 }
 
@@ -165,6 +162,7 @@ int
 TpgNode::output_id2() const
 {
   ASSERT_NOT_REACHED;
+
   return 0;
 }
 
@@ -176,6 +174,7 @@ TpgDff*
 TpgNode::dff() const
 {
   ASSERT_NOT_REACHED;
+
   return nullptr;
 }
 
@@ -186,6 +185,7 @@ GateType
 TpgNode::gate_type() const
 {
   ASSERT_NOT_REACHED;
+
   return GateType::Const0;
 }
 
@@ -195,6 +195,7 @@ Val3
 TpgNode::cval() const
 {
   ASSERT_COND( is_ppo() );
+
   return Val3::_X;
 }
 
@@ -204,6 +205,7 @@ Val3
 TpgNode::nval() const
 {
   ASSERT_COND( is_ppo() );
+
   return Val3::_X;
 }
 
@@ -213,6 +215,7 @@ Val3
 TpgNode::coval() const
 {
   ASSERT_COND( is_ppo() );
+
   return Val3::_X;
 }
 
@@ -222,6 +225,7 @@ Val3
 TpgNode::noval() const
 {
   ASSERT_COND( is_ppo() );
+
   return Val3::_X;
 }
 
@@ -255,6 +259,7 @@ TpgNode::set_fanout(int pos,
 		    TpgNode* fo_node)
 {
   ASSERT_COND( pos < fanout_num() );
+
   mFanoutList[pos] = fo_node;
 }
 
@@ -264,23 +269,6 @@ void
 TpgNode::set_imm_dom(const TpgNode* dom)
 {
   mImmDom = dom;
-}
-
-// @brief ノード名を設定する．
-// @param[in] name ノード名
-// @param[in] alloc メモリアロケータ
-void
-TpgNode::set_name(const string& name,
-		  Alloc& alloc)
-{
-  // name が空文字列( l == 0 )でも正しく動く．
-  int l = name.size();
-  void* p = alloc.get_memory(sizeof(char) * (l + 1));
-  mName = new (p) char[l + 1];
-  for (int i = 0; i < l; ++ i) {
-    mName[i] = name[i];
-  }
-  mName[l] = '\0';
 }
 
 // @brief ファンアウト数を設定する．
@@ -294,48 +282,7 @@ TpgNode::set_fanout_num(int fanout_num,
 {
   mFanoutNum = fanout_num;
   if ( fanout_num > 0 ) {
-    void* p = alloc.get_memory(sizeof(TpgNode*) * fanout_num);
-    mFanoutList = new (p) TpgNode*[fanout_num];
-  }
-}
-
-// @brief 故障リストを設定する．
-void
-TpgNode::set_fault_list(const vector<TpgFault*>& fault_list,
-			Alloc& alloc)
-{
-  mFaultNum = fault_list.size();
-  if ( mFaultNum > 0 ) {
-    void* p = alloc.get_memory(sizeof(TpgFault*) * mFaultNum);
-    mFaultList = new (p) TpgFault*[mFaultNum];
-    for (int i = 0; i < mFaultNum; ++ i) {
-      mFaultList[i] = fault_list[i];
-    }
-  }
-}
-
-// @brief MFFC を設定する．
-// @param[in] mffc このノードを根とするMFFC
-void
-TpgNode::set_mffc(const TpgMFFC* mffc)
-{
-  mMffc = mffc;
-}
-
-// @brief FFR を設定する．
-// @param[in] ffr このノードが含まれるFFR
-void
-TpgNode::set_ffr(TpgFFR* ffr)
-{
-  mFfr = ffr;
-}
-
-// @brief このノードが持っている代表故障をリストに追加する．
-void
-TpgNode::add_to_fault_list(vector<TpgFault*>& fault_list)
-{
-  for (int i = 0; i < mFaultNum; ++ i) {
-    fault_list.push_back(mFaultList[i]);
+    mFanoutList = alloc.get_array<TpgNode*>(fanout_num);
   }
 }
 

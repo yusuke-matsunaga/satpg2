@@ -81,9 +81,7 @@ Just2::operator()(const NodeValList& assign_list,
   }
 
   for (int time = 0; time < 2; ++ time) {
-    for (vector<const TpgNode*>::const_iterator p = mNodeList[time].begin();
-	 p != mNodeList[time].end(); ++ p) {
-      const TpgNode* node = *p;
+    for ( auto node: mNodeList[time] ) {
       calc_value(node, time);
     }
   }
@@ -96,9 +94,7 @@ Just2::operator()(const NodeValList& assign_list,
   }
 
   for (int time = 0; time < 2; ++ time) {
-    for (vector<const TpgNode*>::const_iterator p = mNodeList[time].begin();
-	 p != mNodeList[time].end(); ++ p) {
-      const TpgNode* node = *p;
+    for ( auto node: mNodeList[time] ) {
       int index = node->id() * 2 + time;
       mWeightArray[index] = 0;
       mTmpArray[index] = 0.0;
@@ -122,7 +118,7 @@ Just2::justify(const TpgNode* node,
   set_justified(node, time);
 
   if ( debug ) {
-    cout << "justify(" << node->name() << "@" << time << " = " << gval(node, time) << ")" << endl;
+    cout << "justify(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
   if ( node->is_primary_input() ) {
@@ -220,7 +216,7 @@ Just2::just_all(const TpgNode* node,
 		NodeValList& pi_assign_list)
 {
   if ( debug ) {
-    cout << "just_all(" << node->name() << "@" << time << " = " << gval(node, time) << ")" << endl;
+    cout << "just_all(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
   int ni = node->fanin_num();
@@ -242,7 +238,7 @@ Just2::just_one(const TpgNode* node,
 		NodeValList& pi_assign_list)
 {
   if ( debug ) {
-    cout << "just_one(" << node->name() << "@" << time << " = " << gval(node, time) << ")" << endl;
+    cout << "just_one(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
   int ni = node->fanin_num();
@@ -280,7 +276,7 @@ Just2::add_weight(const TpgNode* node,
   }
 
   if ( debug ) {
-    cout << "add_weight(" << node->name() << "@" << time << " = " << gval(node, time) << ")" << endl;
+    cout << "add_weight(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
   if ( node->is_primary_input() ) {
@@ -540,7 +536,7 @@ Just2::node_value(const TpgNode* node,
 {
   int index = node->id() * 2 + time;
   if ( mWeightArray[index] == 0 ) {
-    cout << "Error!: " << node->name() << "@" << time << " has no weight" << endl;
+    cout << "Error!: Node#" << node->id() << "@" << time << " has no weight" << endl;
   }
   return mTmpArray[index] / mWeightArray[index];
 }

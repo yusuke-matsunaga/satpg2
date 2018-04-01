@@ -13,6 +13,7 @@
 #include "Justifier.h"
 #include "NodeValList.h"
 
+#include "TpgNetwork.h"
 #include "TpgFault.h"
 #include "TpgNode.h"
 #include "TpgDff.h"
@@ -42,23 +43,24 @@ END_NONAMESPACE
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-// @param[in] max_node_id ノード番号の最大値
+// @param[in] network 対象のネットワーク
 // @param[in] fault_type 故障の種類
 // @param[in] sat_type SATソルバの種類を表す文字列
 // @param[in] sat_option SATソルバに渡すオプション文字列
 // @param[in] sat_outp SATソルバ用の出力ストリーム
-StructEnc::StructEnc(int max_node_id,
+StructEnc::StructEnc(const TpgNetwork& network,
 		     FaultType fault_type,
 		     const string& sat_type,
 		     const string& sat_option,
 		     ostream* sat_outp) :
+  mNetwork(network),
   mFaultType(fault_type),
   mSolver(sat_type, sat_option, sat_outp),
-  mMaxId(max_node_id),
-  mMark(max_node_id, false)
+  mMaxId(network.node_num()),
+  mMark(mMaxId, false)
 {
   for (int i = 0; i < 2; ++ i) {
-    mVarMap[i].init(max_node_id);
+    mVarMap[i].init(mMaxId);
   }
   mDebugFlag = 0;
 
@@ -356,7 +358,7 @@ StructEnc::make_vars()
     if ( !var_mark(node, 1) ) {
       set_new_var(node, 1);
       if ( debug() & debug_make_vars ) {
-	cout << node->name() << "@1 -> " << var(node, 1) << endl;
+	cout << mNetwork.node_name(node->id()) << "@1 -> " << var(node, 1) << endl;
       }
     }
   }
@@ -378,7 +380,7 @@ StructEnc::make_vars()
 	set_new_var(node, 0);
       }
       if ( debug() & debug_make_vars ) {
-	cout << node->name() << "@0 -> " << var(node, 0) << endl;
+	cout << mNetwork.node_name(node->id()) << "@0 -> " << var(node, 0) << endl;
       }
     }
   }

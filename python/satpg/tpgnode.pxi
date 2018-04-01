@@ -37,14 +37,6 @@ cdef class TpgNode :
             return 0
         return self._thisptr.id()
 
-    ## @brief 名前を返す．
-    @property
-    def name(self) :
-        if not self.is_valid :
-            return ''
-        cdef string c_name = string(self._thisptr.name())
-        return c_name.decode('UTF-8')
-
     ## @brief 外部入力の時に True を返す．
     @property
     def is_primary_input(self) :
@@ -167,21 +159,6 @@ cdef class TpgNode :
         c_node = self._thisptr.imm_dom()
         return to_TpgNode(c_node)
 
-    ## @brief このノードの故障数を返す．
-    @property
-    def fault_num(self) :
-        if not self.is_valid :
-            return 0
-        return self._thisptr.fault_num()
-
-    ## @brief 故障を返す．
-    # @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-    def fault(self, pos) :
-        cdef const CXX_TpgFault* c_fault
-        if not self.is_valid :
-            return None
-        c_fault = self._thisptr.fault(pos)
-        return to_TpgFault(c_fault)
 
 ## @brief CXX_TpgNode* から TpgNode を作る関数
 cdef to_TpgNode(const CXX_TpgNode* c_node) :

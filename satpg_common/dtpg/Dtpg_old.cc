@@ -63,7 +63,9 @@ Dtpg_old::Dtpg_old(const string& sat_type,
   mJustifier(jt),
   mTimerEnable(true)
 {
-  mNodeList.reserve(network.node_num());
+  mTfoList.reserve(network.node_num());
+  mTfiList.reserve(network.node_num());
+  mTfi2List.reserve(network.node_num());
   mOutputList.reserve(network.ppo_num());
 
   cnf_begin();
@@ -90,7 +92,8 @@ Dtpg_old::dtpg(const TpgFault* fault,
 {
   if ( fault->tpg_onode()->ffr_root() != root_node() ) {
     cerr << "Error[Dtpg_old::dtpg()]: " << fault << " is not within mFfrRoot's FFR" << endl;
-    cerr << " fautl->ffr_root() = " << fault->tpg_onode()->ffr_root()->name() << endl;
+    cerr << " fautl->ffr_root() = "
+	 << mNetwork.node_name(fault->tpg_onode()->ffr_root()->id()) << endl;
     return SatBool3::X;
   }
 
@@ -141,54 +144,57 @@ Dtpg_old::timer_stop()
 void
 Dtpg_old::gen_cnf_base()
 {
-  if ( mFaultType == FaultType::TransitionDelay && mRoot->is_dff_output() ) {
-    mDffList.push_back(mRoot->dff());
-  }
-  // root の TFO を mNodeList に入れる．
+  // root の TFO を mTfoList に入れる．
   set_tfo_mark(mRoot);
-  for (int rpos = 0; rpos < mNodeList.size(); ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
+  for ( int rpos = 0; rpos < mTfoList.size(); ++ rpos ) {
+    const TpgNode* node = mTfoList[rpos];
     int nfo = node->fanout_num();
     for (int i = 0; i < nfo; ++ i) {
       const TpgNode* onode = node->fanout(i);
       set_tfo_mark(onode);
     }
   }
-  int tfo_num = mNodeList.size();
 
   // TFO の TFI を mNodeList に入れる．
-  for (int rpos = 0; rpos < mNodeList.size(); ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
+  for ( auto node: mTfoList ) {
     int ni = node->fanin_num();
     for (int i = 0; i < ni; ++ i) {
       const TpgNode* inode = node->fanin(i);
       set_tfi_mark(inode);
     }
   }
-  int tfi_num = mNodeList.size();
-
-  // TFI に含まれる DFF のさらに TFI を mNodeList2 に入れる．
-  if ( mFaultType == FaultType::TransitionDelay ) {
-    set_tfi2_mark(mRoot);
-  }
-  for (int i = 0; i < mDffList.size(); ++ i) {
-    const TpgDff* dff = mDffList[i];
-    const TpgNode* node = dff->input();
-    mNodeList2.push_back(node);
-  }
-  for (int rpos = 0; rpos < mNodeList2.size(); ++ rpos) {
-    const TpgNode* node = mNodeList2[rpos];
+  for ( int rpos = 0; rpos < mTfiList.size(); ++ rpos ) {
+    const TpgNode* node = mTfiList[rpos];
     int ni = node->fanin_num();
     for (int i = 0; i < ni; ++ i) {
       const TpgNode* inode = node->fanin(i);
-      set_tfi2_mark(inode);
+      set_tfi_mark(inode);
     }
   }
-  int tfi2_num = mNodeList2.size();
+#if 0
+  // TFI に含まれる DFF のさらに TFI を mTfi2List に入れる．
+  if ( mFaultType == FaultType::TransitionDelay ) {
+    if ( mRoot->is_dff_output() ) {
+      mDffList.push_back(mRoot->dff());
+    }
+    for ( auto dff: mDffList ) {
+      const TpgNode* node = dff->input();
+      mTfi2List.push_back(node);
+    }
+    set_tfi2_mark(mRoot);
+    for ( int rpos = 0; rpos < mTfi2List.size(); ++ rpos) {
+      const TpgNode* node = mTfi2List[rpos];
+      int ni = node->fanin_num();
+      for (int i = 0; i < ni; ++ i) {
+	const TpgNode* inode = node->fanin(i);
+	set_tfi2_mark(inode);
+      }
+    }
+  }
+#endif
 
   // TFO の部分に変数を割り当てる．
-  for (int rpos = 0; rpos < tfo_num; ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
+  for ( auto node: mTfoList ) {
     SatVarId gvar = mSolver.new_variable();
     SatVarId fvar = mSolver.new_variable();
     SatVarId dvar = mSolver.new_variable();
@@ -205,8 +211,7 @@ Dtpg_old::gen_cnf_base()
   }
 
   // TFI の部分に変数を割り当てる．
-  for ( int rpos = tfo_num; rpos < mNodeList.size(); ++ rpos ) {
-    const TpgNode* node = mNodeList[rpos];
+  for ( auto node: mTfiList ) {
     SatVarId gvar = mSolver.new_variable();
 
     mGvarMap.set_vid(node, gvar);
@@ -218,8 +223,9 @@ Dtpg_old::gen_cnf_base()
     }
   }
 
+#if 0
   // TFI2 の部分に変数を割り当てる．
-  for ( auto node: mNodeList2 ) {
+  for ( auto node: mTfi2List ) {
     SatVarId hvar = mSolver.new_variable();
 
     mHvarMap.set_vid(node, hvar);
@@ -228,12 +234,26 @@ Dtpg_old::gen_cnf_base()
       DEBUG_OUT << "hvar(Node#" << node->id() << ") = " << hvar << endl;
     }
   }
-
+#endif
 
   //////////////////////////////////////////////////////////////////////
   // 正常回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
-  for ( auto node: mNodeList ) {
+  for ( auto node: mTfoList ) {
+    make_node_cnf(node, GateLitMap_vid(node, mGvarMap));
+
+    if ( debug_dtpg ) {
+      DEBUG_OUT << "Node#" << node->id() << ": gvar("
+		<< gvar(node) << ") := " << node->gate_type()
+		<< "(";
+      for (int j = 0; j < node->fanin_num(); ++ j) {
+	const TpgNode* inode = node->fanin(j);
+	DEBUG_OUT << " " << gvar(inode);
+      }
+      DEBUG_OUT << ")" << endl;
+    }
+  }
+  for ( auto node: mTfiList ) {
     make_node_cnf(node, GateLitMap_vid(node, mGvarMap));
 
     if ( debug_dtpg ) {
@@ -248,6 +268,7 @@ Dtpg_old::gen_cnf_base()
     }
   }
 
+#if 0
   for ( auto dff: mDffList ) {
     const TpgNode* onode = dff->output();
     const TpgNode* inode = dff->input();
@@ -257,7 +278,7 @@ Dtpg_old::gen_cnf_base()
     mSolver.add_eq_rel(olit, ilit);
   }
 
-  for ( auto node: mNodeList2 ) {
+  for ( auto node: mTfi2List ) {
     make_node_cnf(node, GateLitMap_vid(node, mHvarMap));
 
     if ( debug_dtpg ) {
@@ -271,13 +292,12 @@ Dtpg_old::gen_cnf_base()
       DEBUG_OUT << ")" << endl;
     }
   }
-
+#endif
 
   //////////////////////////////////////////////////////////////////////
   // 故障回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
-  for ( int i = 0; i < tfo_num; ++ i ) {
-    const TpgNode* node = mNodeList[i];
+  for ( auto node: mTfoList ) {
     if ( node != mRoot ) {
       make_node_cnf(node, GateLitMap_vid(node, mFvarMap));
 
@@ -695,7 +715,7 @@ Dtpg_old::add_assign(NodeValList& assign_list,
   assign_list.add(node, time, val);
 
   if ( debug_dtpg ) {
-    print_node(DEBUG_OUT, node);
+    print_node(DEBUG_OUT, mNetwork, node);
     DEBUG_OUT << "@" << time << ": ";
     if ( val ) {
       DEBUG_OUT << "1" << endl;

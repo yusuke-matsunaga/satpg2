@@ -173,8 +173,8 @@ ostream&
 operator<<(ostream& s,
 	   NodeVal nv)
 {
-  print_node(s, nv.node());
-  s << "@" << nv.time()
+  s << "Node#" << nv.node()->id()
+    << "@" << nv.time()
     << " = " << nv.val();
   return s;
  }

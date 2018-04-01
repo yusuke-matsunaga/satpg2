@@ -19,7 +19,6 @@ cdef extern from "TpgNode.h" namespace "nsYm::nsSatpg" :
     ## @brief TpgNode の cython バージョン
     cdef cppclass TpgNode :
         int id()
-        const char* name()
         bool is_primary_input()
         bool is_primary_output()
         bool is_dff_input()
@@ -48,5 +47,5 @@ cdef extern from "TpgNode.h" namespace "nsYm::nsSatpg" :
         const TpgNode* mffc_root()
 #        const TpgMFFC* mffc()
         const TpgNode* imm_dom()
-        int fault_num()
-        const TpgFault* fault(int)
+#        int fault_num()
+#        const TpgFault* fault(int)
