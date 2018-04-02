@@ -184,9 +184,7 @@ Just1::just_all(const TpgNode* node,
     cout << "just_all(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     justify(inode, time, pi_assign_list);
   }
 }
@@ -206,9 +204,7 @@ Just1::just_one(const TpgNode* node,
     cout << "just_one(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     Val3 ival = gval(inode, time);
     if ( ival == val ) {
       justify(inode, time, pi_assign_list);

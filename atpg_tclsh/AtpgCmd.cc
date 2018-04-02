@@ -176,8 +176,7 @@ AtpgCmd::after_update_faults()
   int n_remain = 0;
   int n_untest = 0;
   int n_det = 0;
-  for (int i = 0; i < n_rep; ++ i) {
-    const TpgFault* fault = _network().rep_fault(i);
+  for ( auto fault: _network().rep_fault_list() ) {
     switch ( _sa_fault_mgr().status(fault) ) {
     case FaultStatus::Detected:   ++ n_det; break;
     case FaultStatus::Untestable: ++ n_untest; break;

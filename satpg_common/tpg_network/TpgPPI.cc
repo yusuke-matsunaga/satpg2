@@ -65,6 +65,13 @@ TpgPPI::gate_type() const
   return GateType::Input;
 }
 
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgPPI::fanin_list() const
+{
+  return Array<const TpgNode*>(nullptr, 0, 0);
+}
+
 // @brief ファンイン数を得る．
 int
 TpgPPI::fanin_num() const

@@ -33,6 +33,13 @@ TpgDffControl::~TpgDffControl()
 {
 }
 
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgDffControl::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(&mFanin), 0, 1);
+}
+
 // @brief ファンイン数を得る．
 int
 TpgDffControl::fanin_num() const

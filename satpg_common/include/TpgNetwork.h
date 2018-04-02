@@ -16,6 +16,7 @@
 #include "ym/bnet.h"
 #include "ym/clib.h"
 #include "ym/logic.h"
+#include "ym/Array.h"
 #include "ym/SimpleAlloc.h"
 
 
@@ -78,6 +79,10 @@ public:
   const TpgNode*
   node(int id) const;
 
+  /// @brief 全ノードのリストを得る．
+  Array<const TpgNode*>
+  node_list() const;
+
   /// @brief ノード名を得る．
   /// @param[in] id ID番号 ( 0 <= id < node_num() )
   const char*
@@ -97,6 +102,10 @@ public:
   const TpgNode*
   input(int pos) const;
 
+  /// @brief 外部入力ノードのリストを得る．
+  Array<const TpgNode*>
+  input_list() const;
+
   /// @brief 外部出力数を得る．
   int
   output_num() const;
@@ -110,6 +119,10 @@ public:
   /// の関係が成り立つ．
   const TpgNode*
   output(int pos) const;
+
+  /// @brief 外部出力ノードのリストを得る．
+  Array<const TpgNode*>
+  output_list() const;
 
   /// @brief TFIサイズの降順で整列した順番で外部出力ノードを取り出す．
   /// @param[in] pos 位置番号 ( 0 <= pos < output_num() )
@@ -137,6 +150,10 @@ public:
   const TpgNode*
   ppi(int pos) const;
 
+  /// @brief 擬似外部入力のリストを得る．
+  Array<const TpgNode*>
+  ppi_list() const;
+
   /// @brief スキャン方式の擬似外部出力数を得る．
   ///
   /// = output_num() + dff_num()
@@ -153,14 +170,22 @@ public:
   const TpgNode*
   ppo(int pos) const;
 
+  /// @brief 擬似外部出力のリストを得る．
+  Array<const TpgNode*>
+  ppo_list() const;
+
   /// @brief MFFC 数を返す．
   int
   mffc_num() const;
 
   /// @brief MFFC を返す．
   /// @param[in] pos 位置番号 ( 0 <= pos < mffc_num() )
-  const TpgMFFC*
+  const TpgMFFC&
   mffc(int pos) const;
+
+  /// @brief MFFC のリストを得る．
+  Array<const TpgMFFC>
+  mffc_list() const;
 
   /// @brief FFR 数を返す．
   int
@@ -168,8 +193,12 @@ public:
 
   /// @brief FFR を返す．
   /// @param[in] pos 位置番号 ( 0 <= pos < ffr_num() )
-  const TpgFFR*
+  const TpgFFR&
   ffr(int pos) const;
+
+  /// @brief FFR のリストを得る．
+  Array<const TpgFFR>
+  ffr_list() const;
 
   /// @brief DFF数を得る．
   int
@@ -182,8 +211,12 @@ public:
   /// dff = network.dff(dff->id())
   /// @endcode
   /// の関係が成り立つ．
-  const TpgDff*
+  const TpgDff&
   dff(int pos) const;
+
+  /// @brief DFF のリストを得る．
+  Array<const TpgDff>
+  dff_list() const;
 
   /// @brief 故障IDの最大値+1を返す．
   int
@@ -197,6 +230,10 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < rep_fault_num() )
   const TpgFault*
   rep_fault(int pos) const;
+
+  /// @brief 代表故障のリストを返す．
+  Array<const TpgFault*>
+  rep_fault_list() const;
 
   /// @brief ノードに関係した代表故障数を返す．
   /// @param[in] id ID番号 ( 0 <= id < node_num() )
@@ -468,14 +505,14 @@ private:
   /// @param[in] root FFR の根のノード
   /// @param[in] ffr 対象の FFR
   void
-  set_ffr(TpgNode* root,
+  set_ffr(const TpgNode* root,
 	  TpgFFR* ffr);
 
   /// @brief MFFC の情報を設定する．
   /// @param[in] root MFFCの根のノード
   /// @param[in] mffc 対象のMFFC
   void
-  set_mffc(TpgNode* root,
+  set_mffc(const TpgNode* root,
 	   TpgMFFC* mffc);
 
 
@@ -573,6 +610,24 @@ TpgNetwork::node_num() const
   return mNodeNum;
 }
 
+// @brief ノードを得る．
+inline
+const TpgNode*
+TpgNetwork::node(int pos) const
+{
+  ASSERT_COND( pos >= 0 && pos < mNodeNum );
+
+  return mNodeArray[pos];
+}
+
+// @brief 全ノードのリストを得る．
+inline
+Array<const TpgNode*>
+TpgNetwork::node_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mNodeArray), 0, mNodeNum);
+}
+
 // @brief 外部入力数を得る．
 inline
 int
@@ -592,6 +647,14 @@ TpgNetwork::input(int pos) const
   return mPPIArray[pos];
 }
 
+// @brief 外部入力ノードのリストを得る．
+inline
+Array<const TpgNode*>
+TpgNetwork::input_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mPPIArray), 0, mInputNum);
+}
+
 // @brief 外部出力数を得る．
 inline
 int
@@ -609,6 +672,14 @@ TpgNetwork::output(int pos) const
   ASSERT_COND( pos >= 0 && pos < output_num() );
 
   return mPPIArray[pos];
+}
+
+// @brief 外部出力ノードのリストを得る．
+inline
+Array<const TpgNode*>
+TpgNetwork::output_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mPPOArray), 0, mOutputNum);
 }
 
 // @brief サイズの降順で整列した順番で外部出力ノードを取り出す．
@@ -641,13 +712,21 @@ TpgNetwork::ppi_num() const
 
 // @brief スキャン方式の擬似外部入力を得る．
 // @param[in] pos 位置番号 ( 0 <= pos < ppi_num() )
-const inline
-TpgNode*
+inline
+const TpgNode*
 TpgNetwork::ppi(int pos) const
 {
   ASSERT_COND( pos >= 0 && pos < ppi_num() );
 
   return mPPIArray[pos];
+}
+
+// @brief 擬似外部入力のリストを得る．
+inline
+Array<const TpgNode*>
+TpgNetwork::ppi_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mPPIArray), 0, ppi_num());
 }
 
 // @brief スキャン方式の擬似外部出力数を得る．
@@ -671,14 +750,12 @@ TpgNetwork::ppo(int pos) const
   return mPPOArray[pos];
 }
 
-// @brief ノードを得る．
+// @brief 擬似外部出力のリストを得る．
 inline
-const TpgNode*
-TpgNetwork::node(int pos) const
+Array<const TpgNode*>
+TpgNetwork::ppo_list() const
 {
-  ASSERT_COND( pos >= 0 && pos < mNodeNum );
-
-  return mNodeArray[pos];
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mPPOArray), 0, ppo_num());
 }
 
 // @brief 故障IDの最大値+1を返す．
@@ -722,6 +799,14 @@ TpgNetwork::rep_fault(int pos) const
   ASSERT_COND( pos >= 0 && pos < rep_fault_num() );
 
   return mRepFaultArray[pos];
+}
+
+// @brief 代表故障のリストを返す．
+inline
+Array<const TpgFault*>
+TpgNetwork::rep_fault_list() const
+{
+  return Array<const TpgFault*>(mRepFaultArray, 0, rep_fault_num());
 }
 
 END_NAMESPACE_YM_SATPG

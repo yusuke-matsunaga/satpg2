@@ -22,7 +22,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] fault_list 故障のリスト
 // @param[in] alloc メモリアロケータ
 void
-TpgFFR::set(TpgNode* root,
+TpgFFR::set(const TpgNode* root,
 	    vector<TpgFault*>& fault_list,
 	    Alloc& alloc)
 {

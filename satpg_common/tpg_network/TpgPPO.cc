@@ -72,6 +72,13 @@ TpgPPO::gate_type() const
   return GateType::Buff;
 }
 
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgPPO::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(&mFanin), 0, 1);
+}
+
 // @brief ファンイン数を得る．
 int
 TpgPPO::fanin_num() const

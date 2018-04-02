@@ -10,6 +10,7 @@
 
 #include "satpg.h"
 #include "ym/Alloc.h"
+#include "ym/Array.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -57,14 +58,17 @@ public:
   const TpgFFR*
   elem(int pos) const;
 
+  /// @brief このMFFCに含まれるFFRのリストを返す．
+  Array<const TpgFFR*>
+  elem_list() const;
+
   /// @brief このMFFCに含まれる代表故障の数を返す．
   int
   fault_num() const;
 
-  /// @brief このMFFCに含まれる代表故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  const TpgFault*
-  fault(int pos) const;
+  /// @brief このFFRに含まれる代表故障のリストを返す．
+  Array<const TpgFault*>
+  fault_list() const;
 
 
 public:
@@ -78,7 +82,7 @@ public:
   /// @param[in] fault_list このMFFCに含まれる故障のリスト
   /// @param[in] alloc メモリアロケータ
   void
-  set(TpgNode* root,
+  set(const TpgNode* root,
       const vector<const TpgFFR*>& ffr_list,
       const vector<TpgFault*>& fault_list,
       Alloc& alloc);
@@ -161,6 +165,14 @@ TpgMFFC::elem(int pos) const
   return mElemList[pos];
 }
 
+// @brief このMFFCに含まれるFFRのリストを返す．
+inline
+Array<const TpgFFR*>
+TpgMFFC::elem_list() const
+{
+  return Array<const TpgFFR*>(mElemList, 0, elem_num());
+}
+
 // @brief このFFRに含まれる代表故障の数を返す．
 inline
 int
@@ -169,15 +181,12 @@ TpgMFFC::fault_num() const
   return mFaultNum;
 }
 
-// @brief このFFRに含まれる代表故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+// @brief このFFRに含まれる代表故障のリストを返す．
 inline
-const TpgFault*
-TpgMFFC::fault(int pos) const
+Array<const TpgFault*>
+TpgMFFC::fault_list() const
 {
-  ASSERT_COND( pos < fault_num() );
-
-  return mFaultList[pos];
+  return Array<const TpgFault*>(mFaultList, 0, fault_num());
 }
 
 END_NAMESPACE_YM_SATPG

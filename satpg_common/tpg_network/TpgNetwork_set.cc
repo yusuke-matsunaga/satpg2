@@ -26,6 +26,7 @@
 #include "ym/BnDff.h"
 #include "ym/BnNode.h"
 #include "ym/Expr.h"
+#include "ym/Range.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -97,16 +98,11 @@ check_network_connection(const TpgNetwork& network)
   // fanin/fanout の sanity check
   bool error = false;
 
-  int nn = network.node_num();
-  for ( int i = 0; i < nn; ++ i ) {
-    const TpgNode* node = network.node(i);
-    int nfi = node->fanin_num();
-    for ( int j = 0; j < nfi; ++ j ) {
-      const TpgNode* inode = node->fanin(j);
-      int nfo = inode->fanout_num();
+  for ( auto node: network.node_list() ) {
+    for ( auto inode: node->fanin_list() ) {
       bool found = false;
-      for ( int k = 0; k < nfo; ++ k ) {
-	if ( inode->fanout(k) == node ) {
+      for ( auto onode: inode->fanout_list() ) {
+	if ( onode == node ) {
 	  found = true;
 	  break;
 	}
@@ -119,13 +115,10 @@ check_network_connection(const TpgNetwork& network)
 	     << "inode(" << inode->id() << ")" << endl;
       }
     }
-    int nfo = node->fanout_num();
-    for ( int j = 0; j < nfo; ++ j ) {
-      const TpgNode* onode = node->fanout(j);
-      int nfi = onode->fanin_num();
+    for ( auto onode: node->fanout_list() ) {
       bool found = false;
-      for ( int k = 0; k < nfi; ++ k ) {
-	if ( onode->fanin(k) == node ) {
+      for ( auto inode: onode->fanin_list() ) {
+	if ( inode == node ) {
 	  found = true;
 	  break;
 	}
@@ -211,10 +204,9 @@ tfimark(const TpgNode* node,
   }
   mark[node->id()] = true;
 
-  int ni = node->fanin_num();
   int n = 1;
-  for ( int i = 0; i < ni; ++ i ) {
-    n += tfimark(node->fanin(i), mark);
+  for ( auto inode: node->fanin_list() ) {
+    n += tfimark(inode, mark);
   }
   return n;
 }
@@ -460,8 +452,7 @@ TpgNetwork::set(const BnNetwork& network)
   vector<int> nfo_array(mNodeNum, 0);
   for ( int i = 0; i < mNodeNum; ++ i ) {
     TpgNode* node = mNodeArray[i];
-    int ni = node->fanin_num();
-    for ( int j = 0; j < ni; ++ j ) {
+    for ( auto j: Range(node->fanin_num()) ) {
       TpgNode* inode = node->fanin(j);
       int& fo_pos = nfo_array[inode->id()];
       inode->set_fanout(fo_pos, node);
@@ -493,8 +484,7 @@ TpgNetwork::set(const BnNetwork& network)
   // データ系のノードに印をつける．
   //////////////////////////////////////////////////////////////////////
   vector<bool> dmarks(mNodeNum, false);
-  for ( int i = 0; i < ppo_num(); ++ i ) {
-    const TpgNode* node = ppo(i);
+  for ( auto node: ppo_list() ) {
     tfimark(node, dmarks);
   }
 
@@ -569,10 +559,9 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // FFR と MFFC の根のノードを求める．
   //////////////////////////////////////////////////////////////////////
-  vector<TpgNode*> ffr_root_list;
-  vector<TpgNode*> mffc_root_list;
-  for ( int i = 0; i < mNodeNum; ++ i ) {
-    TpgNode* node = mNodeArray[i];
+  vector<const TpgNode*> ffr_root_list;
+  vector<const TpgNode*> mffc_root_list;
+  for ( auto node: node_list() ) {
     if ( !dmarks[node->id()] ) {
       // データ系のノードでなければスキップ
       continue;
@@ -594,7 +583,7 @@ TpgNetwork::set(const BnNetwork& network)
   mFfrNum = ffr_root_list.size();
   mFfrArray = new TpgFFR[mFfrNum];
   for ( int i = 0; i < mFfrNum; ++ i ) {
-    TpgNode* node = ffr_root_list[i];
+    const TpgNode* node = ffr_root_list[i];
     TpgFFR* ffr = &mFfrArray[i];
     set_ffr(node, ffr);
   }
@@ -606,7 +595,7 @@ TpgNetwork::set(const BnNetwork& network)
   mMffcNum = mffc_root_list.size();
   mMffcArray = new TpgMFFC[mMffcNum];
   for ( int i = 0; i < mMffcNum; ++ i ) {
-    TpgNode* node = mffc_root_list[i];
+    const TpgNode* node = mffc_root_list[i];
     TpgMFFC* mffc = &mMffcArray[i];
     set_mffc(node, mffc);
   }
@@ -709,23 +698,21 @@ TpgNetwork::set_rep_faults(TpgNode* node)
 // @param[in] root FFR の根のノード
 // @param[in] ffr 対象の FFR
 void
-TpgNetwork::set_ffr(TpgNode* root,
+TpgNetwork::set_ffr(const TpgNode* root,
 		    TpgFFR* ffr)
 {
   // root を根とするFFRの故障リストを求める．
-  vector<TpgNode*> node_list;
+  vector<const TpgNode*> node_list;
   vector<TpgFault*> fault_list;
 
   node_list.push_back(root);
   while ( !node_list.empty() ) {
-    TpgNode* node = node_list.back();
+    const TpgNode* node = node_list.back();
     node_list.pop_back();
 
     mAuxInfoArray[node->id()].fault_list(fault_list);
 
-    int ni = node->fanin_num();
-    for ( int i = 0; i < ni; ++ i ) {
-      TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       if ( inode->ffr_root() != inode ) {
 	node_list.push_back(inode);
       }
@@ -740,19 +727,19 @@ TpgNetwork::set_ffr(TpgNode* root,
 // @param[in] root MFFCの根のノード
 // @param[in] mffc 対象のMFFC
 void
-TpgNetwork::set_mffc(TpgNode* root,
+TpgNetwork::set_mffc(const TpgNode* root,
 		     TpgMFFC* mffc)
 {
   // root を根とする MFFC の情報を得る．
   vector<bool> mark(node_num());
-  vector<TpgNode*> node_list;
+  vector<const TpgNode*> node_list;
   vector<const TpgFFR*> ffr_list;
   vector<TpgFault*> fault_list;
 
   node_list.push_back(root);
   mark[root->id()] = true;
   while ( !node_list.empty() ) {
-    TpgNode* node = node_list.back();
+    const TpgNode* node = node_list.back();
     node_list.pop_back();
 
     if ( node->ffr_root() == node ) {
@@ -761,9 +748,7 @@ TpgNetwork::set_mffc(TpgNode* root,
 
     mAuxInfoArray[node->id()].fault_list(fault_list);
 
-    int ni = node->fanin_num();
-    for ( int i = 0; i < ni; ++ i ) {
-      TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       if ( !mark[inode->id()] &&
 	   inode->imm_dom() != nullptr ) {
 	mark[inode->id()] = true;

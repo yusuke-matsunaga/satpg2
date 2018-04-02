@@ -11,6 +11,7 @@
 
 #include "satpg.h"
 #include "ym/Alloc.h"
+#include "ym/Array.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -186,6 +187,11 @@ public:
   Val3
   noval() const;
 
+  /// @brief ファンインのリストを得る．
+  virtual
+  Array<const TpgNode*>
+  fanin_list() const = 0;
+
   /// @brief ファンイン数を得る．
   virtual
   int
@@ -196,6 +202,10 @@ public:
   virtual
   TpgNode*
   fanin(int pos) const = 0;
+
+  /// @brief ファンアウトのリストを得る．
+  Array<const TpgNode*>
+  fanout_list() const;
 
   /// @brief ファンアウト数を得る．
   int
@@ -316,6 +326,15 @@ int
 TpgNode::id() const
 {
   return mId;
+}
+
+// @brief ファンアウトのリストを得る．
+inline
+Array<const TpgNode*>
+TpgNode::fanout_list() const
+{
+  const TpgNode** body = const_cast<const TpgNode**>(mFanoutList);
+  return Array<const TpgNode*>(body, 0, mFanoutNum);
 }
 
 // @brief ファンアウト数を得る．

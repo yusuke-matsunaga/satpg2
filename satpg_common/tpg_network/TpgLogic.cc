@@ -52,6 +52,13 @@ TpgLogic0::~TpgLogic0()
 {
 }
 
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgLogic0::fanin_list() const
+{
+  return Array<const TpgNode*>(nullptr, 0, 0);
+}
+
 // @brief ファンイン数を得る．
 int
 TpgLogic0::fanin_num() const
@@ -87,6 +94,13 @@ TpgLogic1::TpgLogic1(int id,
 // @brief デストラクタ
 TpgLogic1::~TpgLogic1()
 {
+}
+
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgLogic1::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(&mFanin), 0, 1);
 }
 
 // @brief ファンイン数を得る．
@@ -131,6 +145,13 @@ TpgLogic2::~TpgLogic2()
 {
 }
 
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgLogic2::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mFanins), 0, 2);
+}
+
 // @brief ファンイン数を得る．
 int
 TpgLogic2::fanin_num() const
@@ -172,6 +193,13 @@ TpgLogic3::TpgLogic3(int id,
 // @brief デストラクタ
 TpgLogic3::~TpgLogic3()
 {
+}
+
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgLogic3::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mFanins), 0, 3);
 }
 
 // @brief ファンイン数を得る．
@@ -218,6 +246,13 @@ TpgLogic4::~TpgLogic4()
 {
 }
 
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgLogic4::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mFanins), 0, 4);
+}
+
 // @brief ファンイン数を得る．
 int
 TpgLogic4::fanin_num() const
@@ -260,6 +295,13 @@ int
 TpgLogicN::fanin_num() const
 {
   return mFaninNum;
+}
+
+// @brief ファンインのリストを得る．
+Array<const TpgNode*>
+TpgLogicN::fanin_list() const
+{
+  return Array<const TpgNode*>(const_cast<const TpgNode**>(mFanins), 0, mFaninNum);
 }
 
 // @brief ファンインを得る．

@@ -185,9 +185,7 @@ BtJust1::just_all(const TpgNode* node,
 		  int time,
 		  NodeValList& assign_list)
 {
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     justify(inode, time, assign_list);
   }
 }
@@ -205,9 +203,7 @@ BtJust1::just_one(const TpgNode* node,
 {
   bool gfound = false;
   bool ffound = false;
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     Val3 igval = gval(inode, time);
     Val3 ifval = fval(inode, time);
     if ( !gfound && igval == val ) {

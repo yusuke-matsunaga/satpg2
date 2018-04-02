@@ -98,9 +98,7 @@ JustSimple::justify(const TpgNode* node,
   }
   else {
     // すべてのファンインに再帰する．
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       justify(inode, time, pi_assign_list);
     }
   }

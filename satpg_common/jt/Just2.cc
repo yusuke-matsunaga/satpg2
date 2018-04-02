@@ -219,9 +219,7 @@ Just2::just_all(const TpgNode* node,
     cout << "just_all(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     justify(inode, time, pi_assign_list);
   }
 }
@@ -241,11 +239,9 @@ Just2::just_one(const TpgNode* node,
     cout << "just_one(Node#" << node->id() << "@" << time << " = " << gval(node, time) << ")" << endl;
   }
 
-  int ni = node->fanin_num();
   double min_val = DBL_MAX;
   const TpgNode* min_node = nullptr;
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     Val3 ival = gval(inode, time);
     if ( ival != val ) {
       continue;
@@ -367,9 +363,7 @@ void
 Just2::aw_all(const TpgNode* node,
 	      int time)
 {
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     add_weight(inode, time);
   }
 }
@@ -383,9 +377,7 @@ Just2::aw_one(const TpgNode* node,
 	      Val3 val,
 	      int time)
 {
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     Val3 ival = gval(inode, time);
     if ( ival == val ) {
       add_weight(inode, time);
@@ -492,9 +484,7 @@ Just2::cv_all(const TpgNode* node,
 	      int time)
 {
   double val = 0.0;
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     calc_value(inode, time);
     val += node_value(inode, time);
   }
@@ -511,9 +501,7 @@ Just2::cv_one(const TpgNode* node,
 	      int time)
 {
   double min_val = DBL_MAX;
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     Val3 ival = gval(inode, time);
     if ( ival != val ) {
       continue;

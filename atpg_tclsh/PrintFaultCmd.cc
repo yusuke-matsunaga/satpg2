@@ -90,9 +90,7 @@ PrintFaultCmd::cmd_proc(TclObjVector& objv)
   TpgFaultMgr& fmgr = mPoptTd->is_specified() ? _td_fault_mgr() : _sa_fault_mgr();
 
   const TpgNetwork& network = _network();
-  int n = network.rep_fault_num();
-  for (int i = 0; i < n; ++ i) {
-    const TpgFault* f = network.rep_fault(i);
+  for ( auto f: network.rep_fault_list() ) {
     if ( fmgr.status(f) == type ) {
       out << f->str() << endl;
     }

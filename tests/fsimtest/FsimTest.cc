@@ -38,15 +38,13 @@ spsfp_test(const TpgNetwork& network,
 	   const vector<const TestVector*>& tv_list)
 {
   vector<bool> mark(network.max_fault_id(), false);
-  ymuint nf = network.rep_fault_num();
   ymuint det_num = 0;
   ymuint nepat = 0;
   ymuint nv = tv_list.size();
   for (ymuint i = 0; i < nv; ++ i) {
     const TestVector* tv = tv_list[i];
     bool detect = false;
-    for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* f = network.rep_fault(j);
+    for ( auto f: network.rep_fault_list() ) {
       if ( mark[f->id()] ) {
 	continue;
       }

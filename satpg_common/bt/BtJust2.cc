@@ -208,9 +208,7 @@ BtJust2::just_all(const TpgNode* node,
 		  int time)
 {
   NodeList*& node_list = mJustArray[node->id() * 2 + time];
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     NodeList* node_list1 = justify(inode, time);
     list_merge(node_list, node_list1);
   }

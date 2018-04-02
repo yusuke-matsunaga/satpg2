@@ -10,6 +10,7 @@
 
 #include "satpg.h"
 #include "ym/Alloc.h"
+#include "ym/Array.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -51,10 +52,9 @@ public:
   int
   fault_num() const;
 
-  /// @brief このFFRに含まれる代表故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  const TpgFault*
-  fault(int pos) const;
+  /// @brief このFFRに含まれる代表故障のリストを返す．
+  Array<const TpgFault*>
+  fault_list() const;
 
 
 public:
@@ -67,7 +67,7 @@ public:
   /// @param[in] fault_list 故障のリスト
   /// @param[in] alloc メモリアロケータ
   void
-  set(TpgNode* root,
+  set(const TpgNode* root,
       vector<TpgFault*>& fault_list,
       Alloc& alloc);
 
@@ -130,15 +130,12 @@ TpgFFR::fault_num() const
   return mFaultNum;
 }
 
-// @brief このFFRに含まれる代表故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+// @brief このFFRに含まれる代表故障のリストを返す．
 inline
-const TpgFault*
-TpgFFR::fault(int pos) const
+Array<const TpgFault*>
+TpgFFR::fault_list() const
 {
-  ASSERT_COND( pos < fault_num() );
-
-  return mFaultList[pos];
+  return Array<const TpgFault*>(mFaultList, 0, fault_num());
 }
 
 END_NAMESPACE_YM_SATPG

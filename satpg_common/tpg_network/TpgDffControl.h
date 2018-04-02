@@ -40,6 +40,11 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ファンインのリストを得る．
+  virtual
+  Array<const TpgNode*>
+  fanin_list() const override;
+
   /// @brief ファンイン数を得る．
   virtual
   int

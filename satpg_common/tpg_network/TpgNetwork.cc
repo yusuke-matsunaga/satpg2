@@ -142,32 +142,53 @@ TpgNetwork::_node_input_fault(int id,
 
 // @brief DFF を得る．
 // @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
-const TpgDff*
+const TpgDff&
 TpgNetwork::dff(int pos) const
 {
   ASSERT_COND( pos >= 0 && pos < dff_num() );
 
-  return &mDffArray[pos];
+  return mDffArray[pos];
+}
+
+// @brief DFF のリストを得る．
+Array<const TpgDff>
+TpgNetwork::dff_list() const
+{
+  return Array<const TpgDff>(const_cast<const TpgDff*>(mDffArray), 0, dff_num());
 }
 
 // @brief MFFC を返す．
 // @param[in] pos 位置番号 ( 0 <= pos < mffc_num() )
-const TpgMFFC*
+const TpgMFFC&
 TpgNetwork::mffc(int pos) const
 {
   ASSERT_COND( pos >= 0 && pos < mffc_num() );
 
-  return &mMffcArray[pos];
+  return mMffcArray[pos];
+}
+
+// @brief MFFC のリストを得る．
+Array<const TpgMFFC>
+TpgNetwork::mffc_list() const
+{
+  return Array<const TpgMFFC>(const_cast<const TpgMFFC*>(mMffcArray), 0, mffc_num());
 }
 
 // @brief FFR を返す．
 // @param[in] pos 位置番号 ( 0 <= pos < ffr_num() )
-const TpgFFR*
+const TpgFFR&
 TpgNetwork::ffr(int pos) const
 {
   ASSERT_COND( pos >= 0 && pos < ffr_num() );
 
-  return &mFfrArray[pos];
+  return mFfrArray[pos];
+}
+
+// @brief FFR のリストを得る．
+Array<const TpgFFR>
+TpgNetwork::ffr_list() const
+{
+  return Array<const TpgFFR>(const_cast<const TpgFFR*>(mFfrArray), 0, ffr_num());
 }
 
 // @brief TpgNetwork の内容を出力する関数
@@ -178,8 +199,7 @@ print_network(ostream& s,
 	      const TpgNetwork& network)
 {
   int n = network.node_num();
-  for ( int i = 0; i < n; ++ i ) {
-    const TpgNode* node = network.node(i);
+  for ( auto node: network.node_list() ) {
     print_node(s, network, node);
     s << ": ";
     if ( node->is_primary_input() ) {
@@ -216,8 +236,7 @@ print_network(ostream& s,
       int ni = node->fanin_num();
       if ( ni > 0 ) {
 	s << "(";
-	for ( int j = 0; j < ni; ++ j ) {
-	  const TpgNode* inode = node->fanin(j);
+	for ( auto inode: node->fanin_list() ) {
 	  s << " ";
 	  print_node(s, network, inode);
 	}

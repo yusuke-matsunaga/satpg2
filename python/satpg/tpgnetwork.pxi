@@ -178,10 +178,11 @@ cdef class TpgNetwork :
     def dff_num(TpgNetwork self) :
         return self._this.dff_num()
 
+    """
     ## @brief ID番号からDFFを返す．
     def dff_by_id(TpgNetwork self, id) :
-        cdef const CXX_TpgDff* c_dff = self._this.dff(id)
-        return to_TpgDff(c_dff)
+        cdef const CXX_TpgDff& c_dff = self._this.dff(id)
+        return to_TpgDff(&c_dff)
 
     ## @brief DFFのリストを返す．
     #
@@ -193,6 +194,7 @@ cdef class TpgNetwork :
         for i in range(0, n) :
             c_dff = self._this.dff(i)
             yield to_TpgDff(c_dff)
+            """
 
     ## @brief 故障番号の最大値(+1)を返す．
     @property

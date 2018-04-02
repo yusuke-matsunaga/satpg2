@@ -65,9 +65,7 @@ DtpgTest::single_test()
 
   int detect_num = 0;
   int untest_num = 0;
-  int nf = mNetwork.rep_fault_num();
-  for (int i = 0; i < nf; ++ i) {
-    const TpgFault* fault = mNetwork.rep_fault(i);
+  for ( auto fault: mNetwork.rep_fault_list() ) {
     if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
       const TpgFFR* ffr = fault->ffr();
       Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr, mStats);
@@ -98,12 +96,9 @@ DtpgTest::ffr_test()
 
   int detect_num = 0;
   int untest_num = 0;
-  for (int i = 0; i < mNetwork.ffr_num(); ++ i) {
-    const TpgFFR* ffr = mNetwork.ffr(i);
-    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr, mStats);
-    int nf = ffr->fault_num();
-    for (int j = 0; j < nf; ++ j) {
-      const TpgFault* fault = ffr->fault(j);
+  for ( auto ffr: mNetwork.ffr_list() ) {
+    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, &ffr, mStats);
+    for ( auto fault: ffr.fault_list() ) {
       if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
 	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
@@ -133,12 +128,9 @@ DtpgTest::mffc_test()
 
   int detect_num = 0;
   int untest_num = 0;
-  for (int i = 0; i < mNetwork.mffc_num(); ++ i) {
-    const TpgMFFC* mffc = mNetwork.mffc(i);
-    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, mffc, mStats);
-    int nf = mffc->fault_num();
-    for (int j = 0; j < nf; ++ j) {
-      const TpgFault* fault = mffc->fault(j);
+  for ( auto mffc: mNetwork.mffc_list() ) {
+    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, &mffc, mStats);
+    for ( auto fault: mffc.fault_list() ) {
       if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;

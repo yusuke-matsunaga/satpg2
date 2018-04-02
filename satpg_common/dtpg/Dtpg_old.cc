@@ -116,18 +116,16 @@ Dtpg_old::Dtpg_old(const string& sat_type,
   mTfi2List.reserve(network.node_num());
   mOutputList.reserve(network.ppo_num());
 
-  int n = mffc->elem_num();
-  if ( n > 1 ) {
-    for ( int i = 0; i < n; ++ i ) {
-      const TpgFFR* ffr = mffc->elem(i);
-      mElemArray[i] = ffr->root();
+  if ( mffc->elem_num() > 1 ) {
+    int ffr_id = 0;
+    for ( auto ffr: mffc->elem_list() ) {
+      mElemArray[ffr_id] = ffr->root();
       ASSERT_COND( ffr->root() != nullptr );
-      int nf = ffr->fault_num();
-      for ( int j = 0; j < nf; ++ j ) {
-	const TpgFault* f = ffr->fault(j);
+      for ( auto f: ffr->fault_list() ) {
 	const TpgNode* node = f->tpg_onode()->ffr_root();
-	mElemPosMap.add(node->id(), i);
+	mElemPosMap.add(node->id(), ffr_id);
       }
+      ++ ffr_id;
     }
   }
 
@@ -135,7 +133,7 @@ Dtpg_old::Dtpg_old(const string& sat_type,
 
   gen_cnf_base();
 
-  if ( n > 1 ) {
+  if ( mffc->elem_num() > 1 ) {
     gen_cnf_mffc();
   }
 
@@ -233,26 +231,20 @@ Dtpg_old::gen_cnf_base()
   set_tfo_mark(mRoot);
   for ( int rpos = 0; rpos < mTfoList.size(); ++ rpos ) {
     const TpgNode* node = mTfoList[rpos];
-    int nfo = node->fanout_num();
-    for (int i = 0; i < nfo; ++ i) {
-      const TpgNode* onode = node->fanout(i);
+    for ( auto onode: node->fanout_list() ) {
       set_tfo_mark(onode);
     }
   }
 
   // TFO の TFI を mNodeList に入れる．
   for ( auto node: mTfoList ) {
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       set_tfi_mark(inode);
     }
   }
   for ( int rpos = 0; rpos < mTfiList.size(); ++ rpos ) {
     const TpgNode* node = mTfiList[rpos];
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       set_tfi_mark(inode);
     }
   }
@@ -269,9 +261,7 @@ Dtpg_old::gen_cnf_base()
     set_tfi2_mark(mRoot);
     for ( int rpos = 0; rpos < mTfi2List.size(); ++ rpos) {
       const TpgNode* node = mTfi2List[rpos];
-      int ni = node->fanin_num();
-      for (int i = 0; i < ni; ++ i) {
-	const TpgNode* inode = node->fanin(i);
+      for ( auto inode: node->fanin_list() ) {
 	set_tfi2_mark(inode);
       }
     }
@@ -329,8 +319,7 @@ Dtpg_old::gen_cnf_base()
       DEBUG_OUT << "Node#" << node->id() << ": gvar("
 		<< gvar(node) << ") := " << node->gate_type()
 		<< "(";
-      for (int j = 0; j < node->fanin_num(); ++ j) {
-	const TpgNode* inode = node->fanin(j);
+      for ( auto inode: node->fanin_list() ) {
 	DEBUG_OUT << " " << gvar(inode);
       }
       DEBUG_OUT << ")" << endl;
@@ -343,8 +332,7 @@ Dtpg_old::gen_cnf_base()
       DEBUG_OUT << "Node#" << node->id() << ": gvar("
 		<< gvar(node) << ") := " << node->gate_type()
 		<< "(";
-      for (int j = 0; j < node->fanin_num(); ++ j) {
-	const TpgNode* inode = node->fanin(j);
+      for ( auto inode: node->fanin_list() ) {
 	DEBUG_OUT << " " << gvar(inode);
       }
       DEBUG_OUT << ")" << endl;
@@ -367,8 +355,7 @@ Dtpg_old::gen_cnf_base()
       DEBUG_OUT << "Node#" << node->id() << ": hvar("
 		<< hvar(node) << ") := " << node->gate_type()
 		<< "(";
-      for (int j = 0; j < node->fanin_num(); ++ j) {
-	const TpgNode* inode = node->fanin(j);
+      for ( auto inode: node->fanin_list() ) {
 	DEBUG_OUT << " " << hvar(inode);
       }
       DEBUG_OUT << ")" << endl;
@@ -387,8 +374,7 @@ Dtpg_old::gen_cnf_base()
 	DEBUG_OUT << "Node#" << node->id() << ": fvar("
 		  << fvar(node) << ") := " << node->gate_type()
 		  << "(";
-	for (int j = 0; j < node->fanin_num(); ++ j) {
-	  const TpgNode* inode = node->fanin(j);
+	for ( auto inode: node->fanin_list() ) {
 	  DEBUG_OUT << " " << fvar(inode);
 	}
 
@@ -441,9 +427,7 @@ Dtpg_old::gen_cnf_mffc()
     if ( node == root_node() ) {
       continue;
     }
-    int nfo = node->fanout_num();
-    for ( int i = 0; i < nfo; ++ i ) {
-      const TpgNode* onode = node->fanout(i);
+    for ( auto onode: node->fanout_list() ) {
       if ( fvar(onode) == gvar(onode) ) {
 	SatVarId var = mSolver.new_variable();
 	set_fvar(onode, var);
@@ -460,9 +444,7 @@ Dtpg_old::gen_cnf_mffc()
     if ( node == root_node() ) {
       continue;
     }
-    int nfo = node->fanout_num();
-    for ( int i = 0; i < nfo; ++ i ) {
-      const TpgNode* onode = node->fanout(i);
+    for ( auto onode: node->fanout_list() ) {
       if ( fvar(onode) == gvar(onode) ) {
 	SatVarId var = mSolver.new_variable();
 	set_fvar(onode, var);
@@ -512,9 +494,7 @@ Dtpg_old::gen_cnf_mffc()
       DEBUG_OUT << "Node#" << node->id() << ": ofvar("
 		<< ovar << ") := " << node->gate_type()
 		<< "(";
-      int ni = node->fanin_num();
-      for ( int i = 0; i < ni; ++ i ) {
-	const TpgNode* inode = node->fanin(i);
+      for ( auto inode: node->fanin_list() ) {
 	DEBUG_OUT << " " << fvar(inode);
       }
       DEBUG_OUT << ")" << endl;
@@ -895,10 +875,8 @@ Dtpg_old::make_ffr_condition(const TpgFault* fault,
     const TpgNode* onode = fault->tpg_onode();
     Val3 nval = onode->nval();
     if ( nval != Val3::_X ) {
-      int ni = onode->fanin_num();
       bool val = (nval == Val3::_1);
-      for (int i = 0; i < ni; ++ i) {
-	const TpgNode* inode1 = onode->fanin(i);
+      for ( auto inode1: onode->fanin_list() ) {
 	if ( inode1 != inode ) {
 	  add_assign(assign_list, inode1, 1, val);
 	}
@@ -919,8 +897,7 @@ Dtpg_old::make_ffr_condition(const TpgFault* fault,
       continue;
     }
     bool val = (nval == Val3::_1);
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode1 = fonode->fanin(i);
+    for ( auto inode1: fonode->fanin_list() ) {
       if ( inode1 != node ) {
 	add_assign(assign_list, inode1, 1, val);
       }

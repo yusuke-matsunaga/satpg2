@@ -22,9 +22,7 @@ TpgFaultMgr::TpgFaultMgr(const TpgNetwork& network) :
   mFaultArray(mMaxFaultId, nullptr),
   mStatusArray(mMaxFaultId, FaultStatus::Undetected)
 {
-  int n = network.rep_fault_num();
-  for (int i = 0; i < n; ++ i) {
-    const TpgFault* f = network.rep_fault(i);
+  for ( auto f: network.rep_fault_list() ) {
     mFaultArray[f->id()] = f;
   }
 }

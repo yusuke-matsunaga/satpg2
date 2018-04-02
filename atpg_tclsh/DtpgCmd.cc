@@ -42,9 +42,7 @@ run_single_old(const string& sat_type,
 	       UntestOp& uop,
 	       DtpgStats& stats)
 {
-  int nf = network.rep_fault_num();
-  for (int i = 0; i < nf; ++ i) {
-    const TpgFault* fault = network.rep_fault(i);
+  for ( auto fault: network.rep_fault_list() ) {
     if ( fmgr.status(fault) == FaultStatus::Undetected ) {
       const TpgFFR* ffr = fault->ffr();
       Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
@@ -73,12 +71,9 @@ run_ffr_old(const string& sat_type,
 	    DtpgStats& stats)
 {
   int nffr = network.ffr_num();
-  for (int i = 0; i < nffr; ++ i) {
-    const TpgFFR* ffr = network.ffr(i);
-    Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
-    int nf = ffr->fault_num();
-    for (int j = 0; j < nf; ++ j) {
-      const TpgFault* fault = ffr->fault(j);
+  for ( auto ffr: network.ffr_list() ) {
+    Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &ffr, stats);
+    for ( auto fault: ffr.fault_list() ) {
       if ( fmgr.status(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
 	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
@@ -106,12 +101,9 @@ run_mffc_old(const string& sat_type,
 	     DtpgStats& stats)
 {
   int n = network.mffc_num();
-  for (int i = 0; i < n; ++ i) {
-    const TpgMFFC* mffc = network.mffc(i);
-    Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc, stats);
-    int nf = mffc->fault_num();
-    for (int j = 0; j < nf; ++ j) {
-      const TpgFault* fault = mffc->fault(j);
+  for ( auto mffc: network.mffc_list() ) {
+    Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &mffc, stats);
+    for ( auto fault: mffc.fault_list() ) {
       if ( fmgr.status(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;
@@ -139,9 +131,7 @@ run_single(const string& sat_type,
 	   UntestOp& uop,
 	   DtpgStats& stats)
 {
-  int nf = network.rep_fault_num();
-  for (int i = 0; i < nf; ++ i) {
-    const TpgFault* fault = network.rep_fault(i);
+  for ( auto fault: network.rep_fault_list() ) {
     if ( fmgr.status(fault) == FaultStatus::Undetected ) {
       const TpgFFR* ffr = fault->ffr();
       Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
@@ -169,13 +159,9 @@ run_ffr(const string& sat_type,
 	UntestOp& uop,
 	DtpgStats& stats)
 {
-  int nffr = network.ffr_num();
-  for (int i = 0; i < nffr; ++ i) {
-    const TpgFFR* ffr = network.ffr(i);
-    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
-    int nf = ffr->fault_num();
-    for (int j = 0; j < nf; ++ j) {
-      const TpgFault* fault = ffr->fault(j);
+  for ( auto ffr: network.ffr_list() ) {
+    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &ffr, stats);
+    for ( auto fault: ffr.fault_list() ) {
       if ( fmgr.status(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
 	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
@@ -202,13 +188,9 @@ run_mffc(const string& sat_type,
 	 UntestOp& uop,
 	 DtpgStats& stats)
 {
-  int n = network.mffc_num();
-  for (int i = 0; i < n; ++ i) {
-    const TpgMFFC* mffc = network.mffc(i);
-    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc, stats);
-    int nf = mffc->fault_num();
-    for (int j = 0; j < nf; ++ j) {
-      const TpgFault* fault = mffc->fault(j);
+  for ( auto mffc: network.mffc_list() ) {
+    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &mffc, stats);
+    for ( auto fault: mffc.fault_list() ) {
       if ( fmgr.status(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;
@@ -223,6 +205,7 @@ run_mffc(const string& sat_type,
     }
   }
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // テストパタン生成を行うコマンド
