@@ -20,7 +20,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] id ID番号
 // @param[in] dff 接続しているDFF
 TpgDffControl::TpgDffControl(int id,
-			     TpgDff* dff,
+			     const TpgDff* dff,
 			     TpgNode* fanin) :
   TpgNode(id),
   mFanin(fanin),
@@ -50,7 +50,7 @@ TpgDffControl::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgDffControl::fanin(int pos) const
+TpgDffControl::_fanin(int pos) const
 {
   ASSERT_COND( pos == 0 );
 
@@ -61,7 +61,7 @@ TpgDffControl::fanin(int pos) const
 //
 // is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
 // の時に意味を持つ．
-TpgDff*
+const TpgDff*
 TpgDffControl::dff() const
 {
   return mDff;

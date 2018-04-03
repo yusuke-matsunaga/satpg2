@@ -170,7 +170,7 @@ TpgNode::output_id2() const
 //
 // is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
 // の時に意味を持つ．
-TpgDff*
+const TpgDff*
 TpgNode::dff() const
 {
   ASSERT_NOT_REACHED;
@@ -256,7 +256,7 @@ TpgNode::set_fanin(const vector<TpgNode*>& inode_list,
 // @param[in] fo_node ファンアウト先のノード
 void
 TpgNode::set_fanout(int pos,
-		    TpgNode* fo_node)
+		    const TpgNode* fo_node)
 {
   ASSERT_COND( pos < fanout_num() );
 
@@ -282,7 +282,7 @@ TpgNode::set_fanout_num(int fanout_num,
 {
   mFanoutNum = fanout_num;
   if ( fanout_num > 0 ) {
-    mFanoutList = alloc.get_array<TpgNode*>(fanout_num);
+    mFanoutList = alloc.get_array<const TpgNode*>(fanout_num);
   }
 }
 

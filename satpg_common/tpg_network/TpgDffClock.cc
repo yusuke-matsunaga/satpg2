@@ -21,7 +21,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] dff 接続しているDFF
 // @param[in] fanin ファンインのノード
 TpgDffClock::TpgDffClock(int id,
-			 TpgDff* dff,
+			 const TpgDff* dff,
 			 TpgNode* fanin) :
   TpgDffControl(id, dff, fanin)
 {

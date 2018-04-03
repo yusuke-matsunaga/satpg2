@@ -27,7 +27,7 @@ protected:
   /// @param[in] id ID番号
   /// @param[in] dff 接続しているDFF
   TpgDffControl(int id,
-		TpgDff* dff,
+		const TpgDff* dff,
 		TpgNode* fanin);
 
   /// @brief デストラクタ
@@ -54,14 +54,14 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
   virtual
   TpgNode*
-  fanin(int pos) const override;
+  _fanin(int pos) const override;
 
   /// @brief 接続している DFF を返す．
   ///
   /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
   /// の時に意味を持つ．
   virtual
-  TpgDff*
+  const TpgDff*
   dff() const override;
 
 
@@ -80,7 +80,7 @@ private:
   TpgNode* mFanin;
 
   // 対応する DFF
-  TpgDff* mDff;
+  const TpgDff* mDff;
 
 };
 

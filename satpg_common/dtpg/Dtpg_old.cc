@@ -810,7 +810,7 @@ Dtpg_old::make_dchain_cnf(const TpgNode* node)
     }
     int nfo = node->fanout_num();
     if ( nfo == 1 ) {
-      SatLiteral odlit(mDvarMap(node->fanout(0)));
+      SatLiteral odlit(mDvarMap(node->fanout_list()[0]));
       mSolver.add_clause(~dlit, odlit);
 
       if ( debug_dtpg ) {
@@ -818,10 +818,10 @@ Dtpg_old::make_dchain_cnf(const TpgNode* node)
       }
     }
     else {
-      vector<SatLiteral> tmp_lits(nfo + 1);
-      for (int i = 0; i < nfo; ++ i) {
-	const TpgNode* onode = node->fanout(i);
-	tmp_lits[i] = SatLiteral(mDvarMap(onode));
+      vector<SatLiteral> tmp_lits;
+      tmp_lits.reserve(nfo + 1);
+      for ( auto onode: node->fanout_list() ) {
+	tmp_lits.push_back(SatLiteral(mDvarMap(onode)));
 
 	if ( debug_dtpg ) {
 	  DEBUG_OUT << " " << mDvarMap(onode);
@@ -831,7 +831,7 @@ Dtpg_old::make_dchain_cnf(const TpgNode* node)
       if ( debug_dtpg ) {
 	DEBUG_OUT << endl;
       }
-      tmp_lits[nfo] = ~dlit;
+      tmp_lits.push_back(~dlit);
       mSolver.add_clause(tmp_lits);
 
       const TpgNode* imm_dom = node->imm_dom();
@@ -885,9 +885,9 @@ Dtpg_old::make_ffr_condition(const TpgFault* fault,
   }
 
   // FFR の根までの伝搬条件を作る．
-  for (const TpgNode* node = fault->tpg_onode(); node->fanout_num() == 1;
-       node = node->fanout(0)) {
-    const TpgNode* fonode = node->fanout(0);
+  for ( const TpgNode* node = fault->tpg_onode(); node->fanout_num() == 1;
+	node = node->fanout_list()[0]) {
+    const TpgNode* fonode = node->fanout_list()[0];
     int ni = fonode->fanin_num();
     if ( ni == 1 ) {
       continue;

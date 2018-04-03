@@ -92,7 +92,7 @@ TpgNodeFactory::make_output(int id,
 TpgNode*
 TpgNodeFactory::make_dff_input(int id,
 			       int oid,
-			       TpgDff* dff,
+			       const TpgDff* dff,
 			       TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffInput));
@@ -110,7 +110,7 @@ TpgNodeFactory::make_dff_input(int id,
 TpgNode*
 TpgNodeFactory::make_dff_output(int id,
 				int iid,
-				TpgDff* dff,
+				const TpgDff* dff,
 				int fanout_num)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffOutput));
@@ -127,7 +127,7 @@ TpgNodeFactory::make_dff_output(int id,
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_clock(int id,
-			       TpgDff* dff,
+			       const TpgDff* dff,
 			       TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffClock));
@@ -143,7 +143,7 @@ TpgNodeFactory::make_dff_clock(int id,
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_clear(int id,
-			       TpgDff* dff,
+			       const TpgDff* dff,
 			       TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffClear));
@@ -159,7 +159,7 @@ TpgNodeFactory::make_dff_clear(int id,
 // @return 作成したノードを返す．
 TpgNode*
 TpgNodeFactory::make_dff_preset(int id,
-				TpgDff* dff,
+				const TpgDff* dff,
 				TpgNode* inode)
 {
   void* p = mAlloc.get_memory(sizeof(TpgDffPreset));

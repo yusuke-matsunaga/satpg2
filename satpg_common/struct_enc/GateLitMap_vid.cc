@@ -42,7 +42,7 @@ GateLitMap_vid::input_size() const
 SatLiteral
 GateLitMap_vid::input(int pos) const
 {
-  const TpgNode* inode = mNode->fanin(pos);
+  const TpgNode* inode = mNode->fanin_list()[pos];
   return SatLiteral(mVidMap(inode), false);
 }
 

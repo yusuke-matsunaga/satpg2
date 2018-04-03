@@ -92,7 +92,7 @@ TpgNetwork::make_output_node(int oid,
 // @return 生成したノードを返す．
 TpgNode*
 TpgNetwork::make_dff_input_node(int oid,
-				TpgDff* dff,
+				const TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
@@ -122,7 +122,7 @@ TpgNetwork::make_dff_input_node(int oid,
 // @return 生成したノードを返す．
 TpgNode*
 TpgNetwork::make_dff_output_node(int iid,
-				 TpgDff* dff,
+				 const TpgDff* dff,
 				 const string& name,
 				 int fanout_num)
 {
@@ -149,7 +149,7 @@ TpgNetwork::make_dff_output_node(int iid,
 // @param[in] inode 入力のノード
 // @return 生成したノードを返す．
 TpgNode*
-TpgNetwork::make_dff_clock_node(TpgDff* dff,
+TpgNetwork::make_dff_clock_node(const TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
@@ -177,7 +177,7 @@ TpgNetwork::make_dff_clock_node(TpgDff* dff,
 // @param[in] inode 入力のノード
 // @return 生成したノードを返す．
 TpgNode*
-TpgNetwork::make_dff_clear_node(TpgDff* dff,
+TpgNetwork::make_dff_clear_node(const TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
@@ -205,7 +205,7 @@ TpgNetwork::make_dff_clear_node(TpgDff* dff,
 // @param[in] inode 入力のノード
 // @return 生成したノードを返す．
 TpgNode*
-TpgNetwork::make_dff_preset_node(TpgDff* dff,
+TpgNetwork::make_dff_preset_node(const TpgDff* dff,
 				 const string& name,
 				 TpgNode* inode)
 {
@@ -536,7 +536,7 @@ TpgNetwork::new_ifault(const char* name,
 {
   TpgNode* node = inode_info.mNode;
   int inode_pos = inode_info.mPos;
-  TpgNode* inode = node->fanin(inode_pos);
+  const TpgNode* inode = node->fanin_list()[inode_pos];
   void* p = mAlloc.get_memory(sizeof(TpgBranchFault));
   TpgFault* f = new (p) TpgBranchFault(mFaultNum, name, val, ipos, node, inode, inode_pos, rep);
   mAuxInfoArray[node->id()].set_input_fault(inode_pos, val, f);

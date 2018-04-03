@@ -109,9 +109,7 @@ MffcPropCone::make_cnf()
     if ( node == root_node() ) {
       continue;
     }
-    int nfo = node->fanout_num();
-    for (int i = 0; i < nfo; ++ i) {
-      const TpgNode* onode = node->fanout(i);
+    for ( auto onode: node->fanout_list() ) {
       if ( fvar(onode) == gvar(onode) ) {
 	SatVarId var = solver().new_variable();
 	set_fvar(onode, var);
@@ -128,9 +126,7 @@ MffcPropCone::make_cnf()
     if ( node == root_node() ) {
       continue;
     }
-    int nfo = node->fanout_num();
-    for (int i = 0; i < nfo; ++ i) {
-      const TpgNode* onode = node->fanout(i);
+    for ( auto onode: node->fanout_list() ) {
       if ( fvar(onode) == gvar(onode) ) {
 	SatVarId var = solver().new_variable();
 	set_fvar(onode, var);
@@ -180,9 +176,7 @@ MffcPropCone::make_cnf()
       DEBUG_OUT << "Node#" << node->id() << ": ofvar("
 		<< ovar << ") := " << node->gate_type()
 		<< "(";
-      int ni = node->fanin_num();
-      for (int i = 0; i < ni; ++ i) {
-	const TpgNode* inode = node->fanin(i);
+      for ( auto inode: node->fanin_list() ) {
 	DEBUG_OUT << " " << fvar(inode);
       }
       DEBUG_OUT << ")" << endl;

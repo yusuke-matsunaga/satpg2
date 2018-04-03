@@ -69,7 +69,7 @@ TpgLogic0::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgLogic0::fanin(int pos) const
+TpgLogic0::_fanin(int pos) const
 {
   ASSERT_NOT_REACHED;
 
@@ -113,7 +113,7 @@ TpgLogic1::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgLogic1::fanin(int pos) const
+TpgLogic1::_fanin(int pos) const
 {
   ASSERT_COND( pos == 0 );
 
@@ -162,9 +162,9 @@ TpgLogic2::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgLogic2::fanin(int pos) const
+TpgLogic2::_fanin(int pos) const
 {
-  ASSERT_COND( pos < 2 );
+  ASSERT_COND( pos >= 0 && pos < 2 );
 
   return mFanins[pos];
 }
@@ -212,9 +212,9 @@ TpgLogic3::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgLogic3::fanin(int pos) const
+TpgLogic3::_fanin(int pos) const
 {
-  ASSERT_COND( pos < 3 );
+  ASSERT_COND( pos >= 0 && pos < 3 );
 
   return mFanins[pos];
 }
@@ -263,9 +263,9 @@ TpgLogic4::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgLogic4::fanin(int pos) const
+TpgLogic4::_fanin(int pos) const
 {
-  ASSERT_COND( pos < 4 );
+  ASSERT_COND( pos >= 0 && pos < 4 );
 
   return mFanins[pos];
 }
@@ -307,9 +307,9 @@ TpgLogicN::fanin_list() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgLogicN::fanin(int pos) const
+TpgLogicN::_fanin(int pos) const
 {
-  ASSERT_COND( pos < fanin_num() );
+  ASSERT_COND( pos >= 0 && pos < fanin_num() );
 
   return mFanins[pos];
 }

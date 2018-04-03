@@ -101,9 +101,7 @@ Extractor::mark_tfo(const TpgNode* node)
     }
   }
 
-  int nfo = node->fanout_num();
-  for (int i = 0; i < nfo; ++ i) {
-    const TpgNode* onode = node->fanout(i);
+  for ( auto onode: node->fanout_list() ) {
     mark_tfo(onode);
   }
 }
@@ -122,9 +120,7 @@ Extractor::record_sensitized_node(const TpgNode* node,
 
   ASSERT_COND( gval(node) != fval(node) );
 
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     if ( mFconeMark.check(inode->id()) ) {
       if ( gval(inode) != fval(inode) ) {
 	record_sensitized_node(inode, assign_list);
@@ -153,14 +149,12 @@ Extractor::record_masking_node(const TpgNode* node,
 
   ASSERT_COND ( gval(node) == fval(node) );
 
-  int ni = node->fanin_num();
   // ファンインには sensitized node があって
   // side input がある場合．
   bool has_cval = false;
   bool has_snode = false;
   const TpgNode* cnode = nullptr;
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     if ( mFconeMark.check(inode->id()) ) {
       if ( gval(inode) != fval(inode) ) {
 	// このノードには故障差が伝搬している．
@@ -186,8 +180,7 @@ Extractor::record_masking_node(const TpgNode* node,
   // ここに来たということは全てのファンインに故障差が伝搬していないか
   // 複数のファンインの故障差が打ち消し合っているのですべてのファンイン
   // に再帰する．
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     if ( mFconeMark.check(inode->id()) ) {
       if ( gval(inode) != fval(inode) ) {
 	record_sensitized_node(inode, assign_list);

@@ -82,7 +82,7 @@ TpgPPI::fanin_num() const
 // @brief ファンインを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
 TpgNode*
-TpgPPI::fanin(int pos) const
+TpgPPI::_fanin(int pos) const
 {
   ASSERT_NOT_REACHED;
   return nullptr;

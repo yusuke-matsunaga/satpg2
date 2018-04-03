@@ -31,7 +31,7 @@ private:
   /// @param[in] dff 接続しているDFF
   TpgDffOutput(int id,
 	       int input_id,
-	       TpgDff* dff);
+	       const TpgDff* dff);
 
   /// @brief デストラクタ
   virtual
@@ -53,7 +53,7 @@ public:
   /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
   /// の時に意味を持つ．
   virtual
-  TpgDff*
+  const TpgDff*
   dff() const override;
 
 
@@ -69,7 +69,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 対応する DFF
-  TpgDff* mDff;
+  const TpgDff* mDff;
 
 };
 

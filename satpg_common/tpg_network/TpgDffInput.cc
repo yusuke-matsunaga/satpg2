@@ -23,7 +23,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] fanin ファンインのノード
 TpgDffInput::TpgDffInput(int id,
 			 int output_id,
-			 TpgDff* dff,
+			 const TpgDff* dff,
 			 TpgNode* fanin) :
   TpgPPO(id, output_id, fanin),
   mDff(dff)
@@ -46,7 +46,7 @@ TpgDffInput::is_dff_input() const
 //
 // is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
 // の時に意味を持つ．
-TpgDff*
+const TpgDff*
 TpgDffInput::dff() const
 {
   return mDff;

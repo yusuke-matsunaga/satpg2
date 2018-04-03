@@ -79,7 +79,7 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
   virtual
   TpgNode*
-  fanin(int pos) const override;
+  _fanin(int pos) const override;
 
 
 private:

@@ -32,7 +32,7 @@ private:
   /// @param[in] fanin ファンインのノード
   TpgDffInput(int id,
 	      int output_id,
-	      TpgDff* dff,
+	      const TpgDff* dff,
 	      TpgNode* fanin);
 
   /// @brief デストラクタ
@@ -54,7 +54,7 @@ public:
   /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
   /// の時に意味を持つ．
   virtual
-  TpgDff*
+  const TpgDff*
   dff() const override;
 
 
@@ -64,7 +64,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 対応する DFF
-  TpgDff* mDff;
+  const TpgDff* mDff;
 
 };
 

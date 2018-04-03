@@ -22,7 +22,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] dff 接続しているDFF
 TpgDffOutput::TpgDffOutput(int id,
 			   int input_id,
-			   TpgDff* dff) :
+			   const TpgDff* dff) :
   TpgPPI(id, input_id),
   mDff(dff)
 {
@@ -44,7 +44,7 @@ TpgDffOutput::is_dff_output() const
 //
 // is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
 // の時に意味を持つ．
-TpgDff*
+const TpgDff*
 TpgDffOutput::dff() const
 {
   return mDff;

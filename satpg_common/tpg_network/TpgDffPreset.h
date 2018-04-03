@@ -30,7 +30,7 @@ private:
   /// @param[in] dff 接続しているDFF
   /// @param[in] fanin ファンインのノード
   TpgDffPreset(int id,
-	       TpgDff* dff,
+	       const TpgDff* dff,
 	       TpgNode* fanin);
 
   /// @brief デストラクタ

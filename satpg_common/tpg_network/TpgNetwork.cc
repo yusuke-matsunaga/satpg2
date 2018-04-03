@@ -211,14 +211,14 @@ print_network(ostream& s,
     }
     else if ( node->is_primary_output() ) {
       s << "OUTPUT#" << node->output_id();
-      const TpgNode* inode = node->fanin(0);
+      const TpgNode* inode = node->fanin_list()[0];
       s << " = ";
       print_node(s, network, inode);
     }
     else if ( node->is_dff_input() ) {
       s << "OUTPUT#" << node->output_id()
 	<< "(DFF#" << node->dff()->id() << ".input)";
-      const TpgNode* inode = node->fanin(0);
+      const TpgNode* inode = node->fanin_list()[0];
       s << " = ";
       print_node(s, network, inode);
     }

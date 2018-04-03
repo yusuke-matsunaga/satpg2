@@ -117,7 +117,7 @@ BtJust1::justify(const TpgNode* node,
   case GateType::Buff:
   case GateType::Not:
     // 無条件で唯一のファンインをたどる．
-    justify(node->fanin(0), time, assign_list);
+    justify(node->fanin_list()[0], time, assign_list);
     break;
 
   case GateType::And:

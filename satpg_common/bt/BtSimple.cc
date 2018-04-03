@@ -93,9 +93,7 @@ BtSimple::justify(const TpgNode* node,
     }
   }
   else {
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       justify(inode, time, assign_list);
     }
   }

@@ -204,11 +204,9 @@ StructEnc::add_fault_condition(const TpgFault* fault,
     const TpgNode* onode = fault->tpg_onode();
     Val3 nval = onode->nval();
     if ( nval != Val3::_X ) {
-      int ni = onode->fanin_num();
       bool val = (nval == Val3::_1);
       // inode -> onode の伝搬条件
-      for (int i = 0; i < ni; ++ i) {
-	const TpgNode* inode1 = onode->fanin(i);
+      for ( auto inode1: onode->fanin_list() ) {
 	if ( inode1 == inode ) {
 	  continue;
 	}
@@ -231,10 +229,10 @@ StructEnc::add_ffr_condition(const TpgNode* root_node,
   add_fault_condition(fault, assign_list);
 
   // FFR の根までの伝搬条件
-  for (const TpgNode* node = fault->tpg_onode(); node != root_node;
-       node = node->fanout(0)) {
+  for ( const TpgNode* node = fault->tpg_onode(); node != root_node;
+       node = node->fanout_list()[0] ) {
     ASSERT_COND( node->fanout_num() == 1 );
-    const TpgNode* onode = node->fanout(0);
+    const TpgNode* onode = node->fanout_list()[0];
     int ni = onode->fanin_num();
     if ( ni == 1 ) {
       // サイドインプットがなければスキップ
@@ -249,8 +247,7 @@ StructEnc::add_ffr_condition(const TpgNode* root_node,
     }
     // サイドインプットの値を非制御値にする．
     bool val = (nval == Val3::_1);
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = onode->fanin(i);
+    for ( auto inode: onode->fanin_list() ) {
       if ( inode == node ) {
 	continue;
       }
@@ -320,9 +317,7 @@ StructEnc::make_tfi_list(const vector<const TpgNode*>& node_list)
     const TpgNode* node = mCurNodeList[rpos];
 
     // node のファンインを mCurNodeList に追加する．
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       if ( !cur_mark(inode) ) {
 	add_cur_node(inode);
       }
@@ -339,9 +334,7 @@ StructEnc::make_tfi_list(const vector<const TpgNode*>& node_list)
     const TpgNode* node = mPrevNodeList[rpos];
 
     // node のファンインを mCurNodeList に追加する．
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       if ( !prev_mark(inode) ) {
 	add_prev_node(inode);
       }
@@ -431,9 +424,7 @@ StructEnc::make_tfi_var(const TpgNode* node,
   set_new_var(node, time);
 
   // 先に TFI のノードの変数を作る．
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     make_tfi_var(inode, time);
   }
 
@@ -465,9 +456,7 @@ StructEnc::make_tfi_cnf(const TpgNode* node,
   make_node_cnf(node, var_map(time));
 
   // TFI のノードの節を作る．
-  int ni = node->fanin_num();
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  for ( auto inode: node->fanin_list() ) {
     make_tfi_cnf(inode, time);
   }
 

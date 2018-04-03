@@ -3,6 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
+  ${PROJECT_SOURCE_DIR}/satpg_common/tpg_network
   )
 
 

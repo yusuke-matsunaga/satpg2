@@ -70,7 +70,7 @@ public:
   TpgNode*
   make_dff_input(int id,
 		 int oid,
-		 TpgDff* dff,
+		 const TpgDff* dff,
 		 TpgNode* inode);
 
   /// @brief DFFの出力ノードを作る．
@@ -82,7 +82,7 @@ public:
   TpgNode*
   make_dff_output(int id,
 		  int iid,
-		  TpgDff* dff,
+		  const TpgDff* dff,
 		  int fanout_num);
 
   /// @brief DFFのクロック端子を作る．
@@ -92,7 +92,7 @@ public:
   /// @return 作成したノードを返す．
   TpgNode*
   make_dff_clock(int id,
-		 TpgDff* dff,
+		 const TpgDff* dff,
 		 TpgNode* inode);
 
   /// @brief DFFのクリア端子を作る．
@@ -102,7 +102,7 @@ public:
   /// @return 作成したノードを返す．
   TpgNode*
   make_dff_clear(int id,
-		 TpgDff* dff,
+		 const TpgDff* dff,
 		 TpgNode* inode);
 
   /// @brief DFFのプリセット端子を作る．
@@ -112,7 +112,7 @@ public:
   /// @return 作成したノードを返す．
   TpgNode*
   make_dff_preset(int id,
-		  TpgDff* dff,
+		  const TpgDff* dff,
 		  TpgNode* inode);
 
   /// @brief 論理ノードを作る．

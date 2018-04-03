@@ -226,10 +226,9 @@ BtJust2::just_one(const TpgNode* node,
 {
   int ni = node->fanin_num();
   // まず gval と fval が等しい場合を探す．
-  int pos = ni;
-  int min = 0;
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  int min = INT_MAX;
+  const TpgNode* min_inode = nullptr;
+  for ( auto inode: node->fanin_list() ) {
     Val3 igval = gval(inode, time);
     Val3 ifval = fval(inode, time);
     if ( igval != ifval || igval != val ) {
@@ -237,24 +236,23 @@ BtJust2::just_one(const TpgNode* node,
     }
     NodeList* node_list1 = justify(inode, time);
     int n = list_size(node_list1);
-    if ( min == 0 || min > n ) {
-      pos = i;
+    if ( min > n ) {
       min = n;
+      min_inode = inode;
     }
   }
-  if ( pos < ni ) {
+  if ( min_inode != nullptr ) {
     NodeList*& node_list = mJustArray[node->id() * 2 + time];
-    list_merge(node_list, mJustArray[node->fanin(pos)->id() * 2 + time]);
+    list_merge(node_list, mJustArray[min_inode->id() * 2 + time]);
     return node_list;
   }
 
   // 次に gval と fval が異なる場合を探す．
-  int gpos = ni;
-  int fpos = ni;
-  int gmin = -1;
-  int fmin = -1;
-  for (int i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
+  int gmin = INT_MAX;
+  int fmin = INT_MAX;
+  const TpgNode* gmin_node = nullptr;
+  const TpgNode* fmin_node = nullptr;
+  for ( auto inode: node->fanin_list() ) {
     Val3 igval = gval(inode, time);
     Val3 ifval = fval(inode, time);
     if ( igval != val && ifval != val ) {
@@ -264,23 +262,23 @@ BtJust2::just_one(const TpgNode* node,
     int n = list_size(node_list1);
     if ( igval == val ) {
       if ( gmin > n ) {
-	gpos = i;
 	gmin = n;
+	gmin_node = inode;
       }
     }
     if ( ifval == val ) {
       if ( fmin == 0 || fmin > n ) {
-	fpos = i;
 	fmin = n;
+	fmin_node = inode;
       }
     }
   }
-  ASSERT_COND( gpos < ni );
-  ASSERT_COND( fpos < ni );
-  ASSERT_COND( gpos != fpos );
+  ASSERT_COND( gmin_node != nullptr );
+  ASSERT_COND( fmin_node != nullptr );
+  ASSERT_COND( gmin_node != fmin_node );
   NodeList*& node_list = mJustArray[node->id() * 2 + time];
-  list_merge(node_list, mJustArray[node->fanin(gpos)->id() * 2 + time]);
-  list_merge(node_list, mJustArray[node->fanin(fpos)->id() * 2 + time]);
+  list_merge(node_list, mJustArray[gmin_node->id() * 2 + time]);
+  list_merge(node_list, mJustArray[fmin_node->id() * 2 + time]);
 
   return node_list;
 }

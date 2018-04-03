@@ -347,7 +347,7 @@ private:
   /// @return 生成したノードを返す．
   TpgNode*
   make_dff_input_node(int oid,
-		      TpgDff* dff,
+		      const TpgDff* dff,
 		      const string& name,
 		      TpgNode* inode);
 
@@ -359,7 +359,7 @@ private:
   /// @return 生成したノードを返す．
   TpgNode*
   make_dff_output_node(int iid,
-		       TpgDff* dff,
+		       const TpgDff* dff,
 		       const string& name,
 		       int fanout_num);
 
@@ -369,7 +369,7 @@ private:
   /// @param[in] inode 入力のノード
   /// @return 生成したノードを返す．
   TpgNode*
-  make_dff_clock_node(TpgDff* dff,
+  make_dff_clock_node(const TpgDff* dff,
 		      const string& name,
 		      TpgNode* inode);
 
@@ -379,7 +379,7 @@ private:
   /// @param[in] inode 入力のノード
   /// @return 生成したノードを返す．
   TpgNode*
-  make_dff_clear_node(TpgDff* dff,
+  make_dff_clear_node(const TpgDff* dff,
 		      const string& name,
 		      TpgNode* inode);
 
@@ -389,7 +389,7 @@ private:
   /// @param[in] inode 入力のノード
   /// @return 生成したノードを返す．
   TpgNode*
-  make_dff_preset_node(TpgDff* dff,
+  make_dff_preset_node(const TpgDff* dff,
 		       const string& name,
 		       TpgNode* inode);
 

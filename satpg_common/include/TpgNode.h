@@ -142,7 +142,7 @@ public:
   /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
   /// の時に意味を持つ．
   virtual
-  TpgDff*
+  const TpgDff*
   dff() const;
 
   /// @brief ゲートタイプを得る．
@@ -187,11 +187,6 @@ public:
   Val3
   noval() const;
 
-  /// @brief ファンインのリストを得る．
-  virtual
-  Array<const TpgNode*>
-  fanin_list() const = 0;
-
   /// @brief ファンイン数を得る．
   virtual
   int
@@ -201,11 +196,12 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
   virtual
   TpgNode*
-  fanin(int pos) const = 0;
+  _fanin(int pos) const = 0;
 
-  /// @brief ファンアウトのリストを得る．
+  /// @brief ファンインのリストを得る．
+  virtual
   Array<const TpgNode*>
-  fanout_list() const;
+  fanin_list() const = 0;
 
   /// @brief ファンアウト数を得る．
   int
@@ -213,8 +209,12 @@ public:
 
   /// @brief ファンアウトを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
-  TpgNode*
-  fanout(int pos) const;
+  const TpgNode*
+  _fanout(int pos) const;
+
+  /// @brief ファンアウトのリストを得る．
+  Array<const TpgNode*>
+  fanout_list() const;
 
   /// @brief FFR の根のノードを得る．
   ///
@@ -262,7 +262,7 @@ public:
   /// @param[in] fo_node ファンアウト先のノード
   void
   set_fanout(int pos,
-	     TpgNode* fo_node);
+	     const TpgNode* fo_node);
 
   /// @brief immediate dominator をセットする．
   /// @param[in] dom dominator ノード
@@ -298,7 +298,7 @@ private:
   int mFanoutNum;
 
   // ファンアウトの配列
-  TpgNode** mFanoutList;
+  const TpgNode** mFanoutList;
 
   // immediate dominator
   const TpgNode* mImmDom;
@@ -333,8 +333,7 @@ inline
 Array<const TpgNode*>
 TpgNode::fanout_list() const
 {
-  const TpgNode** body = const_cast<const TpgNode**>(mFanoutList);
-  return Array<const TpgNode*>(body, 0, mFanoutNum);
+  return Array<const TpgNode*>(mFanoutList, 0, mFanoutNum);
 }
 
 // @brief ファンアウト数を得る．
@@ -348,8 +347,8 @@ TpgNode::fanout_num() const
 // @brief ファンアウトを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
 inline
-TpgNode*
-TpgNode::fanout(int pos) const
+const TpgNode*
+TpgNode::_fanout(int pos) const
 {
   ASSERT_COND( pos < fanout_num() );
   return mFanoutList[pos];
@@ -365,7 +364,7 @@ TpgNode::ffr_root() const
   if ( fanout_num() == 0 || fanout_num() > 1 ) {
     return this;
   }
-  return fanout(0)->ffr_root();
+  return _fanout(0)->ffr_root();
 }
 
 // @brief MFFCの根のノードを得る．

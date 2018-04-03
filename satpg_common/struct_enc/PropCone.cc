@@ -82,8 +82,7 @@ PropCone::mark_tfo(const TpgNode* node)
       continue;
     }
     int nfo = node->fanout_num();
-    for (int i = 0; i < nfo; ++ i) {
-      const TpgNode* fonode = node->fanout(i);
+    for (auto fonode: node->fanout_list() ) {
       set_tfo_mark(fonode);
     }
   }
@@ -129,9 +128,7 @@ PropCone::make_vars()
   vector<bool> tfi_mark(max_id(), false);
   for (int i = 0; i < mNodeList.size(); ++ i) {
     const TpgNode* node = mNodeList[i];
-    int ni = node->fanin_num();
-    for (int j = 0; j < ni; ++ j) {
-      const TpgNode* inode = node->fanin(j);
+    for ( auto inode: node->fanin_list() ) {
       if ( !tfo_mark(inode) && !tfi_mark[inode->id()] ) {
 	tfi_mark[inode->id()] = true;
 	tmp_list.push_back(inode);
@@ -141,9 +138,7 @@ PropCone::make_vars()
   for (int rpos = 0; rpos < tmp_list.size(); ++ rpos) {
     const TpgNode* node = tmp_list[rpos];
     set_fvar(node, gvar(node));
-    int ni = node->fanin_num();
-    for (int i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
+    for ( auto inode: node->fanin_list() ) {
       if ( !tfi_mark[inode->id()] ) {
 	tfi_mark[inode->id()] = true;
 	tmp_list.push_back(inode);
@@ -224,8 +219,7 @@ PropCone::make_dchain_cnf(const TpgNode* node)
     vector<SatLiteral> tmp_lits;
     tmp_lits.reserve(nfo + 1);
     tmp_lits.push_back(~dlit);
-    for (int j = 0; j < nfo; ++ j) {
-      const TpgNode* onode = node->fanout(j);
+    for ( auto onode: node->fanout_list() ) {
       SatLiteral odlit(dvar(onode), false);
       tmp_lits.push_back(odlit);
     }
