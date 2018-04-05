@@ -1,42 +1,32 @@
 
-/// @file JustSimple.cc
-/// @brief JustSimple の実装ファイル
+/// @file Justifier.cc
+/// @brief Justifier の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2017, 2018 Yusuke Matsunaga
+/// Copyright (C) 2018 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "JustSimple.h"
+#include "Justifier.h"
 #include "JustData.h"
 #include "TpgDff.h"
-#include "NodeValList.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
-// @brief JustSimple を生成する．
-// @param[in] max_id ID番号の最大値
-Justifier*
-new_JustSimple(int max_id)
-{
-  return new JustSimple(max_id);
-}
-
-
 //////////////////////////////////////////////////////////////////////
-// クラス JustSimple
+// クラス Justifier
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
 // @param[in] max_id ID番号の最大値
-JustSimple::JustSimple(int max_id) :
-  JustBase(max_id)
+Justifier::Justifier(int max_id) :
+  mMarkArray(max_id, 0U)
 {
 }
 
 // @brief デストラクタ
-JustSimple::~JustSimple()
+Justifier::~Justifier()
 {
 }
 
@@ -46,21 +36,25 @@ JustSimple::~JustSimple()
 // @param[in] model SAT問題の解
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
-JustSimple::operator()(const NodeValList& assign_list,
-		       const VidMap& var_map,
-		       const vector<SatBool3>& model,
-		       NodeValList& pi_assign_list)
+Justifier::operator()(const NodeValList& assign_list,
+		      const VidMap& var_map,
+		      const vector<SatBool3>& model,
+		      NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
   clear_mark();
 
   JustData jd(var_map, model);
 
+  just_init(assign_list, jd);
+
   for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
     justify(jd, node, time, pi_assign_list);
   }
+
+  just_end();
 }
 
 // @brief 正当化に必要な割当を求める(遷移故障用)．
@@ -68,24 +62,28 @@ JustSimple::operator()(const NodeValList& assign_list,
 // @param[in] var1_map 1時刻目の変数番号のマップ
 // @param[in] var2_map 2時刻目の変数番号のマップ
 // @param[in] model SAT問題の解
-/// @param[out] pi_assign_list 外部入力上の値の割当リスト
+// @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
-JustSimple::operator()(const NodeValList& assign_list,
-		       const VidMap& var1_map,
-		       const VidMap& var2_map,
-		       const vector<SatBool3>& model,
-		       NodeValList& pi_assign_list)
+Justifier::operator()(const NodeValList& assign_list,
+		      const VidMap& var1_map,
+		      const VidMap& var2_map,
+		      const vector<SatBool3>& model,
+		      NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
   clear_mark();
 
   JustData jd(var1_map, var2_map, model);
 
+  just_init(assign_list, jd);
+
   for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
     justify(jd, node, time, pi_assign_list);
   }
+
+  just_end();
 }
 
 // @brief 正当化に必要な割当を求める．
@@ -93,10 +91,10 @@ JustSimple::operator()(const NodeValList& assign_list,
 // @param[in] time タイムフレーム ( 0 or 1 )
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
-JustSimple::justify(const JustData& jd,
-		    const TpgNode* node,
-		    int time,
-		    NodeValList& pi_assign_list)
+Justifier::justify(const JustData& jd,
+		   const TpgNode* node,
+		   int time,
+		   NodeValList& pi_assign_list)
 {
   if ( mark(node, time) ) {
     // 処理済みならなにもしない．
@@ -108,8 +106,10 @@ JustSimple::justify(const JustData& jd,
   if ( node->is_primary_input() ) {
     // 外部入力なら値を記録する．
     jd.record_value(node, time, pi_assign_list);
+    return;
   }
-  else if ( node->is_dff_output() ) {
+
+  if ( node->is_dff_output() ) {
     if ( time == 1 && jd.td_mode() ) {
       // DFF の出力で1時刻目の場合は0時刻目に戻る．
       const TpgDff* dff = node->dff();
@@ -120,12 +120,31 @@ JustSimple::justify(const JustData& jd,
       // DFFを擬似入力だと思って値を記録する．
       jd.record_value(node, time, pi_assign_list);
     }
+    return;
+  }
+
+  Val3 oval = jd.val(node, time);
+  if ( oval == node->coval() ) {
+    // cval を持つファンインを選ぶ．
+    const TpgNode* inode = select_cval_node(jd, node, time);
+    // そのノードに再帰する．
+    justify(jd, inode, time, pi_assign_list);
   }
   else {
     // すべてのファンインに再帰する．
     for ( auto inode: node->fanin_list() ) {
       justify(jd, inode, time, pi_assign_list);
     }
+  }
+}
+
+// @brief 全てのマークを消す．
+void
+Justifier::clear_mark()
+{
+  for ( vector<ymuint8>::iterator p = mMarkArray.begin();
+	p != mMarkArray.end(); ++ p ) {
+    *p = 0U;
   }
 }
 

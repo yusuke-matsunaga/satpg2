@@ -278,6 +278,6 @@ INSTANTIATE_TEST_CASE_P(DtpgTest, DtpgTestWithParam,
 							     "ffr",    "ffr_new",
 							     "mffc",   "mffc_new"),
 					   ::testing::Values(FaultType::StuckAt, FaultType::TransitionDelay),
-					   ::testing::Range(0, 3)));
+					   ::testing::Range(1, 3)));
 
 END_NAMESPACE_YM_SATPG

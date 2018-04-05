@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "JustBase.h"
+#include "Justifier.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -21,7 +21,7 @@ class JustData;
 /// @brief 正当化に必要な割当を求めるファンクター
 //////////////////////////////////////////////////////////////////////
 class Just1 :
-  public JustBase
+  public Justifier
 {
 public:
 
@@ -34,74 +34,34 @@ public:
   ~Just1();
 
 
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 外部インターフェイス
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 正当化に必要な割当を求める(縮退故障用)．
-  /// @param[in] assign_list 値の割り当てリスト
-  /// @param[in] var_map 変数番号のマップ
-  /// @param[in] model SAT問題の解
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  virtual
-  void
-  operator()(const NodeValList& assign_list,
-	     const VidMap& var_map,
-	     const vector<SatBool3>& model,
-	     NodeValList& pi_assign_list) override;
-
-  /// @brief 正当化に必要な割当を求める(遷移故障用)．
-  /// @param[in] assign_list 値の割り当てリスト
-  /// @param[in] var1_map 1時刻目の変数番号のマップ
-  /// @param[in] var2_map 2時刻目の変数番号のマップ
-  /// @param[in] model SAT問題の解
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  virtual
-  void
-  operator()(const NodeValList& assign_list,
-	     const VidMap& var1_map,
-	     const VidMap& var2_map,
-	     const vector<SatBool3>& model,
-	     NodeValList& pi_assign_list) override;
-
-
 private:
   //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる便利関数
+  // Justifier の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正当化に必要な割当を求める．
-  /// @param[in] node 対象のノード
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
+  /// @brief 初期化処理
+  /// @param[in] assign_list 割当リスト
+  /// @param[in] jd justify 用のデータ
+  virtual
   void
-  justify(const JustData& jd,
-	  const TpgNode* node,
-	  int time,
-	  NodeValList& pi_assign_list);
+  just_init(const NodeValList& assign_list,
+	    const JustData& jd) override;
 
-  /// @brief すべてのファンインに対して justify() を呼ぶ．
+  /// @brief 制御値を持つファンインを一つ選ぶ．
+  /// @param[in] jd justiry用のデータ
   /// @param[in] node 対象のノード
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  void
-  just_all(const JustData& jd,
-	   const TpgNode* node,
-	   int time,
-	   NodeValList& pi_assign_list);
+  /// @param[in] time 時刻 ( 0 or 1 )
+  /// @return 選んだファンインのノードを返す．
+  virtual
+  const TpgNode*
+  select_cval_node(const JustData& jd,
+		   const TpgNode* node,
+		   int time) override;
 
-  /// @brief 指定した値を持つファンインに対して justify() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] val 値
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
+  /// @brief 終了処理
+  virtual
   void
-  just_one(const JustData& jd,
-	   const TpgNode* node,
-	   Val3 val,
-	   int time,
-	   NodeValList& pi_assign_list);
+  just_end() override;
 
 
 private:

@@ -42,7 +42,6 @@ DtpgTest::DtpgTest(const string& sat_type,
   bool td_mode = (fault_type == FaultType::TransitionDelay);
   mJustifier = nullptr;
   switch ( bt_mode ) {
-  case 0: mJustifier = new_JustSimple(network.node_num()); break;
   case 1: mJustifier = new_Just1(network.node_num()); break;
   case 2: mJustifier = new_Just2(network.node_num()); break;
   default: mJustifier = new_Just2(network.node_num()); break;

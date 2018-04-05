@@ -9,7 +9,8 @@
 /// All rights reserved.
 
 
-#include "JustBase.h"
+#include "Justifier.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -21,7 +22,7 @@ class JustData;
 /// @brief 正当化に必要な割当を求めるファンクター
 //////////////////////////////////////////////////////////////////////
 class Just2 :
-  public JustBase
+  public Justifier
 {
 public:
 
@@ -34,74 +35,40 @@ public:
   ~Just2();
 
 
-public:
+private:
   //////////////////////////////////////////////////////////////////////
-  // 外部インターフェイス
+  // Justifier の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正当化に必要な割当を求める(縮退故障用)．
-  /// @param[in] assign_list 値の割り当てリスト
-  /// @param[in] var_map 変数番号のマップ
-  /// @param[in] model SAT問題の解
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
+  /// @brief 初期化処理
+  /// @param[in] assign_list 割当リスト
+  /// @param[in] jd justify 用のデータ
   virtual
   void
-  operator()(const NodeValList& assign_list,
-	     const VidMap& var_map,
-	     const vector<SatBool3>& model,
-	     NodeValList& pi_assign_list) override;
+  just_init(const NodeValList& assign_list,
+	    const JustData& jd) override;
 
-  /// @brief 正当化に必要な割当を求める(遷移故障用)．
-  /// @param[in] assign_list 値の割り当てリスト
-  /// @param[in] var1_map 1時刻目の変数番号のマップ
-  /// @param[in] var2_map 2時刻目の変数番号のマップ
-  /// @param[in] model SAT問題の解
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
+  /// @brief 制御値を持つファンインを一つ選ぶ．
+  /// @param[in] jd justiry用のデータ
+  /// @param[in] node 対象のノード
+  /// @param[in] time 時刻 ( 0 or 1 )
+  /// @return 選んだファンインのノードを返す．
+  virtual
+  const TpgNode*
+  select_cval_node(const JustData& jd,
+		   const TpgNode* node,
+		   int time) override;
+
+  /// @brief 終了処理
   virtual
   void
-  operator()(const NodeValList& assign_list,
-	     const VidMap& var1_map,
-	     const VidMap& var2_map,
-	     const vector<SatBool3>& model,
-	     NodeValList& pi_assign_list) override;
+  just_end() override;
 
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる便利関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 正当化に必要な割当を求める．
-  /// @param[in] node 対象のノード
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  void
-  justify(const JustData& jd,
-	  const TpgNode* node,
-	  int time,
-	  NodeValList& pi_assign_list);
-
-  /// @brief すべてのファンインに対して justify() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  void
-  just_all(const JustData& jd,
-	   const TpgNode* node,
-	   int time,
-	   NodeValList& pi_assign_list);
-
-  /// @brief 指定した値を持つファンインに対して justify() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] ipos ファンインの位置番号 ( 0 <= ipos < node->fanin_num() )
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  void
-  just_one(const JustData& jd,
-	   const TpgNode* node,
-	   Val3 val,
-	   int time,
-	   NodeValList& pi_assign_list);
 
   /// @brief 重みの計算を行う．
   /// @param[in] node 対象のノード
@@ -111,24 +78,6 @@ private:
 	     const TpgNode* node,
 	     int time);
 
-  /// @brief すべてのファンインに対して add_weight() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  void
-  aw_all(const JustData& jd,
-	 const TpgNode* node,
-	 int time);
-
-  /// @brief 指定した値を持つファンインに対して add_weight() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] ipos ファンインの位置番号 ( 0 <= ipos < node->fanin_num() )
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  void
-  aw_one(const JustData& jd,
-	 const TpgNode* node,
-	 Val3 val,
-	 int time);
-
   /// @brief 見積もり値の計算を行う．
   /// @param[in] node 対象のノード
   /// @param[in] time タイムフレーム ( 0 or 1 )
@@ -136,24 +85,6 @@ private:
   calc_value(const JustData& jd,
 	     const TpgNode* node,
 	     int time);
-
-  /// @brief すべてのファンインに対して calc_value() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  void
-  cv_all(const JustData& jd,
-	 const TpgNode* node,
-	 int time);
-
-  /// @brief 指定した値を持つファンインに対して calc_value() を呼ぶ．
-  /// @param[in] node 対象のノード
-  /// @param[in] ipos ファンインの位置番号 ( 0 <= ipos < node->fanin_num() )
-  /// @param[in] time タイムフレーム ( 0 or 1 )
-  void
-  cv_one(const JustData& jd,
-	 const TpgNode* node,
-	 Val3 val,
-	 int time);
 
   /// @brief 重みを考えた価値を返す．
   /// @param[in] node 対象のノード
@@ -169,6 +100,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ノードのリスト
+  // 作業領域のクリアで用いる．
   vector<const TpgNode*> mNodeList[2];
 
   // 重み配列
@@ -183,6 +115,20 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief 重みを考えた価値を返す．
+// @param[in] node 対象のノード
+// @param[in] time タイムフレーム ( 0 or 1 )
+inline
+double
+Just2::node_value(const TpgNode* node,
+		  int time) const
+{
+  int index = node->id() * 2 + time;
+  ASSERT_COND ( mWeightArray[index] > 0 );
+
+  return mTmpArray[index] / mWeightArray[index];
+}
 
 END_NAMESPACE_YM_SATPG
 

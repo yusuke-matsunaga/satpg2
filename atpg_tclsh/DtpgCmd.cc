@@ -368,7 +368,6 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   bool td_mode = (fault_type == FaultType::TransitionDelay);
   Justifier* jt = nullptr;
   switch ( xmode ) {
-  case 0: jt = new_JustSimple(_network().node_num()); break;
   case 1: jt = new_Just1(_network().node_num()); break;
   case 2: jt = new_Just2(_network().node_num()); break;
   default: jt = new_Just2(_network().node_num()); break;

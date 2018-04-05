@@ -91,9 +91,9 @@ set (uop_SOURCES
   )
 
 set (jt_SOURCES
+  jt/Justifier.cc
   jt/Just1.cc
   jt/Just2.cc
-  jt/JustSimple.cc
   )
 
 set (sa_SOURCES
