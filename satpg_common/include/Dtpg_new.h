@@ -1,8 +1,8 @@
-﻿#ifndef DTPG_OLD_H
-#define DTPG_OLD_H
+﻿#ifndef DTPG_NEW_H
+#define DTPG_NEW_H
 
-/// @file Dtpg_old.h
-/// @brief Dtpg_old のヘッダファイル
+/// @file Dtpg_new.h
+/// @brief Dtpg_new のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -32,10 +32,10 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class Dtpg_old Dtpg_old.h "Dtpg_old.h"
+/// @class Dtpg_new Dtpg_new.h "Dtpg_new.h"
 /// @brief Dtpg の実装用のクラス
 //////////////////////////////////////////////////////////////////////
-class Dtpg_old
+class Dtpg_new
 {
 public:
 
@@ -47,7 +47,7 @@ public:
   /// @param[in] bt バックトレーサー
   /// @param[in] network 対象のネットワーク
   /// @param[in] root 故障伝搬の起点となるノード
-  Dtpg_old(const string& sat_type,
+  Dtpg_new(const string& sat_type,
 	   const string& sat_option,
 	   ostream* sat_outp,
 	   FaultType fault_type,
@@ -64,7 +64,7 @@ public:
   /// @param[in] bt バックトレーサー
   /// @param[in] network 対象のネットワーク
   /// @param[in] root 故障伝搬の起点となるノード
-  Dtpg_old(const string& sat_type,
+  Dtpg_new(const string& sat_type,
 	   const string& sat_option,
 	   ostream* sat_outp,
 	   FaultType fault_type,
@@ -74,7 +74,7 @@ public:
 	   DtpgStats& stats);
 
   /// @brief デストラクタ
-  ~Dtpg_old();
+  ~Dtpg_new();
 
 
 public:
@@ -205,29 +205,6 @@ protected:
   /// @brief mffc 内の影響が root まで伝搬する条件のCNF式を作る．
   void
   gen_cnf_mffc();
-
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] var_map 変数マップ
-  void
-  make_node_cnf(const TpgNode* node,
-		const VidMap& var_map);
-
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] var_map 変数マップ
-  /// @param[in] ovar 出力の変数
-  void
-  make_node_cnf(const TpgNode* node,
-		const VidMap& var_map,
-		SatVarId ovar);
-
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] litmap 入出力のリテラル
-  void
-  _make_node_cnf(const TpgNode* node,
-		 const GateLitMap& litmap);
 
   /// @brief 故障伝搬条件を表すCNF式を生成する．
   /// @param[in] node 対象のノード
@@ -379,7 +356,7 @@ private:
 // @brief SATソルバを返す．
 inline
 SatSolver&
-Dtpg_old::solver()
+Dtpg_new::solver()
 {
   return mSolver;
 }
@@ -387,7 +364,7 @@ Dtpg_old::solver()
 // @brief 対象のネットワークを返す．
 inline
 const TpgNetwork&
-Dtpg_old::network() const
+Dtpg_new::network() const
 {
   return mNetwork;
 }
@@ -395,7 +372,7 @@ Dtpg_old::network() const
 // @brief ノード番号の最大値を返す．
 inline
 int
-Dtpg_old::max_node_id() const
+Dtpg_new::max_node_id() const
 {
   return network().node_num();
 }
@@ -403,7 +380,7 @@ Dtpg_old::max_node_id() const
 // @brief 起点となるノードを返す．
 inline
 const TpgNode*
-Dtpg_old::root_node() const
+Dtpg_new::root_node() const
 {
   return mRoot;
 }
@@ -412,7 +389,7 @@ Dtpg_old::root_node() const
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg_old::hvar(const TpgNode* node)
+Dtpg_new::hvar(const TpgNode* node)
 {
   ASSERT_COND( mHvarMap(node) != kSatVarIdIllegal );
 
@@ -423,7 +400,7 @@ Dtpg_old::hvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg_old::gvar(const TpgNode* node)
+Dtpg_new::gvar(const TpgNode* node)
 {
   return mGvarMap(node);
 }
@@ -432,7 +409,7 @@ Dtpg_old::gvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg_old::fvar(const TpgNode* node)
+Dtpg_new::fvar(const TpgNode* node)
 {
   return mFvarMap(node);
 }
@@ -441,7 +418,7 @@ Dtpg_old::fvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg_old::dvar(const TpgNode* node)
+Dtpg_new::dvar(const TpgNode* node)
 {
   return mDvarMap(node);
 }
@@ -451,7 +428,7 @@ Dtpg_old::dvar(const TpgNode* node)
 // @param[in] var 設定する変数
 inline
 void
-Dtpg_old::set_hvar(const TpgNode* node,
+Dtpg_new::set_hvar(const TpgNode* node,
 		   SatVarId var)
 {
   mHvarMap.set_vid(node, var);
@@ -462,7 +439,7 @@ Dtpg_old::set_hvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-Dtpg_old::set_gvar(const TpgNode* node,
+Dtpg_new::set_gvar(const TpgNode* node,
 		   SatVarId var)
 {
   mGvarMap.set_vid(node, var);
@@ -473,7 +450,7 @@ Dtpg_old::set_gvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-Dtpg_old::set_fvar(const TpgNode* node,
+Dtpg_new::set_fvar(const TpgNode* node,
 		   SatVarId var)
 {
   mFvarMap.set_vid(node, var);
@@ -484,7 +461,7 @@ Dtpg_old::set_fvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-Dtpg_old::set_dvar(const TpgNode* node,
+Dtpg_new::set_dvar(const TpgNode* node,
 		   SatVarId var)
 {
   mDvarMap.set_vid(node, var);
@@ -493,7 +470,7 @@ Dtpg_old::set_dvar(const TpgNode* node,
 // @brief 1時刻前の正常値の変数マップを返す．
 inline
 const VidMap&
-Dtpg_old::hvar_map() const
+Dtpg_new::hvar_map() const
 {
   return mHvarMap;
 }
@@ -501,7 +478,7 @@ Dtpg_old::hvar_map() const
 // @brief 正常値の変数マップを返す．
 inline
 const VidMap&
-Dtpg_old::gvar_map() const
+Dtpg_new::gvar_map() const
 {
   return mGvarMap;
 }
@@ -509,7 +486,7 @@ Dtpg_old::gvar_map() const
 // @brief 故障値の変数マップを返す．
 inline
 const VidMap&
-Dtpg_old::fvar_map() const
+Dtpg_new::fvar_map() const
 {
   return mFvarMap;
 }
@@ -517,7 +494,7 @@ Dtpg_old::fvar_map() const
 // @brief TFO マークをつける．
 inline
 void
-Dtpg_old::set_tfo_mark(const TpgNode* node)
+Dtpg_new::set_tfo_mark(const TpgNode* node)
 {
   int id = node->id();
   if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
@@ -532,7 +509,7 @@ Dtpg_old::set_tfo_mark(const TpgNode* node)
 // @brief TFI マークをつける．
 inline
 void
-Dtpg_old::set_tfi_mark(const TpgNode* node)
+Dtpg_new::set_tfi_mark(const TpgNode* node)
 {
   int id = node->id();
   if ( (mMarkArray[id] & 3U) == 0U ) {
@@ -547,7 +524,7 @@ Dtpg_old::set_tfi_mark(const TpgNode* node)
 // @brief TFI2 マークをつける．
 inline
 void
-Dtpg_old::set_tfi2_mark(const TpgNode* node)
+Dtpg_new::set_tfi2_mark(const TpgNode* node)
 {
   int id = node->id();
   if ( ((mMarkArray[id] >> 2) & 1U) == 0U ) {
@@ -558,4 +535,4 @@ Dtpg_old::set_tfi2_mark(const TpgNode* node)
 
 END_NAMESPACE_YM_SATPG
 
-#endif // DTPG_OLD_H
+#endif // DTPG_NEW_H

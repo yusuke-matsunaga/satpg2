@@ -58,7 +58,9 @@ Just2::~Just2()
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
 Just2::operator()(const NodeValList& assign_list,
-		  const ValMap& val_map,
+		  const VidMap& gvar_map,
+		  const VidMap& hvar_map,
+		  const vector<SatBool3>& model,
 		  NodeValList& pi_assign_list)
 {
   if ( debug ) {
@@ -69,8 +71,10 @@ Just2::operator()(const NodeValList& assign_list,
   pi_assign_list.clear();
   clear_justified_mark();
 
+  ValMap_model val_map(gvar_map, gvar_map, hvar_map, model);
   set_val_map(val_map);
 
+  // ヒューリスティックで用いる重みを計算する．
   mNodeList[0].clear();
   mNodeList[1].clear();
   for (int i = 0; i < assign_list.size(); ++ i) {
@@ -79,21 +83,20 @@ Just2::operator()(const NodeValList& assign_list,
     int time = nv.time();
     add_weight(node, time);
   }
-
-  for (int time = 0; time < 2; ++ time) {
+  for ( auto time: {0, 1} ) {
     for ( auto node: mNodeList[time] ) {
       calc_value(node, time);
     }
   }
 
-  for (int i = 0; i < assign_list.size(); ++ i) {
-    NodeVal nv = assign_list[i];
+  for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
     justify(node, time, pi_assign_list);
   }
 
-  for (int time = 0; time < 2; ++ time) {
+  // 作業領域をクリアしておく．
+  for ( auto time: { 0, 1 } ) {
     for ( auto node: mNodeList[time] ) {
       int index = node->id() * 2 + time;
       mWeightArray[index] = 0;

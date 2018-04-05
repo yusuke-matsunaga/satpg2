@@ -14,6 +14,7 @@
 #include "ValMap_model.h"
 #include "Extractor.h"
 #include "NodeValList.h"
+#include "GateEnc.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_STRUCTENC
@@ -151,11 +152,12 @@ PropCone::make_vars()
 void
 PropCone::make_cnf()
 {
+  GateEnc gate_enc(solver(), fvar_map());
   for (int i = 0; i < mNodeList.size(); ++ i) {
     const TpgNode* node = mNodeList[i];
     if ( i > 0 ) {
       // 故障回路のゲートの入出力関係を表すCNFを作る．
-      mStructEnc.make_node_cnf(node, fvar_map());
+      gate_enc.make_node_cnf(node);
     }
 
     if ( mDetect ) {

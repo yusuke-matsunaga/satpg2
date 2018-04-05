@@ -59,6 +59,7 @@ set (fsim_SOURCES
   )
 
 set (struct_enc_SOURCES
+  struct_enc/GateEnc.cc
   struct_enc/PropCone.cc
   struct_enc/SimplePropCone.cc
   struct_enc/MffcPropCone.cc
@@ -66,24 +67,12 @@ set (struct_enc_SOURCES
 
   struct_enc/Extractor.cc
 
-  struct_enc/GateLitMap_vid.cc
-  struct_enc/GateLitMap_vid2.cc
-
   struct_enc/ValMap_model.cc
   )
 
 set (dtpg_SOURCES
   dtpg/Dtpg.cc
-  dtpg/Dtpg_old.cc
-  )
-
-set (dtpg_old_SOURCES
-  dtpg_old/Dtpg_old.cc
-  dtpg_old/DtpgImpl.cc
-  dtpg_old/DtpgImplM.cc
-
-  dtpg_old/GateLitMap_vect.cc
-  dtpg_old/GateLitMap_vid.cc
+  dtpg/Dtpg_new.cc
   )
 
 set (dop_SOURCES

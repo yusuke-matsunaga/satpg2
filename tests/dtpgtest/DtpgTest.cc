@@ -8,6 +8,8 @@
 
 
 #include "DtpgTest.h"
+#include "Dtpg.h"
+#include "Dtpg_new.h"
 
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
@@ -130,6 +132,102 @@ DtpgTest::mffc_test()
   int untest_num = 0;
   for ( auto mffc: mNetwork.mffc_list() ) {
     Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, &mffc, mStats);
+    for ( auto fault: mffc.fault_list() ) {
+      if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
+	// 故障に対するテスト生成を行なう．
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+	if ( ans == SatBool3::True ) {
+	  ++ detect_num;
+	  mDop(fault, nodeval_list);
+	}
+	else if ( ans == SatBool3::False ) {
+	  ++ untest_num;
+	}
+      }
+    }
+  }
+
+  mTimer.stop();
+
+  return make_pair(detect_num, untest_num);
+}
+
+// @brief シングルモードのテストを行う．
+// @return 検出故障数と冗長故障数を返す．
+pair<int, int>
+DtpgTest::single_new_test()
+{
+  mTimer.reset();
+  mTimer.start();
+
+  int detect_num = 0;
+  int untest_num = 0;
+  for ( auto fault: mNetwork.rep_fault_list() ) {
+    if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
+      const TpgFFR* ffr = fault->ffr();
+      Dtpg_new dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr, mStats);
+      NodeValList nodeval_list;
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+      if ( ans == SatBool3::True ) {
+	++ detect_num;
+	mDop(fault, nodeval_list);
+      }
+      else if ( ans == SatBool3::False ) {
+	++ untest_num;
+      }
+    }
+  }
+
+  mTimer.stop();
+
+  return make_pair(detect_num, untest_num);
+}
+
+// @brief FFRモードのテストを行う．
+// @return 検出故障数と冗長故障数を返す．
+pair<int, int>
+DtpgTest::ffr_new_test()
+{
+  mTimer.reset();
+  mTimer.start();
+
+  int detect_num = 0;
+  int untest_num = 0;
+  for ( auto ffr: mNetwork.ffr_list() ) {
+    Dtpg_new dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, &ffr, mStats);
+    for ( auto fault: ffr.fault_list() ) {
+      if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+	if ( ans == SatBool3::True ) {
+	  ++ detect_num;
+	  mDop(fault, nodeval_list);
+	}
+	else if ( ans == SatBool3::False ) {
+	  ++ untest_num;
+	}
+      }
+    }
+  }
+
+  mTimer.stop();
+
+  return make_pair(detect_num, untest_num);
+}
+
+// @brief MFFCモードのテストを行う．
+// @return 検出故障数と冗長故障数を返す．
+pair<int, int>
+DtpgTest::mffc_new_test()
+{
+  mTimer.reset();
+  mTimer.start();
+
+  int detect_num = 0;
+  int untest_num = 0;
+  for ( auto mffc: mNetwork.mffc_list() ) {
+    Dtpg_new dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, &mffc, mStats);
     for ( auto fault: mffc.fault_list() ) {
       if ( mFaultMgr.status(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．

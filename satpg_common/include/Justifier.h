@@ -41,7 +41,9 @@ public:
   virtual
   void
   operator()(const NodeValList& assign_list,
-	     const ValMap& val_map,
+	     const VidMap& gvar_map,
+	     const VidMap& hvar_map,
+	     const vector<SatBool3>& model,
 	     NodeValList& pi_assign_list) = 0;
 
 };

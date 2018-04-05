@@ -16,6 +16,7 @@
 #include "ValMap_model.h"
 #include "Extractor.h"
 #include "NodeValList.h"
+#include "GateEnc.h"
 #include "GateType.h"
 
 
@@ -156,6 +157,7 @@ MffcPropCone::make_cnf()
   }
 
   // node_list に含まれるノードの入出力の関係を表すCNF式を作る．
+  GateEnc gate_enc(solver(), fvar_map());
   for (int rpos = 0; rpos < node_list.size(); ++ rpos) {
     const TpgNode* node = node_list[rpos];
     SatVarId ovar = fvar(node);
@@ -166,10 +168,10 @@ MffcPropCone::make_cnf()
       ovar = solver().new_variable();
       inject_fault(elem_pos, ovar);
       // ovar が fvar(node) ではない！
-      struct_sat().make_node_cnf(node, fvar_map(), ovar);
+      gate_enc.make_node_cnf(node, ovar);
     }
     else {
-      struct_sat().make_node_cnf(node, fvar_map());
+      gate_enc.make_node_cnf(node);
     }
 
     if ( debug_mffccone ) {

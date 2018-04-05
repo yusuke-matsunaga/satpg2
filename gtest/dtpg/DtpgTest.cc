@@ -183,6 +183,15 @@ DtpgTestWithParam::do_test()
   else if ( mode == "mffc" ) {
     num_pair = mDtpgTest->mffc_test();
   }
+  else if ( mode == "single_new" ) {
+    num_pair = mDtpgTest->single_new_test();
+  }
+  else if ( mode == "ffr_new" ) {
+    num_pair = mDtpgTest->ffr_new_test();
+  }
+  else if ( mode == "mffc_new" ) {
+    num_pair = mDtpgTest->mffc_new_test();
+  }
   else {
     ASSERT_NOT_REACHED;
   }
@@ -265,7 +274,9 @@ TEST_P(DtpgTestWithParam, test1)
 
 INSTANTIATE_TEST_CASE_P(DtpgTest, DtpgTestWithParam,
 			::testing::Combine(::testing::ValuesIn(mydata),
-					   ::testing::Values("single", "ffr", "mffc"),
+					   ::testing::Values("single", "single_new",
+							     "ffr",    "ffr_new",
+							     "mffc",   "mffc_new"),
 					   ::testing::Values(FaultType::StuckAt, FaultType::TransitionDelay),
 					   ::testing::Range(0, 3)));
 

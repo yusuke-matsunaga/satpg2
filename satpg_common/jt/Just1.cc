@@ -53,16 +53,18 @@ Just1::~Just1()
 // @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
 Just1::operator()(const NodeValList& assign_list,
-		  const ValMap& val_map,
+		  const VidMap& gvar_map,
+		  const VidMap& hvar_map,
+		  const vector<SatBool3>& model,
 		  NodeValList& pi_assign_list)
 {
   pi_assign_list.clear();
   clear_justified_mark();
 
+  ValMap_model val_map(gvar_map, gvar_map, hvar_map, model);
   set_val_map(val_map);
 
-  for (int i = 0; i < assign_list.size(); ++ i) {
-    NodeVal nv = assign_list[i];
+  for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
     justify(node, time, pi_assign_list);

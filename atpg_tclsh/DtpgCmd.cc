@@ -16,7 +16,7 @@
 #include "TpgFaultMgr.h"
 #include "DtpgStats.h"
 #include "Dtpg.h"
-#include "Dtpg_old.h"
+#include "Dtpg_new.h"
 #include "Fsim.h"
 #include "NodeValList.h"
 #include "BackTracer.h"
@@ -31,7 +31,7 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 void
-run_single_old(const string& sat_type,
+run_single_new(const string& sat_type,
 	       const string& sat_option,
 	       ostream* sat_outp,
 	       FaultType fault_type,
@@ -45,7 +45,7 @@ run_single_old(const string& sat_type,
   for ( auto fault: network.rep_fault_list() ) {
     if ( fmgr.status(fault) == FaultStatus::Undetected ) {
       const TpgFFR* ffr = fault->ffr();
-      Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
+      Dtpg_new dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == SatBool3::True ) {
@@ -59,7 +59,7 @@ run_single_old(const string& sat_type,
 }
 
 void
-run_ffr_old(const string& sat_type,
+run_ffr_new(const string& sat_type,
 	    const string& sat_option,
 	    ostream* sat_outp,
 	    FaultType fault_type,
@@ -72,7 +72,7 @@ run_ffr_old(const string& sat_type,
 {
   int nffr = network.ffr_num();
   for ( auto ffr: network.ffr_list() ) {
-    Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &ffr, stats);
+    Dtpg_new dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &ffr, stats);
     for ( auto fault: ffr.fault_list() ) {
       if ( fmgr.status(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
@@ -89,7 +89,7 @@ run_ffr_old(const string& sat_type,
 }
 
 void
-run_mffc_old(const string& sat_type,
+run_mffc_new(const string& sat_type,
 	     const string& sat_option,
 	     ostream* sat_outp,
 	     FaultType fault_type,
@@ -102,7 +102,7 @@ run_mffc_old(const string& sat_type,
 {
   int n = network.mffc_num();
   for ( auto mffc: network.mffc_list() ) {
-    Dtpg_old dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &mffc, stats);
+    Dtpg_new dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, &mffc, stats);
     for ( auto fault: mffc.fault_list() ) {
       if ( fmgr.status(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
@@ -229,8 +229,8 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 				     "transition delay fault mode");
   mPoptPrintStats = new TclPopt(this, "print_stats",
 				"print statistics");
-  mPoptOld = new TclPopt(this, "old",
-			 "old single mode");
+  mPoptNew = new TclPopt(this, "new",
+			 "use 'new' engine");
   mPoptSingle = new TclPopt(this, "single",
 			    "single mode");
   mPoptFFR = new TclPopt(this, "ffr",
@@ -312,8 +312,8 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
       kdet_val = mPoptKDet->val();
     }
     else {
-      if ( mPoptOld->is_specified() ) {
-	engine_type = "single_old";
+      if ( mPoptNew->is_specified() ) {
+	engine_type = "single_new";
       }
       else {
 	engine_type = "single";
@@ -321,16 +321,16 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     }
   }
   else if ( mPoptFFR->is_specified() ) {
-    if ( mPoptOld->is_specified() ) {
-      engine_type = "ffr_old";
+    if ( mPoptNew->is_specified() ) {
+      engine_type = "ffr_new";
     }
     else {
       engine_type = "ffr";
     }
   }
   else if ( mPoptMFFC->is_specified() ) {
-    if ( mPoptOld->is_specified() ) {
-      engine_type = "mffc_old";
+    if ( mPoptNew->is_specified() ) {
+      engine_type = "mffc_new";
     }
     else {
       engine_type = "mffc";
@@ -409,16 +409,16 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     run_mffc(sat_type, sat_option, outp, fault_type, *jt,
 	     _network(), fault_mgr, dop_list, uop_list, stats);
   }
-  else if ( engine_type == "single_old" ) {
-    run_single_old(sat_type, sat_option, outp, fault_type, *jt,
+  else if ( engine_type == "single_new" ) {
+    run_single_new(sat_type, sat_option, outp, fault_type, *jt,
 		   _network(), fault_mgr, dop_list, uop_list, stats);
   }
-  else if ( engine_type == "ffr_old" ) {
-    run_ffr_old(sat_type, sat_option, outp, fault_type, *jt,
+  else if ( engine_type == "ffr_new" ) {
+    run_ffr_new(sat_type, sat_option, outp, fault_type, *jt,
 		_network(), fault_mgr, dop_list, uop_list, stats);
   }
-  else if ( engine_type == "mffc_old" ) {
-    run_mffc_old(sat_type, sat_option, outp, fault_type, *jt,
+  else if ( engine_type == "mffc_new" ) {
+    run_mffc_new(sat_type, sat_option, outp, fault_type, *jt,
 		 _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else {

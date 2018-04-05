@@ -12,11 +12,11 @@
 #include "satpg.h"
 #include "TpgNetwork.h"
 #include "TpgFaultMgr.h"
-#include "Dtpg.h"
 #include "Fsim.h"
 #include "Justifier.h"
 #include "DopList.h"
 #include "DopVerifyResult.h"
+#include "DtpgStats.h"
 #include "ym/StopWatch.h"
 
 
@@ -65,6 +65,21 @@ public:
   /// @return 検出故障数と冗長故障数を返す．
   pair<int, int>
   mffc_test();
+
+  /// @brief シングルモードのテストを行う．
+  /// @return 検出故障数と冗長故障数を返す．
+  pair<int, int>
+  single_new_test();
+
+  /// @brief FFRモードのテストを行う．
+  /// @return 検出故障数と冗長故障数を返す．
+  pair<int, int>
+  ffr_new_test();
+
+  /// @brief MFFCモードのテストを行う．
+  /// @return 検出故障数と冗長故障数を返す．
+  pair<int, int>
+  mffc_new_test();
 
   /// @brief 検証結果を得る．
   const DopVerifyResult&

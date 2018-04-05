@@ -193,22 +193,6 @@ public:
   VidMap&
   var_map(int time);
 
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] var_map 変数マップ
-  void
-  make_node_cnf(const TpgNode* node,
-		const VidMap& var_map);
-
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] var_map 変数マップ
-  /// @param[in] ovar 出力の変数
-  void
-  make_node_cnf(const TpgNode* node,
-		const VidMap& var_map,
-		SatVarId ovar);
-
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -320,13 +304,6 @@ private:
   /// @param[in] node_list ノードのリスト
   void
   make_tfi_list(const vector<const TpgNode*>& node_list);
-
-  /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] litmap 入出力のリテラル
-  void
-  _make_node_cnf(const TpgNode* node,
-		 const GateLitMap& litmap);
 
   /// @brief ノードの値割り当てに対応するリテラルを返す．
   /// @param[in] nv ノードの値割り当て

@@ -20,11 +20,9 @@
 #include "TpgMFFC.h"
 
 #include "GateType.h"
+#include "GateEnc.h"
 
 #include "ValMap_model.h"
-
-#include "GateLitMap_vid.h"
-#include "GateLitMap_vid2.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_STRUCTENC
@@ -388,18 +386,21 @@ StructEnc::make_vars()
 void
 StructEnc::make_cnf()
 {
+  GateEnc gate_enc1(mSolver, var_map(1));
   for (int i = 0; i < mCurNodeList.size(); ++ i) {
     const TpgNode* node = mCurNodeList[i];
     if ( !cnf_mark(node, 1) ) {
       set_cnf_mark(node, 1);
-      make_node_cnf(node, var_map(1));
+      gate_enc1.make_node_cnf(node);
     }
   }
+
+  GateEnc gate_enc0(mSolver, var_map(0));
   for (int i = 0; i < mPrevNodeList.size(); ++ i) {
     const TpgNode* node = mPrevNodeList[i];
     if ( !cnf_mark(node, 0) ) {
       set_cnf_mark(node, 0);
-      make_node_cnf(node, var_map(0));
+      gate_enc0.make_node_cnf(node);
     }
   }
 
@@ -453,7 +454,8 @@ StructEnc::make_tfi_cnf(const TpgNode* node,
   make_tfi_var(node, time);
 
   // node の入出力の関係を表す節を作る．
-  make_node_cnf(node, var_map(time));
+  GateEnc gate_enc(mSolver, var_map(time));
+  gate_enc.make_node_cnf(node);
 
   // TFI のノードの節を作る．
   for ( auto inode: node->fanin_list() ) {
@@ -557,312 +559,6 @@ StructEnc::justify(const vector<SatBool3>& model,
   justifier(assign_list, val_map, pi_assign_list);
   if ( debug() & debug_justify ) {
     cout << " => " << pi_assign_list << endl;
-  }
-}
-
-// @brief ノードの入出力の関係を表すCNF式を作る．
-// @param[in] node 対象のノード
-// @param[in] var_map 変数マップ
-void
-StructEnc::make_node_cnf(const TpgNode* node,
-			 const VidMap& var_map)
-{
-  GateLitMap_vid litmap(node, var_map);
-  _make_node_cnf(node, litmap);
-}
-
-// @brief ノードの入出力の関係を表すCNF式を作る．
-// @param[in] node 対象のノード
-// @param[in] var_map 変数マップ
-// @param[in] ovar 出力の変数
-void
-StructEnc::make_node_cnf(const TpgNode* node,
-			 const VidMap& var_map,
-			 SatVarId ovar)
-{
-  GateLitMap_vid2 litmap(node, var_map, ovar);
-  _make_node_cnf(node, litmap);
-}
-
-// @brief ノードの入出力の関係を表すCNF式を作る．
-// @param[in] node 対象のノード
-// @param[in] litmap 入出力のリテラル
-void
-StructEnc::_make_node_cnf(const TpgNode* node,
-			  const GateLitMap& litmap)
-{
-  SatLiteral olit = litmap.output();
-  int ni = litmap.input_size();
-  switch ( node->gate_type() ) {
-  case GateType::Const0:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(CONST0): " << "| " << olit << endl;
-    }
-    mSolver.add_clause(~olit);
-    break;
-
-  case GateType::Const1:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(CONST1): " << "| " << olit << endl;
-    }
-    mSolver.add_clause( olit);
-    break;
-
-  case GateType::Input:
-    // なにもしない．
-    break;
-
-  case GateType::Buff:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(BUFF): " << litmap.input(0) << "| " << olit << endl;
-    }
-    {
-      SatLiteral ilit = litmap.input(0);
-      mSolver.add_eq_rel( ilit,  olit);
-    }
-    break;
-
-  case GateType::Not:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(NOT):  " << litmap.input(0) << "| " << olit << endl;
-    }
-    {
-      SatLiteral ilit = litmap.input(0);
-      mSolver.add_eq_rel( ilit, ~olit);
-    }
-    break;
-
-  case GateType::And:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(AND):  ";
-      for (int i = 0; i < ni; ++ i) {
-	cout << " " << litmap.input(i);
-      }
-      cout << "| " << olit << endl;
-    }
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_andgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_andgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Nand:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(NAND):  ";
-      for (int i = 0; i < ni; ++ i) {
-	cout << " " << litmap.input(i);
-      }
-      cout << "| " << olit << endl;
-    }
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_nandgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_nandgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Or:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(OR):  ";
-      for (int i = 0; i < ni; ++ i) {
-	cout << " " << litmap.input(i);
-      }
-      cout << "| " << olit << endl;
-    }
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_orgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_orgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Nor:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(NOR):  ";
-      for (int i = 0; i < ni; ++ i) {
-	cout << " " << litmap.input(i);
-      }
-      cout << "| " << olit << endl;
-    }
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_norgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_norgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Xor:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(XOR):  ";
-      for (int i = 0; i < ni; ++ i) {
-	cout << " " << litmap.input(i);
-      }
-      cout << "| " << olit << endl;
-    }
-    ASSERT_COND( ni == 2 );
-    {
-      SatLiteral ilit0 = litmap.input(0);
-      SatLiteral ilit1 = litmap.input(1);
-      mSolver.add_xorgate_rel( olit, ilit0, ilit1);
-    }
-    break;
-
-  case GateType::Xnor:
-    if ( debug() & debug_make_node_cnf ) {
-      cout << "_make_node_cnf(XNOR):  ";
-      for (int i = 0; i < ni; ++ i) {
-	cout << " " << litmap.input(i);
-      }
-      cout << "| " << olit << endl;
-    }
-    ASSERT_COND( ni == 2 );
-    {
-      SatLiteral ilit0 = litmap.input(0);
-      SatLiteral ilit1 = litmap.input(1);
-      mSolver.add_xnorgate_rel( olit, ilit0, ilit1);
-    }
-    break;
-
-  default:
-    ASSERT_NOT_REACHED;
-    break;
   }
 }
 

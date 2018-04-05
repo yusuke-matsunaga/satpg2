@@ -1,12 +1,12 @@
 ﻿
-/// @file Dtpg_old.cc
-/// @brief Dtpg_old の実装ファイル
+/// @file Dtpg_new.cc
+/// @brief Dtpg_new の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "Dtpg_old.h"
+#include "Dtpg_new.h"
 
 #include "TpgNetwork.h"
 #include "TpgFault.h"
@@ -14,6 +14,7 @@
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
 #include "GateType.h"
+#include "GateEnc.h"
 #include "Justifier.h"
 
 #include "ym/SatSolver.h"
@@ -21,8 +22,6 @@
 #include "ym/StopWatch.h"
 
 #include "../struct_enc/ValMap_model.h"
-#include "GateLitMap_vid.h"
-#include "GateLitMap_vid2.h"
 
 //#define DEBUG_DTPG
 
@@ -49,7 +48,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] bt バックトレーサー
 // @param[in] network 対象のネットワーク
 // @param[in] root 故障伝搬の起点となるノード
-Dtpg_old::Dtpg_old(const string& sat_type,
+Dtpg_new::Dtpg_new(const string& sat_type,
 		   const string& sat_option,
 		   ostream* sat_outp,
 		   FaultType fault_type,
@@ -89,7 +88,7 @@ Dtpg_old::Dtpg_old(const string& sat_type,
 // @param[in] bt バックトレーサー
 // @param[in] network 対象のネットワーク
 // @param[in] root 故障伝搬の起点となるノード
-Dtpg_old::Dtpg_old(const string& sat_type,
+Dtpg_new::Dtpg_new(const string& sat_type,
 		   const string& sat_option,
 		   ostream* sat_outp,
 		   FaultType fault_type,
@@ -141,7 +140,7 @@ Dtpg_old::Dtpg_old(const string& sat_type,
 }
 
 // @brief デストラクタ
-Dtpg_old::~Dtpg_old()
+Dtpg_new::~Dtpg_new()
 {
 }
 
@@ -151,7 +150,7 @@ Dtpg_old::~Dtpg_old()
 // @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 SatBool3
-Dtpg_old::dtpg(const TpgFault* fault,
+Dtpg_new::dtpg(const TpgFault* fault,
 	       NodeValList& nodeval_list,
 	       DtpgStats& stats)
 {
@@ -163,7 +162,7 @@ Dtpg_old::dtpg(const TpgFault* fault,
     int ffr_id;
     bool stat = mElemPosMap.find(ffr_root->id(), ffr_id);
     if ( !stat ) {
-      cerr << "Error[Dtpg_old::dtpg()]: "
+      cerr << "Error[Dtpg_new::dtpg()]: "
 	   << ffr_root->id() << " is not within the MFFC" << endl;
       return SatBool3::X;
     }
@@ -187,14 +186,14 @@ Dtpg_old::dtpg(const TpgFault* fault,
 
 // @brief タイマーをスタートする．
 void
-Dtpg_old::cnf_begin()
+Dtpg_new::cnf_begin()
 {
   timer_start();
 }
 
 // @brief タイマーを止めて CNF 作成時間に加える．
 void
-Dtpg_old::cnf_end(DtpgStats& stats)
+Dtpg_new::cnf_end(DtpgStats& stats)
 {
   USTime time = timer_stop();
   stats.mCnfGenTime += time;
@@ -203,7 +202,7 @@ Dtpg_old::cnf_end(DtpgStats& stats)
 
 // @brief 時間計測を開始する．
 void
-Dtpg_old::timer_start()
+Dtpg_new::timer_start()
 {
   if ( mTimerEnable ) {
     mTimer.reset();
@@ -213,7 +212,7 @@ Dtpg_old::timer_start()
 
 /// @brief 時間計測を終了する．
 USTime
-Dtpg_old::timer_stop()
+Dtpg_new::timer_stop()
 {
   USTime time(0, 0, 0);
   if ( mTimerEnable ) {
@@ -225,7 +224,7 @@ Dtpg_old::timer_stop()
 
 // @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
 void
-Dtpg_old::gen_cnf_base()
+Dtpg_new::gen_cnf_base()
 {
   // root の TFO を mTfoList に入れる．
   set_tfo_mark(mRoot);
@@ -312,8 +311,9 @@ Dtpg_old::gen_cnf_base()
   //////////////////////////////////////////////////////////////////////
   // 正常回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
+  GateEnc gval_enc(mSolver, mGvarMap);
   for ( auto node: mTfoList ) {
-    make_node_cnf(node, mGvarMap);
+    gval_enc.make_node_cnf(node);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "Node#" << node->id() << ": gvar("
@@ -326,7 +326,7 @@ Dtpg_old::gen_cnf_base()
     }
   }
   for ( auto node: mTfiList ) {
-    make_node_cnf(node, mGvarMap);
+    gval_enc.make_node_cnf(node);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "Node#" << node->id() << ": gvar("
@@ -348,8 +348,9 @@ Dtpg_old::gen_cnf_base()
     mSolver.add_eq_rel(olit, ilit);
   }
 
+  GateEnc hval_enc(mSolver, mHvarMap);
   for ( auto node: mTfi2List ) {
-    make_node_cnf(node, mHvarMap);
+    hval_enc.make_node_cnf(node);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "Node#" << node->id() << ": hvar("
@@ -366,9 +367,10 @@ Dtpg_old::gen_cnf_base()
   //////////////////////////////////////////////////////////////////////
   // 故障回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
+  GateEnc fval_enc(mSolver, mFvarMap);
   for ( auto node: mTfoList ) {
     if ( node != mRoot ) {
-      make_node_cnf(node, mFvarMap);
+      fval_enc.make_node_cnf(node);
 
       if ( debug_dtpg ) {
 	DEBUG_OUT << "Node#" << node->id() << ": fvar("
@@ -405,7 +407,7 @@ Dtpg_old::gen_cnf_base()
 
 // @brief mffc 内の影響が root まで伝搬する条件のCNF式を作る．
 void
-Dtpg_old::gen_cnf_mffc()
+Dtpg_new::gen_cnf_mffc()
 {
   // 各FFRの根にXORゲートを挿入した故障回路を作る．
   // そのXORをコントロールする入力変数を作る．
@@ -474,6 +476,7 @@ Dtpg_old::gen_cnf_mffc()
   }
 
   // node_list に含まれるノードの入出力の関係を表すCNF式を作る．
+  GateEnc fval_enc(mSolver, mFvarMap);
   for ( int rpos = 0; rpos < node_list.size(); ++ rpos ) {
     const TpgNode* node = node_list[rpos];
     SatVarId ovar = fvar(node);
@@ -484,10 +487,10 @@ Dtpg_old::gen_cnf_mffc()
       ovar = mSolver.new_variable();
       inject_fault(elem_pos, ovar);
       // ovar が fvar(node) ではない！
-      make_node_cnf(node, mFvarMap, ovar);
+      fval_enc.make_node_cnf(node, ovar);
     }
     else {
-      make_node_cnf(node, mFvarMap);
+      fval_enc.make_node_cnf(node);
     }
 
     if ( debug_mffccone ) {
@@ -506,7 +509,7 @@ Dtpg_old::gen_cnf_mffc()
 // @param[in] elem_pos 要素番号
 // @param[in] ovar ゲートの出力の変数
 void
-Dtpg_old::inject_fault(int elem_pos,
+Dtpg_new::inject_fault(int elem_pos,
 		       SatVarId ovar)
 {
   SatLiteral lit1(ovar);
@@ -522,262 +525,10 @@ Dtpg_old::inject_fault(int elem_pos,
   }
 }
 
-// @brief ノードの入出力の関係を表すCNF式を作る．
-// @param[in] node 対象のノード
-// @param[in] var_map 変数マップ
-void
-Dtpg_old::make_node_cnf(const TpgNode* node,
-			const VidMap& var_map)
-{
-  GateLitMap_vid litmap(node, var_map);
-  _make_node_cnf(node, litmap);
-}
-
-// @brief ノードの入出力の関係を表すCNF式を作る．
-// @param[in] node 対象のノード
-// @param[in] var_map 変数マップ
-// @param[in] ovar 出力の変数
-void
-Dtpg_old::make_node_cnf(const TpgNode* node,
-			const VidMap& var_map,
-			SatVarId ovar)
-{
-  GateLitMap_vid2 litmap(node, var_map, ovar);
-  _make_node_cnf(node, litmap);
-}
-
-// @brief ノードの入出力の関係を表すCNF式を作る．
-// @param[in] node 対象のノード
-// @param[in] litmap 入出力のリテラル
-void
-Dtpg_old::_make_node_cnf(const TpgNode* node,
-			 const GateLitMap& litmap)
-{
-  SatLiteral olit = litmap.output();
-  int ni = litmap.input_size();
-  switch ( node->gate_type() ) {
-  case GateType::Const0:
-    mSolver.add_clause(~olit);
-    break;
-
-  case GateType::Const1:
-    mSolver.add_clause( olit);
-    break;
-
-  case GateType::Input:
-    // なにもしない．
-    break;
-
-  case GateType::Buff:
-    {
-      SatLiteral ilit = litmap.input(0);
-      mSolver.add_eq_rel( ilit,  olit);
-    }
-    break;
-
-  case GateType::Not:
-    {
-      SatLiteral ilit = litmap.input(0);
-      mSolver.add_eq_rel( ilit, ~olit);
-    }
-    break;
-
-  case GateType::And:
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_andgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_andgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_andgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Nand:
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_nandgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_nandgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_nandgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Or:
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_orgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_orgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_orgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Nor:
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	mSolver.add_norgate_rel( olit, ilit0, ilit1);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = litmap.input(0);
-	SatLiteral ilit1 = litmap.input(1);
-	SatLiteral ilit2 = litmap.input(2);
-	SatLiteral ilit3 = litmap.input(3);
-	mSolver.add_norgate_rel( olit, ilit0, ilit1, ilit2, ilit3);
-      }
-      break;
-
-    default:
-      ASSERT_COND( ni > 4 );
-      {
-	vector<SatLiteral> ilits(ni);
-	for (int i = 0; i < ni; ++ i) {
-	  ilits[i] = litmap.input(i);
-	}
-	mSolver.add_norgate_rel( olit, ilits);
-      }
-      break;
-    }
-    break;
-
-  case GateType::Xor:
-    ASSERT_COND( ni == 2 );
-    {
-      SatLiteral ilit0 = litmap.input(0);
-      SatLiteral ilit1 = litmap.input(1);
-      mSolver.add_xorgate_rel( olit, ilit0, ilit1);
-    }
-    break;
-
-  case GateType::Xnor:
-    ASSERT_COND( ni == 2 );
-    {
-      SatLiteral ilit0 = litmap.input(0);
-      SatLiteral ilit1 = litmap.input(1);
-      mSolver.add_xnorgate_rel( olit, ilit0, ilit1);
-    }
-    break;
-
-  default:
-    ASSERT_NOT_REACHED;
-    break;
-  }
-}
-
 // @brief 故障伝搬条件を表すCNF式を生成する．
 // @param[in] node 対象のノード
 void
-Dtpg_old::make_dchain_cnf(const TpgNode* node)
+Dtpg_new::make_dchain_cnf(const TpgNode* node)
 {
   SatLiteral glit(mGvarMap(node));
   SatLiteral flit(mFvarMap(node));
@@ -852,7 +603,7 @@ Dtpg_old::make_dchain_cnf(const TpgNode* node)
 // @param[in] fault 対象の故障
 // @param[out] assign_list 結果の値割り当てリスト
 void
-Dtpg_old::make_ffr_condition(const TpgFault* fault,
+Dtpg_new::make_ffr_condition(const TpgFault* fault,
 			     NodeValList& assign_list)
 {
   if ( debug_dtpg ) {
@@ -915,7 +666,7 @@ Dtpg_old::make_ffr_condition(const TpgFault* fault,
 // @param[in] time 時刻 ( 0 or 1 )
 // @param[in] val 値
 void
-Dtpg_old::add_assign(NodeValList& assign_list,
+Dtpg_new::add_assign(NodeValList& assign_list,
 		     const TpgNode* node,
 		     int time,
 		     bool val)
@@ -941,7 +692,7 @@ Dtpg_old::add_assign(NodeValList& assign_list,
 // @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 SatBool3
-Dtpg_old::solve(const TpgFault* fault,
+Dtpg_new::solve(const TpgFault* fault,
 		const vector<SatLiteral>& assumptions,
 		NodeValList& nodeval_list,
 		DtpgStats& stats)

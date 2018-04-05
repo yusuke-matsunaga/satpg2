@@ -61,7 +61,6 @@ class Justifier;
 
 class VidMap;
 class ValMap;
-class GateLitMap;
 
 class Fsim;
 

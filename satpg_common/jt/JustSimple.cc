@@ -56,8 +56,7 @@ JustSimple::operator()(const NodeValList& assign_list,
 
   set_val_map(val_map);
 
-  for (int i = 0; i < assign_list.size(); ++ i) {
-    NodeVal nv = assign_list[i];
+  for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
     justify(node, time, pi_assign_list);
