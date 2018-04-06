@@ -68,7 +68,7 @@ set (struct_enc_SOURCES
 
 set (dtpg_SOURCES
   dtpg/Dtpg.cc
-  dtpg/Dtpg_new.cc
+  dtpg/Dtpg_se.cc
   )
 
 set (dop_SOURCES

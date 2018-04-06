@@ -13,7 +13,6 @@
 #include "TpgFFR.h"
 #include "TpgFault.h"
 #include "TpgFaultMgr.h"
-#include "Dtpg.h"
 #include "NodeValList.h"
 #include "Fsim.h"
 #include "DetectOp.h"
@@ -58,7 +57,7 @@ dtpg_test(int argc,
 
   argv0 = argv[0];
 
-  ymuint pos = 1;
+  int pos = 1;
   for ( ; pos < argc; ++ pos) {
     if ( argv[pos][0] == '-' ) {
       if ( strcmp(argv[pos], "--single") == 0 ) {

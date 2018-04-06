@@ -105,11 +105,11 @@ public:
   rep_fault() const;
 
   /// @brief この故障の属しているFFRを返す．
-  const TpgFFR*
+  const TpgFFR&
   ffr() const;
 
   /// @brief この故障の属しているMFFCを返す．
-  const TpgMFFC*
+  const TpgMFFC&
   mffc() const;
 
 
@@ -220,18 +220,18 @@ TpgFault::_rep_fault()
 
 // @brief この故障の属しているFFRを返す．
 inline
-const TpgFFR*
+const TpgFFR&
 TpgFault::ffr() const
 {
-  return mFFR;
+  return *mFFR;
 }
 
 // @brief この故障の属しているMFFCを返す．
 inline
-const TpgMFFC*
+const TpgMFFC&
 TpgFault::mffc() const
 {
-  return mMFFC;
+  return *mMFFC;
 }
 
 END_NAMESPACE_YM_SATPG

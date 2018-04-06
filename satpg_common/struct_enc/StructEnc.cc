@@ -121,7 +121,7 @@ StructEnc::add_simple_cone(const TpgNode* fnode,
 //
 // fnode から到達可能な外部出力までの故障伝搬条件を考える．
 int
-StructEnc::add_mffc_cone(const TpgMFFC* mffc,
+StructEnc::add_mffc_cone(const TpgMFFC& mffc,
 			 bool detect)
 {
   return add_mffc_cone(mffc, nullptr, detect);
@@ -135,7 +135,7 @@ StructEnc::add_mffc_cone(const TpgMFFC* mffc,
 //
 // bnode までの故障伝搬条件を考える．
 int
-StructEnc::add_mffc_cone(const TpgMFFC* mffc,
+StructEnc::add_mffc_cone(const TpgMFFC& mffc,
 			 const TpgNode* bnode,
 			 bool detect)
 {
@@ -144,7 +144,7 @@ StructEnc::add_mffc_cone(const TpgMFFC* mffc,
   mConeList.push_back(mffccone);
 
   if ( fault_type() == FaultType::TransitionDelay ) {
-    add_prev_node(mffc->root());
+    add_prev_node(mffc.root());
   }
   make_tfi_list(mffccone->tfo_node_list());
 

@@ -111,7 +111,7 @@ public:
   ///
   /// fnode から到達可能な外部出力までの故障伝搬条件を考える．
   int
-  add_mffc_cone(const TpgMFFC* mffc,
+  add_mffc_cone(const TpgMFFC& mffc,
 		bool detect);
 
   /// @brief MFFC cone を追加する．
@@ -122,7 +122,7 @@ public:
   ///
   /// bnode までの故障伝搬条件を考える．
   int
-  add_mffc_cone(const TpgMFFC* mffc,
+  add_mffc_cone(const TpgMFFC& mffc,
 		const TpgNode* bnode,
 		bool detect);
 

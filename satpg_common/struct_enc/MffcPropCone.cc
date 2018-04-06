@@ -38,15 +38,15 @@ END_NONAMESPACE
 // 通常 block_node は nullptr か root_node の dominator
 // となっているはず．
 MffcPropCone::MffcPropCone(StructEnc& struct_sat,
-			   const TpgMFFC* mffc,
+			   const TpgMFFC& mffc,
 			   const TpgNode* block_node,
 			   bool detect) :
-  PropCone(struct_sat, mffc->root(), block_node, detect),
-  mElemArray(mffc->elem_num()),
-  mElemVarArray(mffc->elem_num())
+  PropCone(struct_sat, mffc.root(), block_node, detect),
+  mElemArray(mffc.elem_num()),
+  mElemVarArray(mffc.elem_num())
 {
-  for (int i = 0; i < mffc->elem_num(); ++ i ) {
-    const TpgFFR* ffr = mffc->elem(i);
+  for (int i = 0; i < mffc.elem_num(); ++ i ) {
+    const TpgFFR* ffr = mffc.elem(i);
     mElemArray[i] = ffr->root();
     ASSERT_COND( ffr->root() != nullptr );
     for ( auto f: ffr->fault_list() ) {
@@ -76,7 +76,7 @@ MffcPropCone::make_cnf()
 
   // 各FFRの根にXORゲートを挿入した故障回路を作る．
   // そのXORをコントロールする入力変数を作る．
-  for (int i = 0; i < mElemArray.size(); ++ i) {
+  for ( int i = 0; i < mElemArray.size(); ++ i ) {
     mElemVarArray[i] = solver().new_variable();
 
     if ( debug_mffccone ) {
@@ -88,7 +88,7 @@ MffcPropCone::make_cnf()
   // 求め，同時に変数を割り当てる．
   vector<const TpgNode*> node_list;
   HashMap<int, int> elem_map;
-  for (int i = 0; i < mElemArray.size(); ++ i) {
+  for ( int i = 0; i < mElemArray.size(); ++ i ) {
     const TpgNode* node = mElemArray[i];
     elem_map.add(node->id(), i);
     if ( node == root_node() ) {
@@ -106,7 +106,7 @@ MffcPropCone::make_cnf()
       }
     }
   }
-  for (int rpos = 0; rpos < node_list.size(); ++ rpos) {
+  for ( int rpos = 0; rpos < node_list.size(); ++ rpos ) {
     const TpgNode* node = node_list[rpos];
     if ( node == root_node() ) {
       continue;
@@ -127,7 +127,7 @@ MffcPropCone::make_cnf()
 
   // 最も入力よりにある FFR の根のノードの場合
   // 正常回路と制御変数のXORをとったものを故障値とする．
-  for (int i = 0; i < mElemArray.size(); ++ i) {
+  for ( int i = 0; i < mElemArray.size(); ++ i ) {
     const TpgNode* node = mElemArray[i];
     if ( fvar(node) != gvar(node) ) {
       // このノードは入力側ではない．
@@ -142,7 +142,7 @@ MffcPropCone::make_cnf()
 
   // node_list に含まれるノードの入出力の関係を表すCNF式を作る．
   GateEnc gate_enc(solver(), fvar_map());
-  for (int rpos = 0; rpos < node_list.size(); ++ rpos) {
+  for ( int rpos = 0; rpos < node_list.size(); ++ rpos ) {
     const TpgNode* node = node_list[rpos];
     SatVarId ovar = fvar(node);
     int elem_pos;

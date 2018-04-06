@@ -35,7 +35,7 @@ public:
   /// 通常 block_node は nullptr か root_node の dominator
   /// となっているはず．
   MffcPropCone(StructEnc& struct_sat,
-	   const TpgMFFC* mffc,
+	   const TpgMFFC& mffc,
 	   const TpgNode* block_node,
 	   bool detect);
 
