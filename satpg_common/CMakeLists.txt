@@ -64,8 +64,6 @@ set (struct_enc_SOURCES
   struct_enc/SimplePropCone.cc
   struct_enc/MffcPropCone.cc
   struct_enc/StructEnc.cc
-
-  struct_enc/Extractor.cc
   )
 
 set (dtpg_SOURCES
@@ -88,6 +86,10 @@ set (uop_SOURCES
   uop/UopDummy.cc
   uop/UopList.cc
   uop/UopSkip.cc
+  )
+
+set (ex_SOURCES
+  ex/Extractor.cc
   )
 
 set (jt_SOURCES
@@ -137,6 +139,7 @@ ym_add_object_library ( satpg_common
   ${dtpg_SOURCES}
   ${dop_SOURCES}
   ${uop_SOURCES}
+  ${ex_SOURCES}
   ${jt_SOURCES}
 #  ${sa_SOURCES}
 #  ${td_SOURCES}

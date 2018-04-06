@@ -11,10 +11,18 @@
 #include "StructEnc.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
-#include "Extractor.h"
 #include "NodeValList.h"
 #include "GateEnc.h"
 
+BEGIN_NAMESPACE_YM_SATPG
+
+extern void extract(const TpgNode*,
+		    const VidMap&,
+		    const VidMap&,
+		    const vector<SatBool3>&,
+		    NodeValList&);
+
+END_NAMESPACE_YM_SATPG
 
 BEGIN_NAMESPACE_YM_SATPG_STRUCTENC
 
@@ -191,9 +199,8 @@ PropCone::extract(const vector<SatBool3>& model,
 		  const TpgNode* root,
 		  NodeValList& assign_list)
 {
-  // 実際の処理は Extractor が行う．
-  Extractor extractor(gvar_map(), fvar_map(), model);
-  extractor(root, assign_list);
+
+  nsYm::nsSatpg::extract(root, gvar_map(), fvar_map(), model, assign_list);
 }
 
 // @brief node に関する故障伝搬条件を作る．

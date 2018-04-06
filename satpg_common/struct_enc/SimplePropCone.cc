@@ -11,7 +11,6 @@
 #include "StructEnc.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
-#include "Extractor.h"
 #include "NodeValList.h"
 
 
@@ -66,20 +65,6 @@ void
 SimplePropCone::make_prop_condition(const TpgNode* root,
 				    vector<SatLiteral>& assumptions)
 {
-}
-
-// @brief 故障検出に必要な割り当てを求める．
-// @param[in] model SAT のモデル
-// @param[in] root 起点のノード
-// @param[out] 値の割り当て結果を入れるリスト
-void
-SimplePropCone::extract(const vector<SatBool3>& model,
-			const TpgNode* root,
-			NodeValList& assign_list)
-{
-  // 実際の処理は Extractor が行う．
-  Extractor extractor(gvar_map(), fvar_map(), model);
-  extractor(root, assign_list);
 }
 
 END_NAMESPACE_YM_SATPG_STRUCTENC

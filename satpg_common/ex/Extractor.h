@@ -9,14 +9,15 @@
 /// All rights reserved.
 
 
-#include "structenc_nsdef.h"
+#include "satpg.h"
+#include "NodeValList.h"
 #include "VidMap.h"
 #include "Val3.h"
 #include "ym/HashSet.h"
 #include "ym/SatBool3.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_STRUCTENC
+BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
 /// @class Extractor Extractor.h "Extractor.h"
@@ -133,6 +134,29 @@ private:
 
 };
 
+
+//////////////////////////////////////////////////////////////////////
+// インライン関数の定義
+//////////////////////////////////////////////////////////////////////
+
+// @brief side input の値を記録する．
+// @param[in] node 対象のノード
+// @param[out] assign_list 値割当を記録するリスト
+inline
+void
+Extractor::record_side_input(const TpgNode* node,
+			     NodeValList& assign_list)
+{
+  ASSERT_COND( !mFconeMark.check(node->id()) );
+
+  if ( !mRecorded.check(node->id()) ) {
+    mRecorded.add(node->id());
+
+    bool val = (gval(node) == Val3::_1);
+    assign_list.add(node, 1, val);
+  }
+}
+
 // @brief 正常回路の値を返す．
 // @param[in] node ノード
 inline
@@ -151,6 +175,6 @@ Extractor::fval(const TpgNode* node)
   return bool3_to_val3(mSatModel[mFvarMap(node).val()]);
 }
 
-END_NAMESPACE_YM_SATPG_STRUCTENC
+END_NAMESPACE_YM_SATPG
 
 #endif // EXTRACTOR_H

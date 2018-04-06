@@ -67,16 +67,6 @@ public:
   make_prop_condition(const TpgNode* root,
 		      vector<SatLiteral>& assumptions);
 
-  /// @brief 故障検出に必要な割り当てを求める．
-  /// @param[in] model SAT のモデル
-  /// @param[in] root 起点のノード
-  /// @param[out] 値の割り当て結果を入れるリスト
-  virtual
-  void
-  extract(const vector<SatBool3>& model,
-	  const TpgNode* root,
-	  NodeValList& assign_list);
-
 
 private:
   //////////////////////////////////////////////////////////////////////

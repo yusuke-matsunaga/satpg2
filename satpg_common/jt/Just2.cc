@@ -61,9 +61,7 @@ Just2::just_init(const NodeValList& assign_list,
     mNodeList[time].clear();
   }
   for ( auto nv: assign_list ) {
-    const TpgNode* node = nv.node();
-    int time = nv.time();
-    add_weight(jd, node, time);
+    add_weight(jd, nv.node(), nv.time());
   }
   for ( auto time: {0, 1} ) {
     for ( auto node: mNodeList[time] ) {
@@ -179,6 +177,10 @@ Just2::calc_value(const JustData& jd,
 		  const TpgNode* node,
 		  int time)
 {
+  if ( mTmpArray[node->id() * 2 + time] != 0.0 ) {
+    return;
+  }
+
   double val = 0.0;
   if ( node->is_primary_input() ) {
     val = 1.0;

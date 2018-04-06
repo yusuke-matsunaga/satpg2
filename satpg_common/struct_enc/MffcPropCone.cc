@@ -13,7 +13,6 @@
 #include "TpgFFR.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
-#include "Extractor.h"
 #include "NodeValList.h"
 #include "GateEnc.h"
 #include "GateType.h"
@@ -60,20 +59,6 @@ MffcPropCone::MffcPropCone(StructEnc& struct_sat,
 // @brief デストラクタ
 MffcPropCone::~MffcPropCone()
 {
-}
-
-// @brief 故障検出に必要な割り当てを求める．
-// @param[in] model SAT のモデル
-// @param[in] root 起点のノード
-// @param[out] 値の割り当て結果を入れるリスト
-void
-MffcPropCone::extract(const vector<SatBool3>& model,
-		      const TpgNode* root,
-		      NodeValList& assign_list)
-{
-  // 実際の処理は Extractor が行う．
-  Extractor extractor(gvar_map(), fvar_map(), model);
-  extractor(root, assign_list);
 }
 
 // @brief 関係するノードの変数を作る．

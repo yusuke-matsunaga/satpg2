@@ -3,7 +3,7 @@
 /// @brief Extractor の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2015, 2017 Yusuke Matsunaga
+/// Copyright (C) 2015, 2017, 2018 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -22,13 +22,9 @@ extract(const TpgNode* root,
 	const vector<SatBool3>& model,
 	NodeValList& assign_list)
 {
-  nsStructEnc::Extractor extractor(gvar_map, fvar_map, model);
+  Extractor extractor(gvar_map, fvar_map, model);
   return extractor(root, assign_list);
 }
-
-END_NAMESPACE_YM_SATPG
-
-BEGIN_NAMESPACE_YM_SATPG_STRUCTENC
 
 BEGIN_NONAMESPACE
 
@@ -211,22 +207,4 @@ Extractor::record_masking_node(const TpgNode* node,
   }
 }
 
-// @brief side input の値を記録する．
-// @param[in] node 対象のノード
-// @param[out] assign_list 値割当を記録するリスト
-void
-Extractor::record_side_input(const TpgNode* node,
-			     NodeValList& assign_list)
-{
-  ASSERT_COND( !mFconeMark.check(node->id()) );
-
-  if ( mRecorded.check(node->id()) ) {
-    return;
-  }
-  mRecorded.add(node->id());
-
-  bool val = (gval(node) == Val3::_1);
-  assign_list.add(node, 1, val);
-}
-
-END_NAMESPACE_YM_SATPG_STRUCTENC
+END_NAMESPACE_YM_SATPG
