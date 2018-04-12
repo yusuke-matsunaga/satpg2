@@ -35,8 +35,6 @@ add_executable ( dtpg_test
   $<TARGET_OBJECTS:ym_base_a>
   $<TARGET_OBJECTS:ym_logic_a>
   $<TARGET_OBJECTS:ym_cell_a>
-  $<TARGET_OBJECTS:ym_cell_mislib_a>
-  $<TARGET_OBJECTS:ym_cell_dotlib_a>
   $<TARGET_OBJECTS:ym_bnet_a>
   $<TARGET_OBJECTS:ym_sat_a>
   $<TARGET_OBJECTS:ym_mincov_a>
@@ -73,8 +71,6 @@ add_executable ( dtpg_test_d
   $<TARGET_OBJECTS:ym_base_d>
   $<TARGET_OBJECTS:ym_logic_d>
   $<TARGET_OBJECTS:ym_cell_d>
-  $<TARGET_OBJECTS:ym_cell_mislib_d>
-  $<TARGET_OBJECTS:ym_cell_dotlib_d>
   $<TARGET_OBJECTS:ym_bnet_d>
   $<TARGET_OBJECTS:ym_sat_d>
   $<TARGET_OBJECTS:ym_mincov_d>

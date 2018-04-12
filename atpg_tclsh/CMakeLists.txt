@@ -47,8 +47,6 @@ add_executable(atpg_tclsh
   $<TARGET_OBJECTS:ym_base_a>
   $<TARGET_OBJECTS:ym_logic_a>
   $<TARGET_OBJECTS:ym_cell_a>
-  $<TARGET_OBJECTS:ym_cell_mislib_a>
-  $<TARGET_OBJECTS:ym_cell_dotlib_a>
   $<TARGET_OBJECTS:ym_bnet_a>
   $<TARGET_OBJECTS:ym_sat_a>
   $<TARGET_OBJECTS:ym_mincov_a>
@@ -90,8 +88,6 @@ add_executable(atpg_tclsh_p
   $<TARGET_OBJECTS:ym_base_p>
   $<TARGET_OBJECTS:ym_logic_p>
   $<TARGET_OBJECTS:ym_cell_p>
-  $<TARGET_OBJECTS:ym_cell_mislib_p>
-  $<TARGET_OBJECTS:ym_cell_dotlib_p>
   $<TARGET_OBJECTS:ym_bnet_p>
   $<TARGET_OBJECTS:ym_sat_p>
   $<TARGET_OBJECTS:ym_mincov_p>
@@ -133,8 +129,6 @@ add_executable(atpg_tclsh_d
   $<TARGET_OBJECTS:ym_base_d>
   $<TARGET_OBJECTS:ym_logic_d>
   $<TARGET_OBJECTS:ym_cell_d>
-  $<TARGET_OBJECTS:ym_cell_mislib_d>
-  $<TARGET_OBJECTS:ym_cell_dotlib_d>
   $<TARGET_OBJECTS:ym_bnet_d>
   $<TARGET_OBJECTS:ym_sat_d>
   $<TARGET_OBJECTS:ym_mincov_d>
