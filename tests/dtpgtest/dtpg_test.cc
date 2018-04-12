@@ -15,9 +15,7 @@
 #include "TpgFaultMgr.h"
 #include "NodeValList.h"
 #include "Fsim.h"
-#include "DetectOp.h"
 #include "DopVerifyResult.h"
-#include "DopList.h"
 #include "ym/StopWatch.h"
 
 
@@ -203,7 +201,7 @@ dtpg_test(int argc,
 
   DtpgTest dtpgtest(sat_type, sat_option, sat_outp, fault_type, bt_mode, network);
 
-  pair<ymuint, ymuint> num_pair;
+  pair<int, int> num_pair;
   if ( single ) {
     num_pair = dtpgtest.single_test();
   }
@@ -218,14 +216,14 @@ dtpg_test(int argc,
   }
 
   if ( verbose ) {
-    ymuint detect_num = num_pair.first;
-    ymuint untest_num = num_pair.second;
+    int detect_num = num_pair.first;
+    int untest_num = num_pair.second;
     dtpgtest.print_stats(detect_num, untest_num);
   }
 
   const DopVerifyResult& verify_result = dtpgtest.verify_result();
-  ymuint n = verify_result.error_count();
-  for (ymuint i = 0; i < n; ++ i) {
+  int n = verify_result.error_count();
+  for ( int i = 0; i < n; ++ i ) {
     const TpgFault* f = verify_result.error_fault(i);
     const NodeValList& assign_list = verify_result.error_assign_list(i);
     cout << "Error: " << f->str() << " is not detected with "
