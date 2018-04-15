@@ -36,10 +36,13 @@ public:
   /// @brief fval の書き込み読み出しテスト
   /// @param[in] node 対象のノード
   /// @param[in] val0, val1 書き込む値
+  /// @param[in] exp_val0, exp_val1 期待値
   void
   test_val(SimNode* node,
 	   PackedVal val0,
-	   PackedVal val1);
+	   PackedVal val1,
+	   PackedVal exp_val0,
+	   PackedVal exp_val1);
 
   /// @brief 3値の検証を行う．
   /// @param[in] val0 0のワード
@@ -75,10 +78,18 @@ SimNodeTest::test_input()
   // val の書き込み読み出しテスト
   init_val(node, kPvAll1, kPvAll1);
 
-  test_val(node, kPvAll1, kPvAll0);
-  test_val(node, 0x5555555555555555UL, 0x5555555555555555UL);
-  test_val(node, 0xaaaaaaaaaaaaaaaaUL, 0xaaaaaaaaaaaaaaaaUL);
-  test_val(node, kPvAll0, kPvAll1);
+  test_val(node,
+	   kPvAll1,              kPvAll0,
+	   kPvAll1,              kPvAll0);
+  test_val(node,
+	   0x5555555555555555UL, 0x5555555555555555UL,
+	   0x0000000000000000UL, 0x0000000000000000UL);
+  test_val(node,
+	   0xaaaaaaaaaaaaaaaaUL, 0xaaaaaaaaaaaaaaaaUL,
+	   0x0000000000000000UL, 0x0000000000000000UL);
+  test_val(node,
+	   kPvAll0,              kPvAll1,
+	   kPvAll0,              kPvAll1);
 
   delete node;
 }
@@ -101,10 +112,18 @@ SimNodeTest::test_gate(int ni,
   // val の書き込み読み出しテスト
   init_val(node, kPvAll1, kPvAll1);
 
-  test_val(node, kPvAll1, kPvAll0);
-  test_val(node, 0x5555555555555555UL, 0x5555555555555555UL);
-  test_val(node, 0xaaaaaaaaaaaaaaaaUL, 0xaaaaaaaaaaaaaaaaUL);
-  test_val(node, kPvAll0, kPvAll1);
+  test_val(node,
+	   kPvAll1,              kPvAll0,
+	   kPvAll1,              kPvAll0);
+  test_val(node,
+	   0x5555555555555555UL, 0x5555555555555555UL,
+	   0x0000000000000000UL, 0x0000000000000000UL);
+  test_val(node,
+	   0xaaaaaaaaaaaaaaaaUL, 0xaaaaaaaaaaaaaaaaUL,
+	   0x0000000000000000UL, 0x0000000000000000UL);
+  test_val(node,
+	   kPvAll0,              kPvAll1,
+	   kPvAll0,              kPvAll1);
 
   int np = 1;
   for (int i = 0; i < ni; ++ i) {
@@ -212,15 +231,18 @@ SimNodeTest::test_gate(int ni,
 // @brief val の書き込み読み出しテスト
 // @param[in] node 対象のノード
 // @param[in] val0, val1 書き込む値
+// @param[in] exp_val0, exp_val1 期待値
 void
 SimNodeTest::test_val(SimNode* node,
 		      PackedVal val0,
-		      PackedVal val1)
+		      PackedVal val1,
+		      PackedVal exp_val0,
+		      PackedVal exp_val1)
 {
   // 書き込んだ値が読み出せるかテストする．
   init_val(node, val0, val1);
-  EXPECT_EQ( val0, node->val().val0() );
-  EXPECT_EQ( val1, node->val().val1() );
+  EXPECT_EQ( exp_val0, node->val().val0() );
+  EXPECT_EQ( exp_val1, node->val().val1() );
 }
 
 // @brief 3値の検証を行う．
