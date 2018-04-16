@@ -56,10 +56,9 @@ public:
 
   /// @brief 値割当を求める．
   /// @param[in] root 起点となるノード
-  /// @param[out] assign_list 値の割当リスト
-  void
-  operator()(const TpgNode* root,
-	     NodeValList& assign_list);
+  /// @return 値の割当リスト
+  NodeValList
+  operator()(const TpgNode* root);
 
 
 private:

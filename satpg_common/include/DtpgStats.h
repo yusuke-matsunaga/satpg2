@@ -44,15 +44,14 @@ struct DtpgStats
   update_red(const SatStats& sat_stats,
 	     const USTime& time);
 
-  /// @brief PartRedStats を更新する
-  void
-  update_partred(const SatStats& sat_stats,
-		 const USTime& time);
-
   /// @brief AbortStats を更新する
   void
   update_abort(const SatStats& sat_stats,
 	       const USTime& time);
+
+  /// @brief マージする．
+  void
+  merge(const DtpgStats& src);
 
   /// @brief CNF 式を生成した回数
   int mCnfGenCount;
@@ -87,20 +86,6 @@ struct DtpgStats
   ///
   /// 個々の値は同時に起こったわけではない．
   SatStats mRedStatsMax;
-
-  /// @brief 部分的な冗長故障と判定した回数
-  int mPartRedCount;
-
-  /// @brief 部分的な冗長故障と判定した時の SAT に要した時間
-  USTime mPartRedTime;
-
-  /// @brief 部分的な冗長故障と判定した時の SATソルバの統計情報の和
-  SatStats mPartRedStats;
-
-  /// @brief 部分的な冗長故障と判定した時の SATソルバの統計情報の最大値
-  ///
-  /// 個々の値は同時に起こったわけではない．
-  SatStats mPartRedStatsMax;
 
   /// @brief アボートした回数
   int mAbortCount;
@@ -145,11 +130,6 @@ DtpgStats::clear()
   mRedStats.clear();
   mRedStatsMax.clear();
 
-  mPartRedCount = 0;
-  mPartRedTime.set(0.0, 0.0, 0.0);
-  mPartRedStats.clear();
-  mPartRedStatsMax.clear();
-
   mAbortCount = 0;
   mAbortTime.set(0.0, 0.0, 0.0);
 }
@@ -178,18 +158,6 @@ DtpgStats::update_red(const SatStats& sat_stats,
   mRedStatsMax.max_assign(sat_stats);
 }
 
-// @brief PartRedStats を更新する
-inline
-void
-DtpgStats::update_partred(const SatStats& sat_stats,
-			  const USTime& time)
-{
-  ++ mPartRedCount;
-  mPartRedTime += time;
-  mPartRedStats += sat_stats;
-  mPartRedStatsMax.max_assign(sat_stats);
-}
-
 // @brief AbortStats を更新する
 inline
 void
@@ -198,6 +166,26 @@ DtpgStats::update_abort(const SatStats& sat_stats,
 {
   ++ mAbortCount;
   mAbortTime += time;
+}
+
+// @brief マージする．
+inline
+void
+DtpgStats::merge(const DtpgStats& src)
+{
+  mCnfGenCount += src.mCnfGenCount;
+  mCnfGenTime += src.mCnfGenTime;
+  mDetCount += src.mDetCount;
+  mDetTime += src.mDetTime;
+  mDetStats += src.mDetStats;
+  mDetStatsMax.max_assign(src.mDetStatsMax);
+  mRedCount += src.mRedCount;
+  mRedTime += src.mRedTime;
+  mRedStats += src.mRedStats;
+  mRedStatsMax.max_assign(src.mRedStatsMax);
+  mAbortCount += src.mAbortCount;
+  mAbortTime += src.mAbortTime;
+  mBackTraceTime += src.mBackTraceTime;
 }
 
 END_NAMESPACE_YM_SATPG

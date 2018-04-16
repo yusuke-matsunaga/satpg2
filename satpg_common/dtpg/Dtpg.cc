@@ -40,12 +40,11 @@ END_NONAMESPACE
 BEGIN_NAMESPACE_YM_SATPG
 
 extern
-void
+NodeValList
 extract(const TpgNode* root,
 	const VidMap& gvar_map,
 	const VidMap& fvar_map,
-	const vector<SatBool3>& model,
-	NodeValList& assign_list);
+	const vector<SatBool3>& model);
 
 // @brief コンストラクタ(ノードモード)
 // @param[in] sat_type SATソルバの種類を表す文字列
@@ -61,8 +60,7 @@ Dtpg::Dtpg(const string& sat_type,
 	   FaultType fault_type,
 	   Justifier& jt,
 	   const TpgNetwork& network,
-	   const TpgNode* node,
-	   DtpgStats& stats) :
+	   const TpgNode* node) :
   mSolver(sat_type, sat_option, sat_outp),
   mNetwork(network),
   mFaultType(fault_type),
@@ -84,7 +82,7 @@ Dtpg::Dtpg(const string& sat_type,
 
   gen_cnf_base();
 
-  cnf_end(stats);
+  cnf_end();
 }
 
 // @brief コンストラクタ
@@ -101,8 +99,7 @@ Dtpg::Dtpg(const string& sat_type,
 	   FaultType fault_type,
 	   Justifier& jt,
 	   const TpgNetwork& network,
-	   const TpgFFR& ffr,
-	   DtpgStats& stats) :
+	   const TpgFFR& ffr) :
   mSolver(sat_type, sat_option, sat_outp),
   mNetwork(network),
   mFaultType(fault_type),
@@ -124,7 +121,7 @@ Dtpg::Dtpg(const string& sat_type,
 
   gen_cnf_base();
 
-  cnf_end(stats);
+  cnf_end();
 }
 
 // @brief コンストラクタ
@@ -141,8 +138,7 @@ Dtpg::Dtpg(const string& sat_type,
 	   FaultType fault_type,
 	   Justifier& jt,
 	   const TpgNetwork& network,
-	   const TpgMFFC& mffc,
-	   DtpgStats& stats) :
+	   const TpgMFFC& mffc) :
   mSolver(sat_type, sat_option, sat_outp),
   mNetwork(network),
   mFaultType(fault_type),
@@ -180,7 +176,7 @@ Dtpg::Dtpg(const string& sat_type,
     gen_cnf_mffc();
   }
 
-  cnf_end(stats);
+  cnf_end();
 }
 
 // @brief デストラクタ
@@ -191,12 +187,10 @@ Dtpg::~Dtpg()
 // @brief テスト生成を行なう．
 // @param[in] fault 対象の故障
 // @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
-// @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 SatBool3
 Dtpg::dtpg(const TpgFault* fault,
-	   NodeValList& nodeval_list,
-	   DtpgStats& stats)
+	   NodeValList& nodeval_list)
 {
   vector<SatLiteral> assumptions;
 
@@ -223,7 +217,7 @@ Dtpg::dtpg(const TpgFault* fault,
     }
   }
 
-  SatBool3 ans = solve(fault, assumptions, nodeval_list, stats);
+  SatBool3 ans = solve(fault, assumptions, nodeval_list);
 
   return ans;
 }
@@ -237,11 +231,11 @@ Dtpg::cnf_begin()
 
 // @brief タイマーを止めて CNF 作成時間に加える．
 void
-Dtpg::cnf_end(DtpgStats& stats)
+Dtpg::cnf_end()
 {
   USTime time = timer_stop();
-  stats.mCnfGenTime += time;
-  ++ stats.mCnfGenCount;
+  mStats.mCnfGenTime += time;
+  ++ mStats.mCnfGenCount;
 }
 
 // @brief 時間計測を開始する．
@@ -554,7 +548,7 @@ Dtpg::gen_cnf_mffc()
 // @param[in] ovar ゲートの出力の変数
 void
 Dtpg::inject_fault(int ffr_pos,
-		       SatVarId ovar)
+		   SatVarId ovar)
 {
   SatLiteral lit1(ovar);
   SatLiteral lit2(mElemVarArray[ffr_pos]);
@@ -646,13 +640,14 @@ Dtpg::make_dchain_cnf(const TpgNode* node)
 // @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
 // @param[in] fault 対象の故障
 // @param[out] assign_list 結果の値割り当てリスト
-void
-Dtpg::make_ffr_condition(const TpgFault* fault,
-			 NodeValList& assign_list)
+NodeValList
+Dtpg::make_ffr_condition(const TpgFault* fault)
 {
   if ( debug_dtpg ) {
     DEBUG_OUT << "make_ffr_condition" << endl;
   }
+
+  NodeValList assign_list;
 
   // 故障の活性化条件を作る．
   const TpgNode* inode = fault->tpg_inode();
@@ -702,6 +697,8 @@ Dtpg::make_ffr_condition(const TpgFault* fault,
   if ( debug_dtpg ) {
     DEBUG_OUT << endl;
   }
+
+  return assign_list;
 }
 
 // @brief NodeValList に追加する．
@@ -738,8 +735,7 @@ Dtpg::add_assign(NodeValList& assign_list,
 SatBool3
 Dtpg::solve(const TpgFault* fault,
 	    const vector<SatLiteral>& assumptions,
-	    NodeValList& nodeval_list,
-	    DtpgStats& stats)
+	    NodeValList& nodeval_list)
 {
   StopWatch timer;
   timer.start();
@@ -748,22 +744,21 @@ Dtpg::solve(const TpgFault* fault,
   mSolver.get_stats(prev_stats);
 
   // FFR 内の故障伝搬条件を assign_list に入れる．
-  NodeValList assign_list;
-  make_ffr_condition(fault, assign_list);
+  NodeValList assign_list = make_ffr_condition(fault);
 
   // assign_list の内容と assumptions を足したものを assumptions1 に入れる．
+  vector<SatLiteral> assumptions1;
   int n0 = assumptions.size();
   int n = assign_list.size();
-  vector<SatLiteral> assumptions1(n + n0);
-  for ( int i = 0; i < n; ++ i ) {
-    NodeVal nv = assign_list[i];
+  assumptions1.reserve(n + n0);
+  for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     bool inv = !nv.val();
     SatVarId vid = (nv.time() == 0) ? hvar(node) : gvar(node);
-    assumptions1[i] = SatLiteral(vid, inv);
+    assumptions1.push_back(SatLiteral(vid, inv));
   }
-  for (int i = 0; i < n0; ++ i) {
-    assumptions1[i + n] = assumptions[i];
+  for ( auto lit: assumptions ) {
+    assumptions1.push_back(lit);
   }
 
   vector<SatBool3> model;
@@ -783,29 +778,27 @@ Dtpg::solve(const TpgFault* fault,
     timer.start();
 
     // バックトレースを行う．
-    NodeValList assign_list2;
     const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
-    extract(ffr_root, mGvarMap, mFvarMap, model, assign_list2);
+    NodeValList assign_list2 = extract(ffr_root, mGvarMap, mFvarMap, model);
     assign_list2.merge(assign_list);
     if ( mFaultType == FaultType::TransitionDelay ) {
-      mJustifier(assign_list2, mHvarMap, mGvarMap, model, nodeval_list);
+      nodeval_list = mJustifier(assign_list2, mHvarMap, mGvarMap, model);
     }
     else {
-      mJustifier(assign_list2, mGvarMap, model, nodeval_list);
+      nodeval_list = mJustifier(assign_list2, mGvarMap, model);
     }
 
     timer.stop();
-    stats.mBackTraceTime += timer.time();
-
-    stats.update_det(sat_stats, time);
+    mStats.mBackTraceTime += timer.time();
+    mStats.update_det(sat_stats, time);
   }
   else if ( ans == SatBool3::False ) {
     // 検出不能と判定された．
-    stats.update_red(sat_stats, time);
+    mStats.update_red(sat_stats, time);
   }
   else {
     // ans == SatBool3::X つまりアボート
-    stats.update_abort(sat_stats, time);
+    mStats.update_abort(sat_stats, time);
   }
 
   return ans;

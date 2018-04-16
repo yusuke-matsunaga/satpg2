@@ -16,11 +16,12 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-extern void extract(const TpgNode*,
-		    const VidMap&,
-		    const VidMap&,
-		    const vector<SatBool3>&,
-		    NodeValList&);
+extern
+NodeValList
+extract(const TpgNode*,
+	const VidMap&,
+	const VidMap&,
+	const vector<SatBool3>&);
 
 END_NAMESPACE_YM_SATPG
 
@@ -194,13 +195,11 @@ PropCone::make_cnf()
 // @param[in] model SAT のモデル
 // @param[in] root 起点のノード
 // @param[out] 値の割り当て結果を入れるリスト
-void
+NodeValList
 PropCone::extract(const vector<SatBool3>& model,
-		  const TpgNode* root,
-		  NodeValList& assign_list)
+		  const TpgNode* root)
 {
-
-  nsYm::nsSatpg::extract(root, gvar_map(), fvar_map(), model, assign_list);
+  return nsYm::nsSatpg::extract(root, gvar_map(), fvar_map(), model);
 }
 
 // @brief node に関する故障伝搬条件を作る．

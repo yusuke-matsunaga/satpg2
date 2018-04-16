@@ -53,8 +53,7 @@ public:
        FaultType fault_type,
        Justifier& jt,
        const TpgNetwork& network,
-       const TpgNode* node,
-       DtpgStats& stats);
+       const TpgNode* node);
 
   /// @brief コンストラクタ(FFRモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
@@ -70,8 +69,7 @@ public:
        FaultType fault_type,
        Justifier& jt,
        const TpgNetwork& network,
-       const TpgFFR& ffr,
-       DtpgStats& stats);
+       const TpgFFR& ffr);
 
   /// @brief コンストラクタ(MFFCモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
@@ -87,8 +85,7 @@ public:
        FaultType fault_type,
        Justifier& jt,
        const TpgNetwork& network,
-       const TpgMFFC& mffc,
-       DtpgStats& stats);
+       const TpgMFFC& mffc);
 
   /// @brief デストラクタ
   ~Dtpg();
@@ -102,12 +99,14 @@ public:
   /// @brief テスト生成を行なう．
   /// @param[in] fault 対象の故障
   /// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
-  /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
   SatBool3
   dtpg(const TpgFault* fault,
-       NodeValList& nodeval_list,
-       DtpgStats& stats);
+       NodeValList& nodeval_list);
+
+  /// @brief 統計情報を得る．
+  const DtpgStats&
+  stats() const;
 
 
 protected:
@@ -129,7 +128,7 @@ protected:
 
   /// @brief CNF 作成を終了する．
   void
-  cnf_end(DtpgStats& stats);
+  cnf_end();
 
   /// @brief 時間計測を開始する．
   void
@@ -238,9 +237,8 @@ protected:
   /// @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
   /// @param[in] fault 対象の故障
   /// @param[out] assign_list 結果の値割り当てリスト
-  void
-  make_ffr_condition(const TpgFault* fault,
-		     NodeValList& assign_list);
+  NodeValList
+  make_ffr_condition(const TpgFault* fault);
 
   /// @brief NodeValList に追加する．
   /// @param[in] assign_list 追加するリスト
@@ -257,13 +255,11 @@ protected:
   /// @param[in] fault 対象の故障
   /// @param[in] assumptions 値の決まっている変数のリスト
   /// @param[out] nodeval_list 結果の値割り当てリスト
-  /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
   SatBool3
   solve(const TpgFault* fault,
 	const vector<SatLiteral>& assumptions,
-	NodeValList& nodeval_list,
-	DtpgStats& stats);
+	NodeValList& nodeval_list);
 
 
 private:
@@ -299,6 +295,9 @@ private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // 統計情報
+  DtpgStats mStats;
 
   // SATソルバ
   SatSolver mSolver;
@@ -369,6 +368,14 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief 統計情報を得る．
+inline
+const DtpgStats&
+Dtpg::stats() const
+{
+  return mStats;
+}
 
 // @brief SATソルバを返す．
 inline

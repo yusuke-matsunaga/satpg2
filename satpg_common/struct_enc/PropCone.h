@@ -76,10 +76,9 @@ public:
   /// @param[in] root 起点のノード
   /// @param[out] 値の割り当て結果を入れるリスト
   virtual
-  void
+  NodeValList
   extract(const vector<SatBool3>& model,
-	  const TpgNode* root,
-	  NodeValList& assign_list);
+	  const TpgNode* root);
 
   /// @brief 根のノードを得る．
   const TpgNode*

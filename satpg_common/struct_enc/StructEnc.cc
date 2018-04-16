@@ -512,16 +512,17 @@ StructEnc::check_sat(const NodeValList& assign_list1,
 // @param[in] fault 対象の故障
 // @param[in] cone_id コーン番号
 // @param[out] 値の割り当て結果を入れるリスト
-void
+NodeValList
 StructEnc::extract(const vector<SatBool3>& model,
 		   const TpgFault* fault,
-		   int cone_id,
-		   NodeValList& assign_list)
+		   int cone_id)
 {
   if ( debug() & debug_extract ) {
     cout << endl
 	 << "StructEnc::extract(" << fault->str() << ")" << endl;
   }
+
+  NodeValList assign_list;
 
   // fault から FFR の根までの条件を求める．
   const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
@@ -529,11 +530,14 @@ StructEnc::extract(const vector<SatBool3>& model,
 
   // ffr_root より先の条件を求める．
   ASSERT_COND( cone_id < mConeList.size() );
-  mConeList[cone_id]->extract(model, ffr_root, assign_list);
+  NodeValList assign_list2 = mConeList[cone_id]->extract(model, ffr_root);
+  assign_list.merge(assign_list2);
 
   if ( debug() & debug_extract ) {
     cout << "  result = " << assign_list << endl;
   }
+
+  return assign_list;
 }
 
 // @brief 外部入力の値割り当てを求める．
@@ -544,27 +548,29 @@ StructEnc::extract(const vector<SatBool3>& model,
 //
 // このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
 // justifier を呼ぶこと．
-void
+NodeValList
 StructEnc::justify(const vector<SatBool3>& model,
 		   const NodeValList& assign_list,
-		   Justifier& justifier,
-		   NodeValList& pi_assign_list)
+		   Justifier& justifier)
 {
   if ( debug() & debug_justify ) {
     cout << endl
 	 << "StructEnc::justify(" << assign_list << ")" << endl;
   }
 
+  NodeValList pi_assign_list;
   if ( mFaultType == FaultType::TransitionDelay ) {
-    justifier(assign_list, var_map(0), var_map(1), model, pi_assign_list);
+    pi_assign_list = justifier(assign_list, var_map(0), var_map(1), model);
   }
   else {
-    justifier(assign_list, var_map(1), model, pi_assign_list);
+    pi_assign_list = justifier(assign_list, var_map(1), model);
   }
 
   if ( debug() & debug_justify ) {
     cout << " => " << pi_assign_list << endl;
   }
+
+  return pi_assign_list;
 }
 
 END_NAMESPACE_YM_SATPG_STRUCTENC

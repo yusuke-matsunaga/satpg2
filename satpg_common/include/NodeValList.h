@@ -90,6 +90,20 @@ public:
   /// 空のリストが生成される．
   NodeValList();
 
+  /// @brief コピーコンストラクタ
+  NodeValList(const NodeValList& src);
+
+  /// @brief ムーブコンストラクタ
+  NodeValList(NodeValList&& src);
+
+  /// @brief コピー代入演算子
+  NodeValList&
+  operator=(const NodeValList& src);
+
+  /// @brief ムーブ代入演算子
+  NodeValList&
+  operator=(NodeValList&& src);
+
   /// @brief デストラクタ
   ~NodeValList();
 
@@ -293,6 +307,42 @@ operator>=(const NodeVal& left,
 inline
 NodeValList::NodeValList()
 {
+}
+
+// @brief コピーコンストラクタ
+inline
+NodeValList::NodeValList(const NodeValList& src) :
+  mAsList(src.mAsList)
+{
+}
+
+// @brief ムーブコンストラクタ
+inline
+NodeValList::NodeValList(NodeValList&& src) :
+  mAsList(src.mAsList)
+{
+  // vector<> はムーブコンストラクタを持っている．
+}
+
+// @brief コピー代入演算子
+inline
+NodeValList&
+NodeValList::operator=(const NodeValList& src)
+{
+  mAsList = src.mAsList;
+
+  return *this;
+}
+
+// @brief ムーブ代入演算子
+inline
+NodeValList&
+NodeValList::operator=(NodeValList&& src)
+{
+  // vector<> はムーブ代入演算子を持っている．
+  mAsList = src.mAsList;
+
+  return *this;
 }
 
 // @brief デストラクタ

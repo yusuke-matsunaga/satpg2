@@ -70,9 +70,9 @@ DtpgTest::single_test()
   for ( auto fault: mNetwork.rep_fault_list() ) {
     if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
       const TpgNode* node = fault->tpg_onode();
-      Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, node, mStats);
+      Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, node);
       NodeValList nodeval_list;
-      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
       if ( ans == SatBool3::True ) {
 	++ detect_num;
 	mDop(fault, nodeval_list);
@@ -80,6 +80,7 @@ DtpgTest::single_test()
       else if ( ans == SatBool3::False ) {
 	++ untest_num;
       }
+      mStats.merge(dtpg.stats());
     }
   }
 
@@ -99,11 +100,11 @@ DtpgTest::ffr_test()
   int detect_num = 0;
   int untest_num = 0;
   for ( auto& ffr: mNetwork.ffr_list() ) {
-    Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr, mStats);
+    Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  ++ detect_num;
 	  mDop(fault, nodeval_list);
@@ -113,6 +114,7 @@ DtpgTest::ffr_test()
 	}
       }
     }
+    mStats.merge(dtpg.stats());
   }
 
   mTimer.stop();
@@ -131,12 +133,12 @@ DtpgTest::mffc_test()
   int detect_num = 0;
   int untest_num = 0;
   for ( auto& mffc: mNetwork.mffc_list() ) {
-    Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, mffc, mStats);
+    Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, mffc);
     for ( auto fault: mffc.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  ++ detect_num;
 	  mDop(fault, nodeval_list);
@@ -146,6 +148,7 @@ DtpgTest::mffc_test()
 	}
       }
     }
+    mStats.merge(dtpg.stats());
   }
 
   mTimer.stop();
@@ -166,9 +169,9 @@ DtpgTest::single_new_test()
   for ( auto fault: mNetwork.rep_fault_list() ) {
     if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
       const TpgNode* node = fault->tpg_onode();
-      Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, node, mStats);
+      Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, node);
       NodeValList nodeval_list;
-      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
       if ( ans == SatBool3::True ) {
 	++ detect_num;
 	mDop(fault, nodeval_list);
@@ -176,6 +179,7 @@ DtpgTest::single_new_test()
       else if ( ans == SatBool3::False ) {
 	++ untest_num;
       }
+      mStats.merge(dtpg.stats());
     }
   }
 
@@ -195,11 +199,11 @@ DtpgTest::ffr_new_test()
   int detect_num = 0;
   int untest_num = 0;
   for ( auto& ffr: mNetwork.ffr_list() ) {
-    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr, mStats);
+    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  ++ detect_num;
 	  mDop(fault, nodeval_list);
@@ -209,6 +213,7 @@ DtpgTest::ffr_new_test()
 	}
       }
     }
+    mStats.merge(dtpg.stats());
   }
 
   mTimer.stop();
@@ -227,12 +232,12 @@ DtpgTest::mffc_new_test()
   int detect_num = 0;
   int untest_num = 0;
   for ( auto& mffc: mNetwork.mffc_list() ) {
-    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, mffc, mStats);
+    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, *mJustifier, mNetwork, mffc);
     for ( auto fault: mffc.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, mStats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  ++ detect_num;
 	  mDop(fault, nodeval_list);
@@ -242,6 +247,7 @@ DtpgTest::mffc_new_test()
 	}
       }
     }
+    mStats.merge(dtpg.stats());
   }
 
   mTimer.stop();
@@ -338,33 +344,6 @@ DtpgTest::print_stats(int detect_num,
 	 << "# of implications (Ave./Max)   = "
 	 << setw(10) << (double) mStats.mRedStats.mPropagationNum / mStats.mRedCount
 	 << " / " << setw(8) << mStats.mRedStatsMax.mPropagationNum << endl;
-  }
-  if ( mStats.mPartRedCount > 0 ) {
-    cout << endl
-	 << "*** Partial UNSAT instances (" << mStats.mPartRedCount << ") ***" << endl
-	 << "Total CPU time  (s)            = " << setw(10) << mStats.mPartRedTime.usr_time() << "u"
-	 << " " << setw(8) << mStats.mPartRedTime.sys_time() << "s" << endl
-	 << "Ave. CPU time (usec)           = "
-	 << setw(10) << mStats.mPartRedTime.usr_time_usec() / mStats.mPartRedCount
-	 << "u"
-	 << " " << setw(8) << mStats.mPartRedTime.sys_time_usec() / mStats.mPartRedCount
-	 << "s" << endl
-
-	 << "# of restarts (Ave./Max)       = "
-	 << setw(10) << (double) mStats.mPartRedStats.mRestart / mStats.mPartRedCount
-	 << " / " << setw(8) << mStats.mPartRedStatsMax.mRestart << endl
-
-	 << "# of conflicts (Ave./Max)      = "
-	 << setw(10) << (double) mStats.mPartRedStats.mConflictNum / mStats.mPartRedCount
-	 << " / " << setw(8) << mStats.mPartRedStatsMax.mConflictNum << endl
-
-	 << "# of decisions (Ave./Max)      = "
-	 << setw(10) << (double) mStats.mPartRedStats.mDecisionNum / mStats.mPartRedCount
-	 << " / " << setw(8) << mStats.mPartRedStatsMax.mDecisionNum << endl
-
-	 << "# of implications (Ave./Max)   = "
-	 << setw(10) << (double) mStats.mPartRedStats.mPropagationNum / mStats.mPartRedCount
-	 << " / " << setw(8) << mStats.mPartRedStatsMax.mPropagationNum << endl;
   }
   if ( mStats.mAbortCount > 0 ) {
     cout << endl

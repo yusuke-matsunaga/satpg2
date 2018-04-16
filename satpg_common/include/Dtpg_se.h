@@ -38,15 +38,13 @@ public:
   /// @param[in] jt 正当化を行うファンクタ
   /// @param[in] network 対象のネットワーク
   /// @param[in] node 故障のあるノード
-  /// @param[out] stats DTPGの統計情報
   Dtpg_se(const string& sat_type,
 	  const string& sat_option,
 	  ostream* sat_outp,
 	  FaultType fault_type,
 	  Justifier& jt,
 	  const TpgNetwork& network,
-	  const TpgNode* node,
-	  DtpgStats& stats);
+	  const TpgNode* node);
 
   /// @brief コンストラクタ(ffrモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
@@ -56,15 +54,13 @@ public:
   /// @param[in] jt 正当化を行うファンクタ
   /// @param[in] network 対象のネットワーク
   /// @param[in] ffr 故障伝搬の起点となる FFR
-  /// @param[out] stats DTPGの統計情報
   Dtpg_se(const string& sat_type,
 	  const string& sat_option,
 	  ostream* sat_outp,
 	  FaultType fault_type,
 	  Justifier& jt,
 	  const TpgNetwork& network,
-	  const TpgFFR& ffr,
-	  DtpgStats& stats);
+	  const TpgFFR& ffr);
 
   /// @brief コンストラクタ(mffcモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
@@ -74,7 +70,6 @@ public:
   /// @param[in] jt 正当化を行うファンクタ
   /// @param[in] network 対象のネットワーク
   /// @param[in] mffc 故障伝搬の起点となる MFFC
-  /// @param[out] stats DTPGの統計情報
   ///
   /// この MFFC に含まれるすべての FFR が対象となる．
   /// FFR と MFFC が一致している場合は ffr モードと同じことになる．
@@ -84,8 +79,7 @@ public:
 	  FaultType fault_type,
 	  Justifier& jt,
 	  const TpgNetwork& network,
-	  const TpgMFFC& mffc,
-	  DtpgStats& stats);
+	  const TpgMFFC& mffc);
 
   /// @brief デストラクタ
   ~Dtpg_se();
@@ -99,12 +93,14 @@ public:
   /// @brief テスト生成を行なう．
   /// @param[in] fault 対象の故障
   /// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
-  /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
   SatBool3
   dtpg(const TpgFault* fault,
-       NodeValList& nodeval_list,
-       DtpgStats& stats);
+       NodeValList& nodeval_list);
+
+  /// @brief DTPG の統計情報を返す．
+  const DtpgStats&
+  stats() const;
 
 
 private:
@@ -118,7 +114,7 @@ private:
 
   /// @brief CNF 作成を終了する．
   void
-  cnf_end(DtpgStats& stats);
+  cnf_end();
 
   /// @brief 時間計測を開始する．
   void
@@ -133,6 +129,9 @@ private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // 統計情報
+  DtpgStats mStats;
 
   // StructEnc の本体
   StructEnc mStructEnc;

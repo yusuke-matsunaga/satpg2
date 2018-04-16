@@ -45,15 +45,16 @@ run_single_new(const string& sat_type,
   for ( auto fault: network.rep_fault_list() ) {
     if ( fmgr.get(fault) == FaultStatus::Undetected ) {
       const TpgNode* node = fault->tpg_onode();
-      Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, node, stats);
+      Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, node);
       NodeValList nodeval_list;
-      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
       if ( ans == SatBool3::True ) {
 	dop(fault, nodeval_list);
       }
       else if ( ans == SatBool3::False ) {
 	uop(fault);
       }
+      stats.merge(dtpg.stats());
     }
   }
 }
@@ -72,11 +73,11 @@ run_ffr_new(const string& sat_type,
 {
   int nffr = network.ffr_num();
   for ( auto& ffr: network.ffr_list() ) {
-    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
+    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( fmgr.get(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  dop(fault, nodeval_list);
 	}
@@ -85,6 +86,7 @@ run_ffr_new(const string& sat_type,
 	}
       }
     }
+    stats.merge(dtpg.stats());
   }
 }
 
@@ -102,12 +104,12 @@ run_mffc_new(const string& sat_type,
 {
   int n = network.mffc_num();
   for ( auto& mffc: network.mffc_list() ) {
-    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc, stats);
+    Dtpg dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc);
     for ( auto fault: mffc.fault_list() ) {
       if ( fmgr.get(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  dop(fault, nodeval_list);
 	}
@@ -116,6 +118,7 @@ run_mffc_new(const string& sat_type,
 	}
       }
     }
+    stats.merge(dtpg.stats());
   }
 }
 
@@ -134,15 +137,16 @@ run_single(const string& sat_type,
   for ( auto fault: network.rep_fault_list() ) {
     if ( fmgr.get(fault) == FaultStatus::Undetected ) {
       const TpgNode* node = fault->tpg_onode();
-      Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, node, stats);
+      Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, node);
       NodeValList nodeval_list;
-      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
       if ( ans == SatBool3::True ) {
 	dop(fault, nodeval_list);
       }
       else if ( ans == SatBool3::False ) {
 	uop(fault);
       }
+      stats.merge(dtpg.stats());
     }
   }
 }
@@ -160,11 +164,11 @@ run_ffr(const string& sat_type,
 	DtpgStats& stats)
 {
   for ( auto& ffr: network.ffr_list() ) {
-    Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr, stats);
+    Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( fmgr.get(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
 	if ( ans == SatBool3::True ) {
 	  dop(fault, nodeval_list);
 	}
@@ -173,6 +177,7 @@ run_ffr(const string& sat_type,
 	}
       }
     }
+    stats.merge(dtpg.stats());
   }
 }
 
@@ -189,12 +194,13 @@ run_mffc(const string& sat_type,
 	 DtpgStats& stats)
 {
   for ( auto& mffc: network.mffc_list() ) {
-    Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc, stats);
+    Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, jt, network, mffc);
     for ( auto fault: mffc.fault_list() ) {
       if ( fmgr.get(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
+	stats.merge(dtpg.stats());
 	if ( ans == SatBool3::True ) {
 	  dop(fault, nodeval_list);
 	}
@@ -203,6 +209,7 @@ run_mffc(const string& sat_type,
 	}
       }
     }
+    stats.merge(dtpg.stats());
   }
 }
 
@@ -506,33 +513,6 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 	   << setw(10) << (double) stats.mRedStats.mPropagationNum / stats.mRedCount
 	   << " / " << setw(8) << stats.mRedStatsMax.mPropagationNum << endl;
     }
-    if ( stats.mPartRedCount > 0 ) {
-      cout << endl
-	   << "*** Partial UNSAT instances (" << stats.mPartRedCount << ") ***" << endl
-	   << "Total CPU time  (s)            = " << setw(10) << stats.mPartRedTime.usr_time() << "u"
-	   << " " << setw(8) << stats.mPartRedTime.sys_time() << "s" << endl
-	   << "Ave. CPU time (usec)           = "
-	   << setw(10) << stats.mPartRedTime.usr_time_usec() / stats.mPartRedCount
-	   << "u"
-	   << " " << setw(8) << stats.mPartRedTime.sys_time_usec() / stats.mPartRedCount
-	   << "s" << endl
-
-	   << "# of restarts (Ave./Max)       = "
-	   << setw(10) << (double) stats.mPartRedStats.mRestart / stats.mPartRedCount
-	   << " / " << setw(8) << stats.mPartRedStatsMax.mRestart << endl
-
-	   << "# of conflicts (Ave./Max)      = "
-	   << setw(10) << (double) stats.mPartRedStats.mConflictNum / stats.mPartRedCount
-	   << " / " << setw(8) << stats.mPartRedStatsMax.mConflictNum << endl
-
-	   << "# of decisions (Ave./Max)      = "
-	   << setw(10) << (double) stats.mPartRedStats.mDecisionNum / stats.mPartRedCount
-	   << " / " << setw(8) << stats.mPartRedStatsMax.mDecisionNum << endl
-
-	   << "# of implications (Ave./Max)   = "
-	   << setw(10) << (double) stats.mPartRedStats.mPropagationNum / stats.mPartRedCount
-	   << " / " << setw(8) << stats.mPartRedStatsMax.mPropagationNum << endl;
-    }
     if ( stats.mAbortCount > 0 ) {
       cout << endl
 	   << "*** ABORT instances ***" << endl
@@ -566,12 +546,6 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 	  TCL_NAMESPACE_ONLY | TCL_LEAVE_ERR_MSG);
   set_var(base, "det_time",
 	  stats.mDetTime.usr_time(),
-	  TCL_NAMESPACE_ONLY | TCL_LEAVE_ERR_MSG);
-  set_var(base, "part_red_count",
-	  stats.mPartRedCount,
-	  TCL_NAMESPACE_ONLY | TCL_LEAVE_ERR_MSG);
-  set_var(base, "part_red_time",
-	  stats.mPartRedTime.usr_time(),
 	  TCL_NAMESPACE_ONLY | TCL_LEAVE_ERR_MSG);
   set_var(base, "red_count",
 	  stats.mRedCount,

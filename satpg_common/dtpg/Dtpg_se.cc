@@ -23,15 +23,13 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] jt 正当化を行うファンクタ
 // @param[in] network 対象のネットワーク
 // @param[in] node 故障のあるノード
-// @param[out] stats DTPGの統計情報
 Dtpg_se::Dtpg_se(const string& sat_type,
 		 const string& sat_option,
 		 ostream* sat_outp,
 		 FaultType fault_type,
 		 Justifier& jt,
 		 const TpgNetwork& network,
-		 const TpgNode* node,
-		 DtpgStats& stats) :
+		 const TpgNode* node) :
   mStructEnc(network, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
   mJustifier(jt),
@@ -45,7 +43,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 
   mStructEnc.make_cnf();
 
-  cnf_end(stats);
+  cnf_end();
 }
 
 
@@ -57,15 +55,13 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 // @param[in] jt 正当化を行うファンクタ
 // @param[in] network 対象のネットワーク
 // @param[in] ffr 故障伝搬の起点となる FFR
-// @param[out] stats DTPGの統計情報
 Dtpg_se::Dtpg_se(const string& sat_type,
 		 const string& sat_option,
 		 ostream* sat_outp,
 		 FaultType fault_type,
 		 Justifier& jt,
 		 const TpgNetwork& network,
-		 const TpgFFR& ffr,
-		 DtpgStats& stats) :
+		 const TpgFFR& ffr) :
   mStructEnc(network, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
   mJustifier(jt),
@@ -79,7 +75,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 
   mStructEnc.make_cnf();
 
-  cnf_end(stats);
+  cnf_end();
 }
 
 // @brief コンストラクタ(mffcモード)
@@ -90,7 +86,6 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 // @param[in] jt 正当化を行うファンクタ
 // @param[in] network 対象のネットワーク
 // @param[in] mffc 故障伝搬の起点となる MFFC
-// @param[out] stats DTPGの統計情報
 //
 // この MFFC に含まれるすべての FFR が対象となる．
 // FFR と MFFC が一致している場合は ffr モードと同じことになる．
@@ -100,8 +95,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 		 FaultType fault_type,
 		 Justifier& jt,
 		 const TpgNetwork& network,
-		 const TpgMFFC& mffc,
-		 DtpgStats& stats) :
+		 const TpgMFFC& mffc) :
   mStructEnc(network, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
   mJustifier(jt),
@@ -120,7 +114,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 
   mStructEnc.make_cnf();
 
-  cnf_end(stats);
+  cnf_end();
 }
 
 // @brief デストラクタ
@@ -131,15 +125,13 @@ Dtpg_se::~Dtpg_se()
 // @brief テスト生成を行なう．
 // @param[in] fault 対象の故障
 // @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
-// @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 //
 // 直前にどちらのモードでCNFを作っていたかで動作は異なる．<br>
 // どちらの関数も呼んでいなければなにもしないで SatBool3::X を返す．
 SatBool3
 Dtpg_se::dtpg(const TpgFault* fault,
-	      NodeValList& nodeval_list,
-	      DtpgStats& stats)
+	      NodeValList& nodeval_list)
 {
   StopWatch timer;
   timer.start();
@@ -167,26 +159,31 @@ Dtpg_se::dtpg(const TpgFault* fault,
     timer.start();
 
     // バックトレースを行う．
-    NodeValList assign_list;
-    mStructEnc.extract(model, fault, 0, assign_list);
+    NodeValList assign_list = mStructEnc.extract(model, fault, 0);
 
-    mStructEnc.justify(model, assign_list, mJustifier, nodeval_list);
+    nodeval_list = mStructEnc.justify(model, assign_list, mJustifier);
 
     timer.stop();
-    stats.mBackTraceTime += timer.time();
-
-    stats.update_det(sat_stats, time);
+    mStats.mBackTraceTime += timer.time();
+    mStats.update_det(sat_stats, time);
   }
   else if ( ans == SatBool3::False ) {
     // 検出不能と判定された．
-    stats.update_red(sat_stats, time);
+    mStats.update_red(sat_stats, time);
   }
   else {
     // ans == SatBool3::X つまりアボート
-    stats.update_abort(sat_stats, time);
+    mStats.update_abort(sat_stats, time);
   }
 
   return ans;
+}
+
+// @brief DTPG の統計情報を返す．
+const DtpgStats&
+Dtpg_se::stats() const
+{
+  return mStats;
 }
 
 // @brief タイマーをスタートする．
@@ -198,11 +195,11 @@ Dtpg_se::cnf_begin()
 
 // @brief タイマーを止めて CNF 作成時間に加える．
 void
-Dtpg_se::cnf_end(DtpgStats& stats)
+Dtpg_se::cnf_end()
 {
   USTime time = timer_stop();
-  stats.mCnfGenTime += time;
-  ++ stats.mCnfGenCount;
+  mStats.mCnfGenTime += time;
+  ++ mStats.mCnfGenCount;
 }
 
 // @brief 時間計測を開始する．

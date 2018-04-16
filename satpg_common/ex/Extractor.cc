@@ -15,15 +15,14 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-void
+NodeValList
 extract(const TpgNode* root,
 	const VidMap& gvar_map,
 	const VidMap& fvar_map,
-	const vector<SatBool3>& model,
-	NodeValList& assign_list)
+	const vector<SatBool3>& model)
 {
   Extractor extractor(gvar_map, fvar_map, model);
-  return extractor(root, assign_list);
+  return extractor(root);
 }
 
 BEGIN_NONAMESPACE
@@ -56,9 +55,8 @@ Extractor::~Extractor()
 // @brief 値割当を求める．
 // @param[in] root 起点となるノード
 // @param[out] assign_list 値の割当リスト
-void
-Extractor::operator()(const TpgNode* root,
-		      NodeValList& assign_list)
+NodeValList
+Extractor::operator()(const TpgNode* root)
 {
   // root の TFO (fault cone) に印をつける．
   // 同時に故障差の伝搬している外部出力のリストを作る．
@@ -72,6 +70,8 @@ Extractor::operator()(const TpgNode* root,
   // その経路の side input の値を記録する．
   mRecorded.clear();
 
+  NodeValList assign_list;
+
   record_sensitized_node(spo, assign_list);
 
   assign_list.sort();
@@ -79,10 +79,8 @@ Extractor::operator()(const TpgNode* root,
   if ( debug ) {
     ostream& dbg_out = cout;
     dbg_out << "Extract at Node#" << root->id() << endl;
-    int n = assign_list.size();
     const char* comma = "";
-    for (int i = 0; i < n; ++ i) {
-      NodeVal nv = assign_list[i];
+    for ( auto nv: assign_list ) {
       const TpgNode* node = nv.node();
       dbg_out << comma << "Node#" << node->id()
 	      << ":";
@@ -96,6 +94,8 @@ Extractor::operator()(const TpgNode* root,
     }
     dbg_out << endl;
   }
+
+  return assign_list;
 }
 
 // @brief node の TFO に印をつけ，故障差の伝搬している外部出力を求める．

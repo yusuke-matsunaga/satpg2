@@ -44,25 +44,23 @@ public:
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] var_map 変数番号のマップ
   /// @param[in] model SAT問題の解
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  void
+  /// @return 外部入力上の値の割当リスト
+  NodeValList
   operator()(const NodeValList& assign_list,
 	     const VidMap& var_map,
-	     const vector<SatBool3>& model,
-	     NodeValList& pi_assign_list);
+	     const vector<SatBool3>& model);
 
   /// @brief 正当化に必要な割当を求める(遷移故障用)．
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] var1_map 1時刻目の変数番号のマップ
   /// @param[in] var2_map 2時刻目の変数番号のマップ
   /// @param[in] model SAT問題の解
-  /// @param[out] pi_assign_list 外部入力上の値の割当リスト
-  void
+  /// @return 外部入力上の値の割当リスト
+  NodeValList
   operator()(const NodeValList& assign_list,
 	     const VidMap& var1_map,
 	     const VidMap& var2_map,
-	     const vector<SatBool3>& model,
-	     NodeValList& pi_assign_list);
+	     const vector<SatBool3>& model);
 
 
 private:

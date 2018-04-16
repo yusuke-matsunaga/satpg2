@@ -34,20 +34,18 @@ Justifier::~Justifier()
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] var_map 変数番号のマップ
 // @param[in] model SAT問題の解
-// @param[out] pi_assign_list 外部入力上の値の割当リスト
-void
+NodeValList
 Justifier::operator()(const NodeValList& assign_list,
 		      const VidMap& var_map,
-		      const vector<SatBool3>& model,
-		      NodeValList& pi_assign_list)
+		      const vector<SatBool3>& model)
 {
-  pi_assign_list.clear();
   clear_mark();
 
   JustData jd(var_map, model);
 
   just_init(assign_list, jd);
 
+  NodeValList pi_assign_list;
   for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
@@ -55,6 +53,8 @@ Justifier::operator()(const NodeValList& assign_list,
   }
 
   just_end();
+
+  return pi_assign_list;
 }
 
 // @brief 正当化に必要な割当を求める(遷移故障用)．
@@ -62,21 +62,19 @@ Justifier::operator()(const NodeValList& assign_list,
 // @param[in] var1_map 1時刻目の変数番号のマップ
 // @param[in] var2_map 2時刻目の変数番号のマップ
 // @param[in] model SAT問題の解
-// @param[out] pi_assign_list 外部入力上の値の割当リスト
-void
+NodeValList
 Justifier::operator()(const NodeValList& assign_list,
 		      const VidMap& var1_map,
 		      const VidMap& var2_map,
-		      const vector<SatBool3>& model,
-		      NodeValList& pi_assign_list)
+		      const vector<SatBool3>& model)
 {
-  pi_assign_list.clear();
   clear_mark();
 
   JustData jd(var1_map, var2_map, model);
 
   just_init(assign_list, jd);
 
+  NodeValList pi_assign_list;
   for ( auto nv: assign_list ) {
     const TpgNode* node = nv.node();
     int time = nv.time();
@@ -84,6 +82,8 @@ Justifier::operator()(const NodeValList& assign_list,
   }
 
   just_end();
+
+  return pi_assign_list;
 }
 
 // @brief 正当化に必要な割当を求める．

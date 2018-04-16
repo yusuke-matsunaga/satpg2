@@ -245,25 +245,23 @@ public:
   /// @param[in] fault 対象の故障
   /// @param[in] cone_id コーン番号
   /// @param[out] 値の割り当て結果を入れるリスト
-  void
+  NodeValList
   extract(const vector<SatBool3>& model,
 	  const TpgFault* fault,
-	  int cone_id,
-	  NodeValList& assign_list);
+	  int cone_id);
 
   /// @brief 外部入力の値割り当てを求める．
   /// @param[in] model SAT のモデル
   /// @param[in] assign_list 値割り当てのリスト
   /// @param[in] justifier 正当化を行うファンクタ
-  /// @param[out] pi_assign_list 外部入力における値割り当てのリスト
+  /// @return 外部入力における値割り当てのリスト
   ///
   /// このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
   /// justifier を呼ぶこと．
-  void
+  NodeValList
   justify(const vector<SatBool3>& model,
 	  const NodeValList& assign_list,
-	  Justifier& justifier,
-	  NodeValList& pi_assign_list);
+	  Justifier& justifier);
 
   /// @brief デバッグ用のフラグをセットする．
   void
