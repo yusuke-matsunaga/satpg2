@@ -7,6 +7,7 @@
 # All rights reserved.
 
 include "celllibrary.pxi"
+include "satbool3.pxi"
 include "fault_type.pxi"
 include "gate_type.pxi"
 include "val3.pxi"
@@ -21,3 +22,5 @@ include "tvmgr.pxi"
 include "nodeval.pxi"
 include "nodevallist.pxi"
 include "fsim.pxi"
+include "dtpg.pxi"
+include "dtpgstats.pxi"

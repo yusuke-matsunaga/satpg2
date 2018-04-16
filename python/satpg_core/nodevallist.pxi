@@ -49,11 +49,17 @@ cdef class NodeValList :
         return to_NodeVal(self._this.elem(pos))
 
 
-### 2つの割当リストが矛盾しているか調べる．
+### @brief 2つの割当リストが矛盾しているか調べる．
 cdef check_conflict(NodeValList right, NodeValList left) :
     return CXX_check_conflict(left._this, right._this)
 
 
-### 2つの割当リストの包含関係を調べる．
+### @brief 2つの割当リストの包含関係を調べる．
 cdef check_contain(NodeValList right, NodeValList left) :
     return CXX_check_contain(left._this, right._this)
+
+### @brief C++ の NodeValList から Python の NodeValList に変換する．
+cdef to_NodeValList(CXX_NodeValList c_nodeval_list) :
+    ans = NodeValList()
+    ans._this = c_nodeval_list
+    return ans
