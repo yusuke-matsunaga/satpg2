@@ -17,8 +17,15 @@ cdef class Dtpg :
     cdef CXX_Dtpg* _thisptr
 
     ### @brief 初期化
-    def __cinit__(Dtpg self, ) :
-        pass
+    def __cinit__(Dtpg self, sat_type, sat_option, fault_type, justifier, network, root) :
+        cdef CXX_FaultType c_ftype = from_FaultType(fault_type)
+        cdef CXX_Justifier c_jt = new_Just2(network.node_num())
+        _thisptr = new CXX_Dtpg(c_sat_type, c_sat_option, NULL, c_ftype, *c_jt, network._this, root)
+
+    ### @brief 終了処理
+    def __dealloc__(Dtpg self) :
+        if self._thisptr != NULL :
+            del self._thisptr
 
     ### @brief パタン生成を行う．
     def __call__(Dtpg self, TpgFault fault) :

@@ -19,12 +19,14 @@ include_directories (
 # サブディレクトリの設定
 # ===================================================================
 
+add_subdirectory ( cython-src )
+
 # ===================================================================
 #  cython 用のソースファイルの設定
 # ===================================================================
 
 set ( CYTHON_SOURCES
-  satpg_core.pyx
+  cython-src/satpg_core.pyx
   )
 
 set_source_files_properties (
