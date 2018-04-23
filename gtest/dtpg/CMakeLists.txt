@@ -24,18 +24,18 @@ include_directories(
 add_executable ( DtpgTest
   DtpgTest.cc
   ../../tests/dtpgtest/DtpgTest.cc
-  $<TARGET_OBJECTS:satpg_common_d>
-  $<TARGET_OBJECTS:satpg_fsimsa2_d>
-  $<TARGET_OBJECTS:satpg_fsimsa3_d>
-  $<TARGET_OBJECTS:satpg_fsimtd2_d>
-  $<TARGET_OBJECTS:satpg_fsimtd3_d>
-  $<TARGET_OBJECTS:ym_base_d>
-  $<TARGET_OBJECTS:ym_logic_d>
-  $<TARGET_OBJECTS:ym_cell_d>
-  $<TARGET_OBJECTS:ym_bnet_d>
-  $<TARGET_OBJECTS:ym_sat_d>
-  $<TARGET_OBJECTS:ym_mincov_d>
-  $<TARGET_OBJECTS:ym_udgraph_d>
+  $<TARGET_OBJECTS:satpg_common_ad>
+  $<TARGET_OBJECTS:satpg_fsimsa2_ad>
+  $<TARGET_OBJECTS:satpg_fsimsa3_ad>
+  $<TARGET_OBJECTS:satpg_fsimtd2_ad>
+  $<TARGET_OBJECTS:satpg_fsimtd3_ad>
+  $<TARGET_OBJECTS:ym_base_ad>
+  $<TARGET_OBJECTS:ym_logic_ad>
+  $<TARGET_OBJECTS:ym_cell_ad>
+  $<TARGET_OBJECTS:ym_bnet_ad>
+  $<TARGET_OBJECTS:ym_sat_ad>
+  $<TARGET_OBJECTS:ym_mincov_ad>
+  $<TARGET_OBJECTS:ym_udgraph_ad>
   )
 
 target_compile_options ( DtpgTest

@@ -70,18 +70,18 @@ target_link_libraries ( satpg_core
 
 cython_add_module ( satpg_core_d
   cython-src/satpg_core_d.pyx
-  $<TARGET_OBJECTS:satpg_common_dd>
-  $<TARGET_OBJECTS:satpg_fsimsa2_dd>
-  $<TARGET_OBJECTS:satpg_fsimsa3_dd>
-  $<TARGET_OBJECTS:satpg_fsimtd2_dd>
-  $<TARGET_OBJECTS:satpg_fsimtd3_dd>
-  $<TARGET_OBJECTS:ym_base_dd>
-  $<TARGET_OBJECTS:ym_logic_dd>
-  $<TARGET_OBJECTS:ym_cell_dd>
-  $<TARGET_OBJECTS:ym_bnet_dd>
-  $<TARGET_OBJECTS:ym_udgraph_dd>
-  $<TARGET_OBJECTS:ym_mincov_dd>
-  $<TARGET_OBJECTS:ym_sat_dd>
+  $<TARGET_OBJECTS:satpg_common_d>
+  $<TARGET_OBJECTS:satpg_fsimsa2_d>
+  $<TARGET_OBJECTS:satpg_fsimsa3_d>
+  $<TARGET_OBJECTS:satpg_fsimtd2_d>
+  $<TARGET_OBJECTS:satpg_fsimtd3_d>
+  $<TARGET_OBJECTS:ym_base_d>
+  $<TARGET_OBJECTS:ym_logic_d>
+  $<TARGET_OBJECTS:ym_cell_d>
+  $<TARGET_OBJECTS:ym_bnet_d>
+  $<TARGET_OBJECTS:ym_udgraph_d>
+  $<TARGET_OBJECTS:ym_mincov_d>
+  $<TARGET_OBJECTS:ym_sat_d>
   )
 
 target_compile_options ( satpg_core_d

@@ -37,11 +37,11 @@ target_compile_definitions ( satpg_fsimsa2_a
   PRIVATE "-DFSIM_VAL2=1" "-DFSIM_SA=1"
   )
 
-target_compile_definitions ( satpg_fsimsa2_d
+target_compile_definitions ( satpg_fsimsa2_ad
   PRIVATE "-DFSIM_VAL2=1" "-DFSIM_SA=1"
   )
 
-target_compile_definitions ( satpg_fsimsa2_dd
+target_compile_definitions ( satpg_fsimsa2_d
   PRIVATE "-DFSIM_VAL2=1" "-DFSIM_SA=1"
   )
 
@@ -62,11 +62,11 @@ target_compile_definitions ( satpg_fsimsa3_a
   PRIVATE "-DFSIM_VAL3=1" "-DFSIM_SA=1"
   )
 
-target_compile_definitions ( satpg_fsimsa3_d
+target_compile_definitions ( satpg_fsimsa3_ad
   PRIVATE "-DFSIM_VAL3=1" "-DFSIM_SA=1"
   )
 
-target_compile_definitions ( satpg_fsimsa3_dd
+target_compile_definitions ( satpg_fsimsa3_d
   PRIVATE "-DFSIM_VAL3=1" "-DFSIM_SA=1"
   )
 
@@ -87,11 +87,11 @@ target_compile_definitions ( satpg_fsimtd2_a
   PRIVATE "-DFSIM_VAL2=1" "-DFSIM_TD=1"
   )
 
-target_compile_definitions ( satpg_fsimtd2_d
+target_compile_definitions ( satpg_fsimtd2_ad
   PRIVATE "-DFSIM_VAL2=1" "-DFSIM_TD=1"
   )
 
-target_compile_definitions ( satpg_fsimtd2_dd
+target_compile_definitions ( satpg_fsimtd2_d
   PRIVATE "-DFSIM_VAL2=1" "-DFSIM_TD=1"
   )
 
@@ -112,11 +112,11 @@ target_compile_definitions ( satpg_fsimtd3_a
   PRIVATE "-DFSIM_VAL3=1" "-DFSIM_TD=1"
   )
 
-target_compile_definitions ( satpg_fsimtd3_d
+target_compile_definitions ( satpg_fsimtd3_ad
   PRIVATE "-DFSIM_VAL3=1" "-DFSIM_TD=1"
   )
 
-target_compile_definitions ( satpg_fsimtd3_dd
+target_compile_definitions ( satpg_fsimtd3_d
   PRIVATE "-DFSIM_VAL3=1" "-DFSIM_TD=1"
   )
 
