@@ -10,6 +10,8 @@ from libcpp cimport bool
 from libcpp.string cimport string
 from CXX_TpgNetwork cimport TpgNetwork as CXX_TpgNetwork
 from CXX_TpgNode cimport TpgNode as CXX_TpgNode
+from CXX_TpgMFFC cimport TpgMFFC as CXX_TpgMFFC
+from CXX_TpgFFR cimport TpgFFR as CXX_TpgFFR
 
 
 ### @brief TpgNetwork の Python ヴァージョン
@@ -184,6 +186,34 @@ cdef class TpgNetwork :
         for i in range(0, n) :
             c_node = self._this.ppo(i)
             yield to_TpgNode(c_node)
+
+    ### @brief MFFC 数を返す．
+    @property
+    def mffc_num(TpgNetwork self) :
+        return self._this.mffc_num()
+
+    ### @brief MFFC のリストを返す．
+    ###
+    ### 正確にはジェネレータを返す．
+    def mffc_list(TpgNetwork self) :
+        cdef int n = self._this.mffc_num()
+        cdef int i
+        for i in range(0, n) :
+            yield to_TpgMFFC(self._this.mffc(i))
+
+    ### @brief FFR 数を返す．
+    @property
+    def ffr_num(TpgNetwork self) :
+        return self._this.ffr_num()
+
+    ### @brief FFR のリストを返す．
+    ###
+    ### 正確にはジェネレータを返す．
+    def ffr_list(TpgNetwork self) :
+        cdef int n = self._this.ffr_num()
+        cdef int i
+        for i in range(0, n) :
+            yield to_TpgFFR(self._this.ffr(i))
 
     ### @brief DFF入力ノードのリストを返す．
     ###

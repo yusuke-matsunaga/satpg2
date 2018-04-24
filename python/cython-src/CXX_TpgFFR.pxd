@@ -16,3 +16,4 @@ cdef extern from "TpgFFR.h" namespace "nsYm::nsSatpg" :
         TpgFFR()
         const TpgNode* root()
         int fault_num()
+        const TpgFault* fault(int)

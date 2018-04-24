@@ -1,21 +1,23 @@
-# @file CXX_TpgNetwork.pxd
-# @brief TpgNetwork 用の pxd ファイル
-# @author Yusuke Matsunaga (松永 裕介)
-#
-# Copyright (C) 2017 Yusuke Matsunaga
-# All rights reserved.
+### @file CXX_TpgNetwork.pxd
+### @brief TpgNetwork 用の pxd ファイル
+### @author Yusuke Matsunaga (松永 裕介)
+###
+### Copyright (C) 2017 Yusuke Matsunaga
+### All rights reserved.
 
 from libcpp cimport bool
 from libcpp.string cimport string
 from CXX_ClibCellLibrary cimport ClibCellLibrary
 from CXX_TpgNode cimport TpgNode
+from CXX_TpgMFFC cimport TpgMFFC
+from CXX_TpgFFR cimport TpgFFR
 from CXX_TpgDff cimport TpgDff
 from CXX_TpgFault cimport TpgFault
 
 
 cdef extern from "TpgNetwork.h" namespace "nsYm::nsSatpg" :
 
-    ## @brief TpgNetwork の cython バージョン
+    ### @brief TpgNetwork の cython バージョン
     cdef cppclass TpgNetwork :
         TpgNetwork()
         bool read_blif(const string& filename)
@@ -32,8 +34,12 @@ cdef extern from "TpgNetwork.h" namespace "nsYm::nsSatpg" :
         const TpgNode* ppi(int)
         int ppo_num()
         const TpgNode* ppo(int)
+        int mffc_num()
+        const TpgMFFC& mffc(int)
+        int ffr_num()
+        const TpgFFR& ffr(int)
         int dff_num()
-        const TpgDff& dff(int pos)
+        const TpgDff& dff(int)
         int max_fault_id()
         int rep_fault_num()
         const TpgFault* rep_fault(int pos)

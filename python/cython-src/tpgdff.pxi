@@ -9,12 +9,10 @@
 from CXX_TpgDff cimport TpgDff as CXX_TpgDff
 from CXX_TpgNode cimport TpgNode as CXX_TpgNode
 
-ctypedef unsigned int ymuint
-
 
 ## @brief TpgDff の Python バージョン
 cdef class TpgDff :
-    cdef ymuint _id
+    cdef int _id
     cdef CXX_TpgNode* _input
     cdef CXX_TpgNode* _output
     cdef CXX_TpgNode* _clock

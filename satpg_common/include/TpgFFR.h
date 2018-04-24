@@ -39,9 +39,16 @@ public:
   /// @brief コピーコンストラクタは禁止
   TpgFFR(const TpgFFR& src) = delete;
 
-  /// @brief 代入演算子も禁止
-  const TpgFFR&
+  /// @brief コピー代入演算子も禁止
+  TpgFFR&
   operator=(const TpgFFR& src) = delete;
+
+  /// @brief ムーブコンストラクタは禁止
+  TpgFFR(TpgFFR&& src) = delete;
+
+  /// @brief ムーブ代入演算子も禁止
+  TpgFFR&
+  operator=(TpgFFR&& src) = delete;
 
   /// @brief デストラクタ
   ~TpgFFR();
@@ -59,6 +66,11 @@ public:
   /// @brief このFFRに含まれる代表故障の数を返す．
   int
   fault_num() const;
+
+  /// @brief このFFRに含まれる代表故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  const TpgFault*
+  fault(int pos) const;
 
   /// @brief このFFRに含まれる代表故障のリストを返す．
   Array<const TpgFault*>
@@ -136,6 +148,17 @@ int
 TpgFFR::fault_num() const
 {
   return mFaultNum;
+}
+
+// @brief このFFRに含まれる代表故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+inline
+const TpgFault*
+TpgFFR::fault(int pos) const
+{
+  ASSERT_COND( pos > 0 && pos < fault_num() );
+
+  return mFaultList[pos];
 }
 
 // @brief このFFRに含まれる代表故障のリストを返す．
