@@ -64,7 +64,7 @@ set (struct_enc_SOURCES
   )
 
 set (dtpg_SOURCES
-  dtpg/Dtpg.cc
+  dtpg/DtpgEngine.cc
   dtpg/Dtpg_se.cc
   )
 

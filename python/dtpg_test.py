@@ -10,19 +10,13 @@
 from satpg_core_d import *
 
 
-fault_type = FaultType.StuckAt
-network = TpgNetwork.read_blif('/home/yusuke/data/public/MCNC.blifdata/C432.blif')
-
-fsim2 = Fsim('Fsim2', network, fault_type)
-
-ndet = 0
-nunt = 0
-nabt = 0
-
-def node_mode(network) :
+def node_mode(network, fault_type) :
+    ndet = 0
+    nunt = 0
+    nabt = 0
     for fault in network.rep_fault_list() :
         onode = fault.onode
-        dtpg = Dtpg('', '', fault_type, 'Just2', network, onode)
+        dtpg = Dtpg(network, fault_type, onode)
         stat, nodeval_list = dtpg(fault)
         if stat == SatBool3._True :
             ndet += 1
@@ -32,10 +26,14 @@ def node_mode(network) :
             nabt += 1
         else :
             assert False
+    return ndet, nunt, nabt
 
-def ffr_mode(network) :
+def ffr_mode(network, fault_type) :
+    ndet = 0
+    nunt = 0
+    nabt = 0
     for ffr in network.ffr_list() :
-        dtpg = Dtpg('', '', fault_type, 'Just2', network, ffr)
+        dtpg = DtpgFFR(network, fault_type, ffr)
         for fault in ffr.fault_list() :
             stat, nodeval_list = dtpg(fault)
             if stat == SatBool3._True :
@@ -46,10 +44,14 @@ def ffr_mode(network) :
                 nabt += 1
             else :
                 assert False
+    return ndet, nunt, nabt
 
-def mffc_mode(network) :
+def mffc_mode(network, fault_type) :
+    ndet = 0
+    nunt = 0
+    nabt = 0
     for mffc in network.mffc_list() :
-        dtpg = Dtpg('', '', fault_type, 'Just2', network, mffc)
+        dtpg = DtpgMFFC(network, fault_type, mffc)
         for fault in mffc.fault_list() :
             stat, nodeval_list = dtpg(fault)
             if stat == SatBool3._True :
@@ -60,6 +62,15 @@ def mffc_mode(network) :
                 nabt += 1
             else :
                 assert False
+    return ndet, nunt, nabt
+
+
+fault_type = FaultType.StuckAt
+network = TpgNetwork.read_blif('/home/yusuke/data/public/MCNC.blifdata/C432.blif')
+
+fsim2 = Fsim('Fsim2', network, fault_type)
+
+ndet, nunt, nabt = ffr_mode(network, fault_type)
 
 print('# of total faults:      {}'.format(ndet + nunt + nabt))
 print('# of detected faults:   {}'.format(ndet))

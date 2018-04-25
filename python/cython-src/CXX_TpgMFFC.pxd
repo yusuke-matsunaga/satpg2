@@ -7,6 +7,7 @@
 ### All rights reserved.
 
 from CXX_TpgNode cimport TpgNode
+from CXX_TpgFault cimport TpgFault
 
 
 cdef extern from "TpgMFFC.h" namespace "nsYm::nsSatpg" :

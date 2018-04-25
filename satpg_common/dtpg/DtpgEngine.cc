@@ -1,12 +1,12 @@
 ﻿
-/// @file Dtpg.cc
-/// @brief Dtpg の実装ファイル
+/// @file DtpgEngine.cc
+/// @brief DtpgEngine の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "Dtpg.h"
+#include "DtpgEngine.h"
 
 #include "TpgNetwork.h"
 #include "TpgFault.h"
@@ -54,13 +54,13 @@ extract(const TpgNode* root,
 // @param[in] just_type Justifier の種類を表す文字列
 // @param[in] network 対象のネットワーク
 // @param[in] node 故障のあるノード
-Dtpg::Dtpg(const string& sat_type,
-	   const string& sat_option,
-	   ostream* sat_outp,
-	   FaultType fault_type,
-	   const string& just_type,
-	   const TpgNetwork& network,
-	   const TpgNode* node) :
+DtpgEngine::DtpgEngine(const string& sat_type,
+		       const string& sat_option,
+		       ostream* sat_outp,
+		       FaultType fault_type,
+		       const string& just_type,
+		       const TpgNetwork& network,
+		       const TpgNode* node) :
   mSolver(sat_type, sat_option, sat_outp),
   mNetwork(network),
   mFaultType(fault_type),
@@ -93,13 +93,13 @@ Dtpg::Dtpg(const string& sat_type,
 // @param[in] bt バックトレーサー
 // @param[in] network 対象のネットワーク
 // @param[in] root 故障伝搬の起点となるノード
-Dtpg::Dtpg(const string& sat_type,
-	   const string& sat_option,
-	   ostream* sat_outp,
-	   FaultType fault_type,
-	   const string& just_type,
-	   const TpgNetwork& network,
-	   const TpgFFR& ffr) :
+DtpgEngine::DtpgEngine(const string& sat_type,
+		       const string& sat_option,
+		       ostream* sat_outp,
+		       FaultType fault_type,
+		       const string& just_type,
+		       const TpgNetwork& network,
+		       const TpgFFR& ffr) :
   mSolver(sat_type, sat_option, sat_outp),
   mNetwork(network),
   mFaultType(fault_type),
@@ -132,13 +132,13 @@ Dtpg::Dtpg(const string& sat_type,
 // @param[in] just_type Justifier の種類を表す文字列
 // @param[in] network 対象のネットワーク
 // @param[in] root 故障伝搬の起点となるノード
-Dtpg::Dtpg(const string& sat_type,
-	   const string& sat_option,
-	   ostream* sat_outp,
-	   FaultType fault_type,
-	   const string& just_type,
-	   const TpgNetwork& network,
-	   const TpgMFFC& mffc) :
+DtpgEngine::DtpgEngine(const string& sat_type,
+		       const string& sat_option,
+		       ostream* sat_outp,
+		       FaultType fault_type,
+		       const string& just_type,
+		       const TpgNetwork& network,
+		       const TpgMFFC& mffc) :
   mSolver(sat_type, sat_option, sat_outp),
   mNetwork(network),
   mFaultType(fault_type),
@@ -180,7 +180,7 @@ Dtpg::Dtpg(const string& sat_type,
 }
 
 // @brief デストラクタ
-Dtpg::~Dtpg()
+DtpgEngine::~DtpgEngine()
 {
 }
 
@@ -189,8 +189,8 @@ Dtpg::~Dtpg()
 // @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
 // @return 結果を返す．
 SatBool3
-Dtpg::dtpg(const TpgFault* fault,
-	   NodeValList& nodeval_list)
+DtpgEngine::dtpg(const TpgFault* fault,
+		 NodeValList& nodeval_list)
 {
   vector<SatLiteral> assumptions;
 
@@ -200,7 +200,7 @@ Dtpg::dtpg(const TpgFault* fault,
     int ffr_id;
     bool stat = mElemPosMap.find(ffr_root->id(), ffr_id);
     if ( !stat ) {
-      cerr << "Error[Dtpg::dtpg()]: "
+      cerr << "Error[DtpgEngine::dtpg()]: "
 	   << ffr_root->id() << " is not within the MFFC" << endl;
       return SatBool3::X;
     }
@@ -224,14 +224,14 @@ Dtpg::dtpg(const TpgFault* fault,
 
 // @brief タイマーをスタートする．
 void
-Dtpg::cnf_begin()
+DtpgEngine::cnf_begin()
 {
   timer_start();
 }
 
 // @brief タイマーを止めて CNF 作成時間に加える．
 void
-Dtpg::cnf_end()
+DtpgEngine::cnf_end()
 {
   USTime time = timer_stop();
   mStats.mCnfGenTime += time;
@@ -240,7 +240,7 @@ Dtpg::cnf_end()
 
 // @brief 時間計測を開始する．
 void
-Dtpg::timer_start()
+DtpgEngine::timer_start()
 {
   if ( mTimerEnable ) {
     mTimer.reset();
@@ -250,7 +250,7 @@ Dtpg::timer_start()
 
 /// @brief 時間計測を終了する．
 USTime
-Dtpg::timer_stop()
+DtpgEngine::timer_stop()
 {
   USTime time(0, 0, 0);
   if ( mTimerEnable ) {
@@ -262,7 +262,7 @@ Dtpg::timer_stop()
 
 // @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
 void
-Dtpg::gen_cnf_base()
+DtpgEngine::gen_cnf_base()
 {
   // root の TFO を mTfoList に入れる．
   set_tfo_mark(mRoot);
@@ -445,7 +445,7 @@ Dtpg::gen_cnf_base()
 
 // @brief mffc 内の影響が root まで伝搬する条件のCNF式を作る．
 void
-Dtpg::gen_cnf_mffc()
+DtpgEngine::gen_cnf_mffc()
 {
   // 各FFRの根にXORゲートを挿入した故障回路を作る．
   // そのXORをコントロールする入力変数を作る．
@@ -547,8 +547,8 @@ Dtpg::gen_cnf_mffc()
 // @param[in] ffr_pos 要素番号
 // @param[in] ovar ゲートの出力の変数
 void
-Dtpg::inject_fault(int ffr_pos,
-		   SatVarId ovar)
+DtpgEngine::inject_fault(int ffr_pos,
+			 SatVarId ovar)
 {
   SatLiteral lit1(ovar);
   SatLiteral lit2(mElemVarArray[ffr_pos]);
@@ -566,7 +566,7 @@ Dtpg::inject_fault(int ffr_pos,
 // @brief 故障伝搬条件を表すCNF式を生成する．
 // @param[in] node 対象のノード
 void
-Dtpg::make_dchain_cnf(const TpgNode* node)
+DtpgEngine::make_dchain_cnf(const TpgNode* node)
 {
   SatLiteral glit(mGvarMap(node));
   SatLiteral flit(mFvarMap(node));
@@ -641,7 +641,7 @@ Dtpg::make_dchain_cnf(const TpgNode* node)
 // @param[in] fault 対象の故障
 // @param[out] assign_list 結果の値割り当てリスト
 NodeValList
-Dtpg::make_ffr_condition(const TpgFault* fault)
+DtpgEngine::make_ffr_condition(const TpgFault* fault)
 {
   if ( debug_dtpg ) {
     DEBUG_OUT << "make_ffr_condition" << endl;
@@ -707,10 +707,10 @@ Dtpg::make_ffr_condition(const TpgFault* fault)
 // @param[in] time 時刻 ( 0 or 1 )
 // @param[in] val 値
 void
-Dtpg::add_assign(NodeValList& assign_list,
-		 const TpgNode* node,
-		 int time,
-		 bool val)
+DtpgEngine::add_assign(NodeValList& assign_list,
+		       const TpgNode* node,
+		       int time,
+		       bool val)
 {
   assign_list.add(node, time, val);
 
@@ -733,9 +733,9 @@ Dtpg::add_assign(NodeValList& assign_list,
 // @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 SatBool3
-Dtpg::solve(const TpgFault* fault,
-	    const vector<SatLiteral>& assumptions,
-	    NodeValList& nodeval_list)
+DtpgEngine::solve(const TpgFault* fault,
+		  const vector<SatLiteral>& assumptions,
+		  NodeValList& nodeval_list)
 {
   StopWatch timer;
   timer.start();

@@ -21,7 +21,7 @@ cdef class TpgMFFC :
     def fault_list(self) :
         cdef int n = self._thisptr.fault_num()
         cdef int i
-        cdef const CXXTpgFault c_fault
+        cdef const CXX_TpgFault* c_fault
         for i in range(0, n) :
             c_fault = self._thisptr.fault(i)
             yield to_TpgFault(c_fault)

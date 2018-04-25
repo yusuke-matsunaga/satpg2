@@ -1,8 +1,8 @@
-﻿#ifndef DTPG_H
-#define DTPG_H
+﻿#ifndef DTPGENGINE_H
+#define DTPGENGINE_H
 
-/// @file Dtpg.h
-/// @brief Dtpg のヘッダファイル
+/// @file DtpgEngine.h
+/// @brief DtpgEngine のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -33,10 +33,10 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class Dtpg Dtpg.h "Dtpg.h"
-/// @brief Dtpg の実装用のクラス
+/// @class DtpgEngine DtpgEngine.h "DtpgEngine.h"
+/// @brief Dtpg 基本的な処理を行うクラス
 //////////////////////////////////////////////////////////////////////
-class Dtpg
+class DtpgEngine
 {
 public:
 
@@ -47,14 +47,14 @@ public:
   /// @param[in] fault_type 故障の種類
   /// @param[in] just_type Justifier の種類を表す文字列
   /// @param[in] network 対象のネットワーク
-  /// @param[in] node 故障のあるノード
-  Dtpg(const string& sat_type,
-       const string& sat_option,
-       ostream* sat_outp,
-       FaultType fault_type,
-       const string& just_type,
-       const TpgNetwork& network,
-       const TpgNode* node);
+  /// @param[in] node 故障のあるFFRの根のノード
+  DtpgEngine(const string& sat_type,
+	     const string& sat_option,
+	     ostream* sat_outp,
+	     FaultType fault_type,
+	     const string& just_type,
+	     const TpgNetwork& network,
+	     const TpgNode* root);
 
   /// @brief コンストラクタ(FFRモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
@@ -63,14 +63,14 @@ public:
   /// @param[in] fault_type 故障の種類
   /// @param[in] just_type Justifier の種類を表す文字列
   /// @param[in] network 対象のネットワーク
-  /// @param[in] root 故障伝搬の起点となるノード
-  Dtpg(const string& sat_type,
-       const string& sat_option,
-       ostream* sat_outp,
-       FaultType fault_type,
-       const string& just_type,
-       const TpgNetwork& network,
-       const TpgFFR& ffr);
+  /// @param[in] ffr 故障伝搬の起点となる FFR
+  DtpgEngine(const string& sat_type,
+	     const string& sat_option,
+	     ostream* sat_outp,
+	     FaultType fault_type,
+	     const string& just_type,
+	     const TpgNetwork& network,
+	     const TpgFFR& ffr);
 
   /// @brief コンストラクタ(MFFCモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
@@ -80,16 +80,16 @@ public:
   /// @param[in] just_type Justifier の種類を表す文字列
   /// @param[in] network 対象のネットワーク
   /// @param[in] root 故障伝搬の起点となるノード
-  Dtpg(const string& sat_type,
-       const string& sat_option,
-       ostream* sat_outp,
-       FaultType fault_type,
-       const string& just_type,
-       const TpgNetwork& network,
-       const TpgMFFC& mffc);
+  DtpgEngine(const string& sat_type,
+	     const string& sat_option,
+	     ostream* sat_outp,
+	     FaultType fault_type,
+	     const string& just_type,
+	     const TpgNetwork& network,
+	     const TpgMFFC& mffc);
 
   /// @brief デストラクタ
-  ~Dtpg();
+  ~DtpgEngine();
 
 
 public:
@@ -373,7 +373,7 @@ private:
 // @brief 統計情報を得る．
 inline
 const DtpgStats&
-Dtpg::stats() const
+DtpgEngine::stats() const
 {
   return mStats;
 }
@@ -381,7 +381,7 @@ Dtpg::stats() const
 // @brief SATソルバを返す．
 inline
 SatSolver&
-Dtpg::solver()
+DtpgEngine::solver()
 {
   return mSolver;
 }
@@ -389,7 +389,7 @@ Dtpg::solver()
 // @brief 対象のネットワークを返す．
 inline
 const TpgNetwork&
-Dtpg::network() const
+DtpgEngine::network() const
 {
   return mNetwork;
 }
@@ -397,7 +397,7 @@ Dtpg::network() const
 // @brief ノード番号の最大値を返す．
 inline
 int
-Dtpg::max_node_id() const
+DtpgEngine::max_node_id() const
 {
   return network().node_num();
 }
@@ -405,7 +405,7 @@ Dtpg::max_node_id() const
 // @brief 起点となるノードを返す．
 inline
 const TpgNode*
-Dtpg::root_node() const
+DtpgEngine::root_node() const
 {
   return mRoot;
 }
@@ -414,7 +414,7 @@ Dtpg::root_node() const
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg::hvar(const TpgNode* node)
+DtpgEngine::hvar(const TpgNode* node)
 {
   ASSERT_COND( mHvarMap(node) != kSatVarIdIllegal );
 
@@ -425,7 +425,7 @@ Dtpg::hvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg::gvar(const TpgNode* node)
+DtpgEngine::gvar(const TpgNode* node)
 {
   return mGvarMap(node);
 }
@@ -434,7 +434,7 @@ Dtpg::gvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg::fvar(const TpgNode* node)
+DtpgEngine::fvar(const TpgNode* node)
 {
   return mFvarMap(node);
 }
@@ -443,7 +443,7 @@ Dtpg::fvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-Dtpg::dvar(const TpgNode* node)
+DtpgEngine::dvar(const TpgNode* node)
 {
   return mDvarMap(node);
 }
@@ -453,8 +453,8 @@ Dtpg::dvar(const TpgNode* node)
 // @param[in] var 設定する変数
 inline
 void
-Dtpg::set_hvar(const TpgNode* node,
-	       SatVarId var)
+DtpgEngine::set_hvar(const TpgNode* node,
+		     SatVarId var)
 {
   mHvarMap.set_vid(node, var);
 }
@@ -464,8 +464,8 @@ Dtpg::set_hvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-Dtpg::set_gvar(const TpgNode* node,
-	       SatVarId var)
+DtpgEngine::set_gvar(const TpgNode* node,
+		     SatVarId var)
 {
   mGvarMap.set_vid(node, var);
 }
@@ -475,8 +475,8 @@ Dtpg::set_gvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-Dtpg::set_fvar(const TpgNode* node,
-	       SatVarId var)
+DtpgEngine::set_fvar(const TpgNode* node,
+		     SatVarId var)
 {
   mFvarMap.set_vid(node, var);
 }
@@ -486,8 +486,8 @@ Dtpg::set_fvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-Dtpg::set_dvar(const TpgNode* node,
-	       SatVarId var)
+DtpgEngine::set_dvar(const TpgNode* node,
+		     SatVarId var)
 {
   mDvarMap.set_vid(node, var);
 }
@@ -495,7 +495,7 @@ Dtpg::set_dvar(const TpgNode* node,
 // @brief 1時刻前の正常値の変数マップを返す．
 inline
 const VidMap&
-Dtpg::hvar_map() const
+DtpgEngine::hvar_map() const
 {
   return mHvarMap;
 }
@@ -503,7 +503,7 @@ Dtpg::hvar_map() const
 // @brief 正常値の変数マップを返す．
 inline
 const VidMap&
-Dtpg::gvar_map() const
+DtpgEngine::gvar_map() const
 {
   return mGvarMap;
 }
@@ -511,7 +511,7 @@ Dtpg::gvar_map() const
 // @brief 故障値の変数マップを返す．
 inline
 const VidMap&
-Dtpg::fvar_map() const
+DtpgEngine::fvar_map() const
 {
   return mFvarMap;
 }
@@ -519,7 +519,7 @@ Dtpg::fvar_map() const
 // @brief TFO マークをつける．
 inline
 void
-Dtpg::set_tfo_mark(const TpgNode* node)
+DtpgEngine::set_tfo_mark(const TpgNode* node)
 {
   int id = node->id();
   if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
@@ -534,7 +534,7 @@ Dtpg::set_tfo_mark(const TpgNode* node)
 // @brief TFI マークをつける．
 inline
 void
-Dtpg::set_tfi_mark(const TpgNode* node)
+DtpgEngine::set_tfi_mark(const TpgNode* node)
 {
   int id = node->id();
   if ( (mMarkArray[id] & 3U) == 0U ) {
@@ -549,7 +549,7 @@ Dtpg::set_tfi_mark(const TpgNode* node)
 // @brief TFI2 マークをつける．
 inline
 void
-Dtpg::set_tfi2_mark(const TpgNode* node)
+DtpgEngine::set_tfi2_mark(const TpgNode* node)
 {
   int id = node->id();
   if ( ((mMarkArray[id] >> 2) & 1U) == 0U ) {
@@ -560,4 +560,4 @@ Dtpg::set_tfi2_mark(const TpgNode* node)
 
 END_NAMESPACE_YM_SATPG
 
-#endif // DTPG_H
+#endif // DTPGENGINE_H

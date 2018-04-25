@@ -9,7 +9,7 @@
 
 #include "DtpgTest.h"
 #include "Dtpg_se.h"
-#include "Dtpg.h"
+#include "DtpgEngine.h"
 
 #include "TpgMFFC.h"
 #include "TpgFFR.h"
@@ -162,7 +162,7 @@ DtpgTest::single_new_test()
   for ( auto fault: mNetwork.rep_fault_list() ) {
     if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
       const TpgNode* node = fault->tpg_onode();
-      Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, node);
+      DtpgEngine dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, node);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list);
       if ( ans == SatBool3::True ) {
@@ -192,7 +192,7 @@ DtpgTest::ffr_new_test()
   int detect_num = 0;
   int untest_num = 0;
   for ( auto& ffr: mNetwork.ffr_list() ) {
-    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, ffr);
+    DtpgEngine dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	NodeValList nodeval_list;
@@ -225,7 +225,7 @@ DtpgTest::mffc_new_test()
   int detect_num = 0;
   int untest_num = 0;
   for ( auto& mffc: mNetwork.mffc_list() ) {
-    Dtpg dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, mffc);
+    DtpgEngine dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, mffc);
     for ( auto fault: mffc.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．

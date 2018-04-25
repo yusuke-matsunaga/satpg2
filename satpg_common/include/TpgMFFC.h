@@ -207,7 +207,7 @@ inline
 const TpgFault*
 TpgMFFC::fault(int pos) const
 {
-  ASSERT_COND( pos > 0 && pos < fault_num() );
+  ASSERT_COND( pos >= 0 && pos < fault_num() );
 
   return mFaultList[pos];
 }
