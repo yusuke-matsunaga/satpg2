@@ -181,6 +181,25 @@ TestVector::is_conflict(const TestVector& tv1,
   return false;
 }
 
+// @brief マージして代入する．
+TestVector&
+TestVector::operator&=(const TestVector& right)
+{
+  ASSERT_COND( input_num() == right.input_num() );
+  ASSERT_COND( dff_num() == right.dff_num() );
+  ASSERT_COND( has_aux_input() == right.has_aux_input() );
+
+  mInputVector->merge(right.input_vector());
+  if ( mDffVector ) {
+    mDffVector->merge(right.dff_vector());
+  }
+  if ( mAuxInputVector ) {
+    mAuxInputVector->merge(right.aux_input_vector());
+  }
+
+  return *this;
+}
+
 // @brief 等価関係の比較を行なう．
 // @param[in] right オペランド
 // @return 自分自身と right が等しいとき true を返す．

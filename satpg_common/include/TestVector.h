@@ -157,6 +157,21 @@ public:
   const InputVector&
   aux_input_vector() const;
 
+  /// @brief 内容を BIN 形式で表す．
+  string
+  bin_str() const;
+
+  /// @brief 内容を HEX 形式で表す．
+  /// @note X を含む場合の出力は不定
+  string
+  hex_str() const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // TestVector の演算
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief 2つのベクタが両立しないとき true を返す．
   /// @param[in] tv1, tv2 対象のテストベクタ
   ///
@@ -165,6 +180,10 @@ public:
   bool
   is_conflict(const TestVector& tv1,
 	      const TestVector& tv2);
+
+  /// @brief マージして代入する．
+  TestVector&
+  operator&=(const TestVector& right);
 
   /// @brief 等価関係の比較を行なう．
   /// @param[in] right オペランド
@@ -187,14 +206,6 @@ public:
   bool
   operator<=(const TestVector& right) const;
 
-  /// @brief 内容を BIN 形式で表す．
-  string
-  bin_str() const;
-
-  /// @brief 内容を HEX 形式で表す．
-  /// @note X を含む場合の出力は不定
-  string
-  hex_str() const;
 
 
 public:
@@ -371,6 +382,57 @@ operator>=(const TestVector& left,
   return right.operator<=(left);
 }
 
+/// @brief マージする．
+/// @param[in] left, right オペランド
+/// @return マージ結果を返す．
+///
+/// left と right がコンフリクトしている時の結果は不定
+inline
+TestVector
+operator&(const TestVector& left,
+	  const TestVector& right)
+{
+  return TestVector(left).operator&=(right);
+}
+
+/// @brief マージする．
+/// @param[in] left, right オペランド
+/// @return マージ結果を返す．
+///
+/// left と right がコンフリクトしている時の結果は不定
+inline
+TestVector
+operator&(TestVector&& left,
+	  const TestVector& right)
+{
+  return left.operator&=(right);
+}
+
+/// @brief マージする．
+/// @param[in] left, right オペランド
+/// @return マージ結果を返す．
+///
+/// left と right がコンフリクトしている時の結果は不定
+inline
+TestVector
+operator&(const TestVector& left,
+	  TestVector&& right)
+{
+  return right.operator&=(left);
+}
+
+/// @brief マージする．
+/// @param[in] left, right オペランド
+/// @return マージ結果を返す．
+///
+/// left と right がコンフリクトしている時の結果は不定
+inline
+TestVector
+operator&(TestVector&& left,
+	  TestVector&& right)
+{
+  return left.operator&=(right);
+}
 
 /// @brief 内容を出力する．
 /// @param[in] s 出力先のストリーム
