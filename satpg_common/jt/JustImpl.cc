@@ -34,6 +34,7 @@ JustImpl::~JustImpl()
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] var_map 変数番号のマップ
 // @param[in] model SAT問題の解
+// @return 外部入力上の値の割当リスト
 NodeValList
 JustImpl::justify(const NodeValList& assign_list,
 		  const VidMap& var_map,
@@ -62,6 +63,7 @@ JustImpl::justify(const NodeValList& assign_list,
 // @param[in] var1_map 1時刻目の変数番号のマップ
 // @param[in] var2_map 2時刻目の変数番号のマップ
 // @param[in] model SAT問題の解
+// @return 外部入力上の値の割当リスト
 NodeValList
 JustImpl::justify(const NodeValList& assign_list,
 		  const VidMap& var1_map,

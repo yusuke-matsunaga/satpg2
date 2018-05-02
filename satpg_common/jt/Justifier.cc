@@ -11,6 +11,7 @@
 #include "Just1.h"
 #include "Just2.h"
 #include "NodeValList.h"
+#include "TestVector.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -56,12 +57,15 @@ Justifier::~Justifier()
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] var_map 変数番号のマップ
 // @param[in] model SAT問題の解
-NodeValList
+// @param[out] testvect テストベクタ
+void
 Justifier::operator()(const NodeValList& assign_list,
 		      const VidMap& var_map,
-		      const vector<SatBool3>& model)
+		      const vector<SatBool3>& model,
+		      TestVector& testvect)
 {
-  return mImpl->justify(assign_list, var_map, model);
+  NodeValList pi_assign_list = mImpl->justify(assign_list, var_map, model);
+  testvect.set_from_assign_list(pi_assign_list);
 }
 
 // @brief 正当化に必要な割当を求める(遷移故障用)．
@@ -69,13 +73,16 @@ Justifier::operator()(const NodeValList& assign_list,
 // @param[in] var1_map 1時刻目の変数番号のマップ
 // @param[in] var2_map 2時刻目の変数番号のマップ
 // @param[in] model SAT問題の解
-NodeValList
+// @param[out] testvect テストベクタ
+void
 Justifier::operator()(const NodeValList& assign_list,
 		      const VidMap& var1_map,
 		      const VidMap& var2_map,
-		      const vector<SatBool3>& model)
+		      const vector<SatBool3>& model,
+		      TestVector& testvect)
 {
-  return mImpl->justify(assign_list, var1_map, var2_map, model);
+  NodeValList pi_assign_list = mImpl->justify(assign_list, var1_map, var2_map, model);
+  testvect.set_from_assign_list(pi_assign_list);
 }
 
 END_NAMESPACE_YM_SATPG

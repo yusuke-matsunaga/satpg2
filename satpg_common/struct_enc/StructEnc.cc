@@ -12,6 +12,7 @@
 #include "MffcPropCone.h"
 #include "Justifier.h"
 #include "NodeValList.h"
+#include "TestVector.h"
 
 #include "TpgNetwork.h"
 #include "TpgFault.h"
@@ -544,33 +545,31 @@ StructEnc::extract(const vector<SatBool3>& model,
 // @param[in] model SAT のモデル
 // @param[in] assign_list 値割り当てのリスト
 // @param[in] justifier 正当化を行うファンクタ
-// @param[out] pi_assign_list 外部入力における値割り当てのリスト
+// @param[out] testvect テストベクタ
 //
 // このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
 // justifier を呼ぶこと．
-NodeValList
+void
 StructEnc::justify(const vector<SatBool3>& model,
 		   const NodeValList& assign_list,
-		   Justifier& justifier)
+		   Justifier& justifier,
+		   TestVector& testvect)
 {
   if ( debug() & debug_justify ) {
     cout << endl
 	 << "StructEnc::justify(" << assign_list << ")" << endl;
   }
 
-  NodeValList pi_assign_list;
   if ( mFaultType == FaultType::TransitionDelay ) {
-    pi_assign_list = justifier(assign_list, var_map(0), var_map(1), model);
+    justifier(assign_list, var_map(0), var_map(1), model, testvect);
   }
   else {
-    pi_assign_list = justifier(assign_list, var_map(1), model);
+    justifier(assign_list, var_map(1), model, testvect);
   }
 
   if ( debug() & debug_justify ) {
-    cout << " => " << pi_assign_list << endl;
+    cout << " => " << testvect.bin_str() << endl;
   }
-
-  return pi_assign_list;
 }
 
 END_NAMESPACE_YM_SATPG_STRUCTENC

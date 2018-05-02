@@ -161,8 +161,7 @@ Dtpg_se::dtpg(const TpgFault* fault,
 
     // バックトレースを行う．
     NodeValList assign_list = mStructEnc.extract(model, fault, 0);
-    NodeValList nodeval_list = mStructEnc.justify(model, assign_list, mJustifier);
-    testvect.set_from_assign_list(nodeval_list);
+    mStructEnc.justify(model, assign_list, mJustifier, testvect);
 
     timer.stop();
     mStats.mBackTraceTime += timer.time();

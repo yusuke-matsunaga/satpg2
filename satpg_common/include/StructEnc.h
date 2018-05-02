@@ -254,14 +254,15 @@ public:
   /// @param[in] model SAT のモデル
   /// @param[in] assign_list 値割り当てのリスト
   /// @param[in] justifier 正当化を行うファンクタ
-  /// @return 外部入力における値割り当てのリスト
+  /// @param[out] testvect テストベクタ
   ///
   /// このクラスでの仕事はValMapに関する適切なオブジェクトを生成して
   /// justifier を呼ぶこと．
-  NodeValList
+  void
   justify(const vector<SatBool3>& model,
 	  const NodeValList& assign_list,
-	  Justifier& justifier);
+	  Justifier& justifier,
+	  TestVector& testvect);
 
   /// @brief デバッグ用のフラグをセットする．
   void

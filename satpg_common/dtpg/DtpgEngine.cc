@@ -785,10 +785,10 @@ DtpgEngine::solve(const TpgFault* fault,
     assign_list2.merge(assign_list);
     NodeValList nodeval_list;
     if ( mFaultType == FaultType::TransitionDelay ) {
-      nodeval_list = mJustifier(assign_list2, mHvarMap, mGvarMap, model);
+      mJustifier(assign_list2, mHvarMap, mGvarMap, model, testvect);
     }
     else {
-      nodeval_list = mJustifier(assign_list2, mGvarMap, model);
+      mJustifier(assign_list2, mGvarMap, model, testvect);
     }
     testvect.set_from_assign_list(nodeval_list);
 
