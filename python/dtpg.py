@@ -54,12 +54,13 @@ class Dtpg :
 
     ### @brief 全モードで共通な処理
     def __call_dtpg(self, dtpg, fault) :
-        stat, nodeval_list = dtpg(fault)
+        stat, testvect = dtpg(fault)
         if stat == SatBool3._True :
             self.__ndet += 1
             # fault を検出可能故障と記録
             self.__fsmgr.set(fault, FaultStatus.Detected)
-            # fault のパタンとして nodeval_list を記録
+            # fault のパタンとして testvect を記録
+            self.__tvlist.append(testvect)
         elif stat == SatBool3._False :
             self.__nunt += 1
             # fault をテスト不能故障と記録
