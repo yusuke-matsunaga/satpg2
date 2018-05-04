@@ -15,32 +15,15 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-BEGIN_NONAMESPACE
-
-// @brief ベクタ長からバイトサイズを計算する．
-// @param[in] vectlen ベクタ長
-inline
-SizeType
-calc_size(int vectlen)
-{
-  if ( vectlen == 0 ) {
-    vectlen = 1;
-  }
-  return sizeof(BitVector) + kPvBitLen * (BitVector::block_num(vectlen) - 1);
-}
-
-END_NONAMESPACE
-
-
 //////////////////////////////////////////////////////////////////////
 // クラス TestVector
 //////////////////////////////////////////////////////////////////////
 
 // @brief 空のコンストラクタ
 TestVector::TestVector() :
-  mInputVector(nullptr),
-  mDffVector(nullptr),
-  mAuxInputVector(nullptr)
+  mInputVector(0),
+  mDffVector(0),
+  mAuxInputVector(0)
 {
 }
 
@@ -51,20 +34,20 @@ TestVector::TestVector() :
 TestVector::TestVector(int input_num,
 		       int dff_num,
 		       FaultType fault_type) :
-  mInputVector(new_input_vector(input_num)),
-  mDffVector(new_dff_vector(dff_num)),
-  mAuxInputVector(new_aux_input_vector(input_num, fault_type))
+  mInputVector(input_num),
+  mDffVector(dff_num),
+  mAuxInputVector(fault_type == FaultType::StuckAt ? 0 : input_num)
 {
 }
 
+#if 0
 // @brief コピーコンストラクタ
 // @param[in] src コピー元のソース
 TestVector::TestVector(const TestVector& src) :
-  mInputVector(new_input_vector(src.input_num())),
-  mDffVector(new_dff_vector(src.dff_num())),
-  mAuxInputVector(new_aux_input_vector(src.input_num(), src.fault_type()))
+  mInputVector(src.mInputVector),
+  mDffVector(src.mDffVector),
+  mAuxInputVector(src.mAuxInputVector)
 {
-  _copy(src);
 }
 
 // @brief コピー代入演算子
@@ -72,6 +55,8 @@ TestVector::TestVector(const TestVector& src) :
 TestVector&
 TestVector::operator=(const TestVector& src)
 {
+  mInputVector = src.mInputVector;
+  mDffVector = src.mDffVector
   resize(src.input_num(), src.dff_num(), src.fault_type());
 
   _copy(src);
@@ -99,12 +84,14 @@ TestVector::operator=(TestVector&& src)
 
   return *this;
 }
+#endif
 
 // @brief デストラクタ
 TestVector::~TestVector()
 {
 }
 
+#if 0
 // @brief InputVector を作る．
 inline
 std::unique_ptr<InputVector>
@@ -141,19 +128,13 @@ TestVector::new_aux_input_vector(int input_num,
     return nullptr;
   }
 }
+#endif
 
 // @brief X の個数を得る．
 int
 TestVector::x_count() const
 {
-  int ans = mInputVector->x_count();
-  if ( mDffVector != nullptr ) {
-    ans += mDffVector->x_count();
-  }
-  if ( mAuxInputVector != nullptr ) {
-    ans += mAuxInputVector->x_count();
-  }
-  return ans;
+  return mInputVector.x_count() + mDffVector.x_count() + mAuxInputVector.x_count();
 }
 
 // @brief 2つのベクタが両立しないとき true を返す．
@@ -189,13 +170,9 @@ TestVector::operator&=(const TestVector& right)
   ASSERT_COND( dff_num() == right.dff_num() );
   ASSERT_COND( has_aux_input() == right.has_aux_input() );
 
-  mInputVector->merge(right.input_vector());
-  if ( mDffVector ) {
-    mDffVector->merge(right.dff_vector());
-  }
-  if ( mAuxInputVector ) {
-    mAuxInputVector->merge(right.aux_input_vector());
-  }
+  mInputVector.merge(right.input_vector());
+  mDffVector.merge(right.dff_vector());
+  mAuxInputVector.merge(right.aux_input_vector());
 
   return *this;
 }
@@ -213,15 +190,11 @@ TestVector::operator==(const TestVector& right) const
   if ( input_vector() != right.input_vector() ) {
     return false;
   }
-  if ( dff_num() > 0 ) {
-    if ( dff_vector() != right.dff_vector() ) {
-      return false;
-    }
+  if ( dff_vector() != right.dff_vector() ) {
+    return false;
   }
-  if ( has_aux_input() ) {
-    if ( aux_input_vector() != right.aux_input_vector() ) {
-      return false;
-    }
+  if ( aux_input_vector() != right.aux_input_vector() ) {
+    return false;
   }
   return true;
 }
@@ -240,15 +213,11 @@ TestVector::operator<(const TestVector& right) const
   if ( !(input_vector() < right.input_vector()) ) {
     return false;
   }
-  if ( dff_num() > 0 ) {
-    if ( !(dff_vector() < right.dff_vector()) ) {
-      return false;
-    }
+  if ( !(dff_vector() < right.dff_vector()) ) {
+    return false;
   }
-  if ( has_aux_input() ) {
-    if ( !(aux_input_vector() < right.aux_input_vector()) ) {
-      return false;
-    }
+  if ( !(aux_input_vector() < right.aux_input_vector()) ) {
+    return false;
   }
   return true;
 }
@@ -268,19 +237,16 @@ TestVector::operator<=(const TestVector& right) const
   if ( !(input_vector() <= right.input_vector()) ) {
     return false;
   }
-  if ( dff_num() > 0 ) {
-    if ( !(dff_vector() <= right.dff_vector()) ) {
-      return false;
-    }
+  if ( !(dff_vector() <= right.dff_vector()) ) {
+    return false;
   }
-  if ( has_aux_input() ) {
-    if ( !(aux_input_vector() <= right.aux_input_vector()) ) {
-      return false;
-    }
+  if ( !(aux_input_vector() <= right.aux_input_vector()) ) {
+    return false;
   }
   return true;
 }
 
+#if 0
 // @brief サイズを(再)設定する．
 // @param[in] input_num 入力数
 // @param[in] dff_numr DFF数
@@ -294,18 +260,15 @@ TestVector::resize(int input_num,
   mDffVector = new_dff_vector(dff_num);
   mAuxInputVector = new_aux_input_vector(input_num, fault_type);
 }
+#endif
 
 // @brief すべて未定(X) で初期化する．
 void
 TestVector::init()
 {
-  mInputVector->init();
-  if ( mDffVector != nullptr ) {
-    mDffVector->init();
-  }
-  if ( mAuxInputVector != nullptr ) {
-    mAuxInputVector->init();
-  }
+  mInputVector.init();
+  mDffVector.init();
+  mAuxInputVector.init();
 }
 
 // @brief 割当リストから内容を設定する．
@@ -353,6 +316,7 @@ TestVector::set_from_assign_list(const NodeValList& assign_list)
 bool
 TestVector::set_from_hex(const string& hex_string)
 {
+#if 0
   // C++ はこういう文字列処理がめんどくさい．
   string tmp_string(hex_string);
   if ( mDffVector != nullptr ) {
@@ -366,22 +330,24 @@ TestVector::set_from_hex(const string& hex_string)
 	return false;
       }
       string aux_input_str = tmp_string.substr(pos2 + 1, string::npos);
-      bool stat1 = mAuxInputVector->set_from_hex(aux_input_str);
+      bool stat1 = mAuxInputVector.set_from_hex(aux_input_str);
       if ( !stat1 ) {
 	return false;
       }
       tmp_string = tmp_string.substr(0, pos2);
     }
     string dff_str = tmp_string.substr(pos1 + 1, string::npos);
-    bool stat2 = mDffVector->set_from_hex(dff_str);
+    bool stat2 = mDffVector.set_from_hex(dff_str);
     if ( !stat2 ) {
       return false;
     }
     tmp_string = tmp_string.substr(0, pos1);
   }
-  bool stat3 = mInputVector->set_from_hex(tmp_string);
+  bool stat3 = mInputVector.set_from_hex(tmp_string);
 
   return stat3;
+#endif
+  return false;
 }
 
 // @brief 乱数パタンを設定する．
@@ -389,13 +355,9 @@ TestVector::set_from_hex(const string& hex_string)
 void
 TestVector::set_from_random(RandGen& randgen)
 {
-  mInputVector->set_from_random(randgen);
-  if ( mDffVector != nullptr ) {
-    mDffVector->set_from_random(randgen);
-  }
-  if ( mAuxInputVector != nullptr ) {
-    mAuxInputVector->set_from_random(randgen);
-  }
+  mInputVector.set_from_random(randgen);
+  mDffVector.set_from_random(randgen);
+  mAuxInputVector.set_from_random(randgen);
 }
 
 // @brief X の部分を乱数で 0/1 に設定する．
@@ -403,13 +365,9 @@ TestVector::set_from_random(RandGen& randgen)
 void
 TestVector::fix_x_from_random(RandGen& randgen)
 {
-  mInputVector->fix_x_from_random(randgen);
-  if ( mDffVector != nullptr ) {
-    mDffVector->fix_x_from_random(randgen);
-  }
-  if ( mAuxInputVector != nullptr ) {
-    mAuxInputVector->fix_x_from_random(randgen);
-  }
+  mInputVector.fix_x_from_random(randgen);
+  mDffVector.fix_x_from_random(randgen);
+  mAuxInputVector.fix_x_from_random(randgen);
 }
 
 // @brief テストベクタをコピーする．
@@ -422,13 +380,9 @@ TestVector::_copy(const TestVector& src)
   ASSERT_COND( dff_num() == src.dff_num() );
   ASSERT_COND( has_aux_input() == src.has_aux_input() );
 
-  mInputVector->copy(src.input_vector());
-  if ( mDffVector != nullptr ) {
-    mDffVector->copy(src.dff_vector());
-  }
-  if ( mAuxInputVector != nullptr ) {
-    mAuxInputVector->copy(src.aux_input_vector());
-  }
+  mInputVector.copy(src.input_vector());
+  mDffVector.copy(src.dff_vector());
+  mAuxInputVector.copy(src.aux_input_vector());
 }
 
 // @breif テストベクタをマージする．
@@ -440,22 +394,19 @@ TestVector::merge(const TestVector& src)
   ASSERT_COND( dff_num() == src.dff_num() );
   ASSERT_COND( has_aux_input() == src.has_aux_input() );
 
-  bool stat1 = mInputVector->merge(src.input_vector());
+  bool stat1 = mInputVector.merge(src.input_vector());
   if ( !stat1 ) {
     return false;
   }
 
-  if ( mDffVector != nullptr ) {
-    bool stat2 = mDffVector->merge(src.dff_vector());
-    if ( !stat2 ) {
-      return false;
-    }
+  bool stat2 = mDffVector.merge(src.dff_vector());
+  if ( !stat2 ) {
+    return false;
   }
-  if ( mAuxInputVector != nullptr ) {
-    bool stat3 = mAuxInputVector->merge(src.aux_input_vector());
-    if ( !stat3 ) {
-      return false;
-    }
+
+  bool stat3 = mAuxInputVector.merge(src.aux_input_vector());
+  if ( !stat3 ) {
+    return false;
   }
 
   return true;
@@ -465,11 +416,11 @@ TestVector::merge(const TestVector& src)
 string
 TestVector::bin_str() const
 {
-  string ans = mInputVector->bin_str();
-  if ( mDffVector != nullptr ) {
-    ans += ":" + mDffVector->bin_str();
-    if ( mAuxInputVector != nullptr ) {
-      ans += ":" + mAuxInputVector->bin_str();
+  string ans = mInputVector.bin_str();
+  if ( dff_num() > 0 ) {
+    ans += ":" + mDffVector.bin_str();
+    if ( has_aux_input() ) {
+      ans += ":" + mAuxInputVector.bin_str();
     }
   }
   return ans;
@@ -479,11 +430,11 @@ TestVector::bin_str() const
 string
 TestVector::hex_str() const
 {
-  string ans = mInputVector->hex_str();
-  if ( mDffVector != nullptr ) {
-    ans += ":" + mDffVector->hex_str();
-    if ( mAuxInputVector != nullptr ) {
-      ans += ":" + mAuxInputVector->hex_str();
+  string ans = mInputVector.hex_str();
+  if ( dff_num() ) {
+    ans += ":" + mDffVector.hex_str();
+    if ( has_aux_input() ) {
+      ans += ":" + mAuxInputVector.hex_str();
     }
   }
   return ans;

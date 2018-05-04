@@ -15,7 +15,8 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] vlen ベクタ長
 BitVector::BitVector(int vlen) :
-  mVectLen(vlen)
+  mVectLen(vlen),
+  mPat(new PackedVal[block_num(vlen)])
 {
   // X に初期化しておく．
   init();
@@ -25,9 +26,35 @@ BitVector::BitVector(int vlen) :
   mMask = kPvAll1 << (kPvBitLen - k);
 }
 
-// @brief デストラクタ
-BitVector::~BitVector()
+// @brief コピーコンストラクタ
+// @param[in] src コピー元のソース
+BitVector::BitVector(const BitVector& src) :
+  mVectLen(src.mVectLen),
+  mMask(src.mMask),
+  mPat(new PackedVal[block_num(mVectLen)])
 {
+  int n = block_num(mVectLen);
+  for ( int i = 0; i < n; ++ i ) {
+    mPat[i] = src.mPat[i];
+  }
+}
+
+// @brief コピー代入演算子
+// @param[in] src コピー元のソース
+BitVector&
+BitVector::operator=(const BitVector& src)
+{
+  if ( &src != this ) {
+    mVectLen = src.mVectLen;
+    mMask = src.mMask;
+    int n = block_num(mVectLen);
+    mPat = new PackedVal[n];
+    for ( int i = 0; i < n; ++ i ) {
+      mPat[i] = src.mPat[i];
+    }
+  }
+
+  return *this;
 }
 
 // @brief X の個数を得る．

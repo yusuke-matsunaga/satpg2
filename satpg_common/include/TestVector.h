@@ -55,21 +55,21 @@ public:
 
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
-  TestVector(const TestVector& src);
+  TestVector(const TestVector& src) = default;
 
   /// @brief コピー代入演算子
   /// @param[in] src コピー元のソース
   TestVector&
-  operator=(const TestVector& src);
+  operator=(const TestVector& src) = default;
 
   /// @brief ムーブコンストラクタ
   /// @param[in] src ムーブ元のソース
-  TestVector(TestVector&& src);
+  TestVector(TestVector&& src) = default;
 
   /// @brief ムーブ代入演算子
   /// @param[in] src ムーブ元のソース
   TestVector&
-  operator=(TestVector&& src);
+  operator=(TestVector&& src) = default;
 
   /// @brief デストラクタ
   ~TestVector();
@@ -336,13 +336,13 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 入力用ベクタ
-  std::unique_ptr<InputVector> mInputVector;
+  InputVector mInputVector;
 
   // DFF用ベクタ
-  std::unique_ptr<DffVector> mDffVector;
+  DffVector mDffVector;
 
   // ２時刻目の入力用ベクタ
-  std::unique_ptr<InputVector> mAuxInputVector;
+  InputVector mAuxInputVector;
 
 };
 
@@ -458,12 +458,7 @@ inline
 int
 TestVector::input_num() const
 {
-  if ( mInputVector != nullptr ) {
-    return mInputVector->vect_len();
-  }
-  else {
-    return 0;
-  }
+  return mInputVector.vect_len();
 }
 
 // @brief DFF数を得る．
@@ -471,10 +466,7 @@ inline
 int
 TestVector::dff_num() const
 {
-  if ( mDffVector != nullptr ) {
-    return mDffVector->vect_len();
-  }
-  return 0;
+  return mDffVector.vect_len();
 }
 
 // @brief PPI数を得る．
@@ -492,7 +484,7 @@ inline
 bool
 TestVector::has_aux_input() const
 {
-  return mAuxInputVector != nullptr;
+  return mAuxInputVector.vect_len() != 0;
 }
 
 // @brief 故障の種類を返す．
@@ -500,7 +492,7 @@ inline
 FaultType
 TestVector::fault_type() const
 {
-  if ( mAuxInputVector != nullptr ) {
+  if ( has_aux_input() ) {
     return FaultType::TransitionDelay;
   }
   else {
@@ -513,11 +505,7 @@ inline
 int
 TestVector::vect_len() const
 {
-  int ans = input_num() + dff_num();
-  if ( mAuxInputVector != nullptr ) {
-    ans += mAuxInputVector->vect_len();
-  }
-  return ans;
+  return input_num() + dff_num() + mAuxInputVector.vect_len();
 }
 
 // @brief PPIの値を得る．
@@ -529,10 +517,10 @@ TestVector::ppi_val(int pos) const
   ASSERT_COND( pos >= 0 && pos < ppi_num() );
 
   if ( pos < input_num() ) {
-    return mInputVector->val(pos);
+    return mInputVector.val(pos);
   }
   else {
-    return mDffVector->val(pos - input_num());
+    return mDffVector.val(pos - input_num());
   }
 }
 
@@ -545,7 +533,7 @@ TestVector::input_val(int pos) const
   ASSERT_COND( fault_type() == FaultType::TransitionDelay );
   ASSERT_COND( pos >= 0 && pos < input_num() );
 
-  return mInputVector->val(pos);
+  return mInputVector.val(pos);
 }
 
 // @brief 1時刻目のDFFの値を得る．
@@ -557,7 +545,7 @@ TestVector::dff_val(int pos) const
   ASSERT_COND( fault_type() == FaultType::TransitionDelay );
   ASSERT_COND( pos >= 0 && pos < dff_num() );
 
-  return mDffVector->val(pos);
+  return mDffVector.val(pos);
 }
 
 // @brief 2時刻目の外部入力の値を得る．
@@ -569,7 +557,7 @@ TestVector::aux_input_val(int pos) const
   ASSERT_COND( fault_type() == FaultType::TransitionDelay );
   ASSERT_COND( pos >= 0 && pos < input_num() );
 
-  return mAuxInputVector->val(pos);
+  return mAuxInputVector.val(pos);
 }
 
 // @brief 入力のベクタを得る．
@@ -577,7 +565,7 @@ inline
 const InputVector&
 TestVector::input_vector() const
 {
-  return *mInputVector;
+  return mInputVector;
 }
 
 // @brief DFFのベクタを得る．
@@ -587,7 +575,7 @@ inline
 const DffVector&
 TestVector::dff_vector() const
 {
-  return *mDffVector;
+  return mDffVector;
 }
 
 // @brief ２時刻目の入力のベクタを得る．
@@ -597,7 +585,7 @@ inline
 const InputVector&
 TestVector::aux_input_vector() const
 {
-  return *mAuxInputVector;
+  return mAuxInputVector;
 }
 
 // @brief PPIの値を設定する．
@@ -614,10 +602,10 @@ TestVector::set_ppi_val(int pos,
   ASSERT_COND( pos < ppi_num() );
 
   if ( pos < input_num() ) {
-    mInputVector->set_val(pos, val);
+    mInputVector.set_val(pos, val);
   }
   else {
-    mDffVector->set_val(pos - input_num(), val);
+    mDffVector.set_val(pos - input_num(), val);
   }
 }
 
@@ -632,7 +620,7 @@ TestVector::set_input_val(int pos,
   ASSERT_COND( fault_type() == FaultType::TransitionDelay );
   ASSERT_COND( pos < input_num() );
 
-  mInputVector->set_val(pos, val);
+  mInputVector.set_val(pos, val);
 }
 
 // @breif 1時刻目のDFFの値を設定する．
@@ -646,7 +634,7 @@ TestVector::set_dff_val(int pos,
   ASSERT_COND( fault_type() == FaultType::TransitionDelay );
   ASSERT_COND( pos < dff_num() );
 
-  mDffVector->set_val(pos, val);
+  mDffVector.set_val(pos, val);
 }
 
 // @breif 2時刻目の外部入力の値を設定する．
@@ -661,7 +649,7 @@ TestVector::set_aux_input_val(int pos,
   ASSERT_COND( pos < input_num() );
 
   if ( fault_type() == FaultType::TransitionDelay ) {
-    mAuxInputVector->set_val(pos, val);
+    mAuxInputVector.set_val(pos, val);
   }
 }
 

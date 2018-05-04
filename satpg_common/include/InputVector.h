@@ -23,36 +23,32 @@ BEGIN_NAMESPACE_YM_SATPG
 class InputVector :
   public BitVector
 {
-  friend class TestVector;
-
-private:
+public:
 
   /// @brief コンストラクタ
   /// @param[in] vect_len ベクタ長
+  ///
+  /// 内容は 0 で初期化される．
   explicit
   InputVector(int vect_len);
 
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
-  ///
-  /// この関数は実装しない．
-  InputVector(const InputVector& src) = delete;
+  InputVector(const InputVector& src);
 
   /// @brief ムーブコンストラクタ
   /// @param[in] src ムーブ元のソース
-  ///
-  /// この関数は実装しない．
-  InputVector(InputVector&& src) = delete;
+  InputVector(InputVector&& src);
+
+  /// @brief コピー代入演算子
+  /// @param[in] src コピー元のソース
+  InputVector&
+  operator=(const InputVector& src);
 
   /// @brief ムーブ代入演算子
   /// @param[in] src ムーブ元のソース
-  ///
-  /// この関数は実装しない．
   InputVector&
-  operator=(InputVector&& src) = delete;
-
-
-public:
+  operator=(InputVector&& src);
 
   /// @brief デストラクタ
   ~InputVector();
@@ -88,6 +84,44 @@ inline
 InputVector::InputVector(int vect_len) :
   BitVector(vect_len)
 {
+}
+
+// @brief コピーコンストラクタ
+// @param[in] src コピー元のソース
+inline
+InputVector::InputVector(const InputVector& src) :
+  BitVector(src)
+{
+}
+
+// @brief ムーブコンストラクタ
+// @param[in] src ムーブ元のソース
+inline
+InputVector::InputVector(InputVector&& src) :
+  BitVector(src)
+{
+}
+
+// @brief コピー代入演算子
+// @param[in] src コピー元のソース
+inline
+InputVector&
+InputVector::operator=(const InputVector& src)
+{
+  BitVector::operator=(src);
+
+  return *this;
+}
+
+// @brief ムーブ代入演算子
+// @param[in] src ムーブ元のソース
+inline
+InputVector&
+InputVector::operator=(InputVector&& src)
+{
+  BitVector::operator=(src);
+
+  return *this;
 }
 
 // @brief デストラクタ

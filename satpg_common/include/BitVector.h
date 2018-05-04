@@ -21,14 +21,42 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief ビットベクタを表すクラス
 ///
 /// 基本的には3値(0, 1, X)のベクタを表している．
-/// 生成/破壊は TvMgr のみが行う．
-/// 同じ TvMgr が扱うビットベクタのサイズは入力用とFF用の２種類がある．
 ///
-/// mPat[0], mPat[1] の２つのワードでそれぞれ0のビット/1のビットを表す．
+/// mPat[i * 2 + 0], mPat[i * 2 + 1] の２つのワードでそれぞれ0のビット
+/// と1のビットを表す．
 /// X の場合は両方のビットに1を立てる．
 //////////////////////////////////////////////////////////////////////
 class BitVector
 {
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] vect_len ベクタ長
+  explicit
+  BitVector(int vect_len);
+
+  /// @brief コピーコンストラクタ
+  /// @param[in] src コピー元のソース
+  BitVector(const BitVector& src);
+
+  /// @brief ムーブコンストラクタ
+  /// @param[in] src ムーブ元のソース
+  BitVector(BitVector&& src);
+
+  /// @brief コピー代入演算子
+  /// @param[in] src コピー元のソース
+  BitVector&
+  operator=(const BitVector& src);
+
+  /// @brief ムーブ代入演算子
+  /// @param[in] src ムーブ元のソース
+  BitVector&
+  operator=(BitVector&& src);
+
+  /// @brief デストラクタ
+  ~BitVector();
+
+
 public:
   //////////////////////////////////////////////////////////////////////
   // 値を取り出す関数
@@ -129,7 +157,8 @@ public:
 
   /// @brief ビットベクタをコピーする．
   /// @param[in] src コピー元のビットベクタ
-  /// @note X の部分はコピーしない．
+  ///
+  /// src の X の部分はコピーしない．
   void
   copy(const BitVector& src);
 
@@ -138,17 +167,17 @@ public:
   bool
   merge(const BitVector& src);
 
-  /// @brief ブロック数を返す．
-  /// @param[in] ni 入力数
-  static
-  int
-  block_num(int ni);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる便利関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief ブロック数を返す．
+  /// @param[in] ni 入力数
+  static
+  int
+  block_num(int ni);
 
   /// @brief HEX文字列の長さを返す．
   /// @param[in] ni 入力数
@@ -169,45 +198,6 @@ private:
   shift_num(int ipos);
 
 
-protected:
-  //////////////////////////////////////////////////////////////////////
-  // 特殊なアロケーションをしているのでコンストラクタ関係は
-  // プライベートにしている．
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief コンストラクタ
-  /// @param[in] vect_len ベクタ長
-  explicit
-  BitVector(int vect_len);
-
-  /// @brief デストラクタ
-  ~BitVector();
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 宣言だけして内容を定義しない関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief コピーコンストラクタ
-  /// @param[in] src コピー元のソース
-  BitVector(const BitVector& src) = delete;
-
-  /// @brief ムーブコンストラクタ
-  /// @param[in] src ムーブ元のソース
-  BitVector(BitVector&& src) = delete;
-
-  /// @brief コピー代入演算子
-  /// @param[in] src コピー元のソース
-  BitVector&
-  operator=(const BitVector& src) = delete;
-
-  /// @brief ムーブ代入演算子
-  /// @param[in] src ムーブ元のソース
-  BitVector&
-  operator=(BitVector&& src) = delete;
-
-
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
@@ -219,8 +209,8 @@ private:
   // 最後のブロックのマスク
   PackedVal mMask;
 
-  // ベクタ本体(ただしサイズは可変)
-  PackedVal mPat[1];
+  // ベクタ本体の配列
+  PackedVal* mPat;
 
 
 private:
@@ -289,6 +279,39 @@ operator<<(ostream& s,
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief ムーブコンストラクタ
+// @param[in] src ムーブ元のソース
+inline
+BitVector::BitVector(BitVector&& src) :
+  mVectLen(src.mVectLen),
+  mMask(src.mMask),
+  mPat(src.mPat)
+{
+  src.mPat = nullptr;
+}
+
+// @brief ムーブ代入演算子
+// @param[in] src ムーブ元のソース
+inline
+BitVector&
+BitVector::operator=(BitVector&& src)
+{
+  mVectLen = src.mVectLen;
+  mMask = src.mMask;
+  mPat = src.mPat;
+
+  src.mPat = nullptr;
+
+  return *this;
+}
+
+// @brief デストラクタ
+inline
+BitVector::~BitVector()
+{
+  delete [] mPat;
+}
 
 // @brief ベクタ長を返す．
 inline

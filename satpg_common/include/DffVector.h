@@ -23,9 +23,7 @@ BEGIN_NAMESPACE_YM_SATPG
 class DffVector :
   public BitVector
 {
-  friend class TestVector;
-
-private:
+public:
 
   /// @brief コンストラクタ
   /// @param[in] vect_len ベクタ長
@@ -34,32 +32,21 @@ private:
 
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
-  ///
-  /// この関数は実装しない．
-  DffVector(const DffVector& src) = delete;
-
-  /// @brief コピー代入演算子
-  /// @param[in] src コピー元のソース
-  ///
-  /// この関数は実装しない．
-  DffVector&
-  operator=(const DffVector& src) = delete;
+  DffVector(const DffVector& src);
 
   /// @brief ムーブコンストラクタ
   /// @param[in] src ムーブ元のソース
-  ///
-  /// この関数は実装しない．
-  DffVector(DffVector&& src) = delete;
+  DffVector(DffVector&& src);
+
+  /// @brief コピー代入演算子
+  /// @param[in] src コピー元のソース
+  DffVector&
+  operator=(const DffVector& src);
 
   /// @brief ムーブ代入演算子
   /// @param[in] src ムーブ元のソース
-  ///
-  /// この関数は実装しない．
   DffVector&
-  operator=(DffVector&& src) = delete;
-
-
-public:
+  operator=(DffVector&& src);
 
   /// @brief デストラクタ
   ~DffVector();
@@ -95,6 +82,44 @@ inline
 DffVector::DffVector(int vect_len) :
   BitVector(vect_len)
 {
+}
+
+// @brief コピーコンストラクタ
+// @param[in] src コピー元のソース
+inline
+DffVector::DffVector(const DffVector& src) :
+  BitVector(src)
+{
+}
+
+// @brief ムーブコンストラクタ
+// @param[in] src ムーブ元のソース
+inline
+DffVector::DffVector(DffVector&& src) :
+  BitVector(src)
+{
+}
+
+// @brief コピー代入演算子
+// @param[in] src コピー元のソース
+inline
+DffVector&
+DffVector::operator=(const DffVector& src)
+{
+  BitVector::operator=(src);
+
+  return *this;
+}
+
+// @brief ムーブ代入演算子
+// @param[in] src ムーブ元のソース
+inline
+DffVector&
+DffVector::operator=(DffVector&& src)
+{
+  BitVector::operator=(src);
+
+  return *this;
 }
 
 // @brief デストラクタ
