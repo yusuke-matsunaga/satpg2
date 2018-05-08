@@ -561,10 +561,10 @@ StructEnc::justify(const vector<SatBool3>& model,
   }
 
   if ( mFaultType == FaultType::TransitionDelay ) {
-    justifier(assign_list, var_map(0), var_map(1), model, testvect);
+    testvect = justifier(assign_list, var_map(0), var_map(1), model);
   }
   else {
-    justifier(assign_list, var_map(1), model, testvect);
+    testvect = justifier(assign_list, var_map(1), model);
   }
 
   if ( debug() & debug_justify ) {

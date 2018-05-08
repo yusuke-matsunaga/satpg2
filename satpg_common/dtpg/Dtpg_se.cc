@@ -33,7 +33,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 		 const TpgNode* node) :
   mStructEnc(network, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
-  mJustifier(just_type, network.node_num()),
+  mJustifier(just_type, network),
   mTimerEnable(true)
 {
   cnf_begin();
@@ -65,7 +65,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 		 const TpgFFR& ffr) :
   mStructEnc(network, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
-  mJustifier(just_type, network.node_num()),
+  mJustifier(just_type, network),
   mTimerEnable(true)
 {
   cnf_begin();
@@ -99,7 +99,7 @@ Dtpg_se::Dtpg_se(const string& sat_type,
 		 const TpgMFFC& mffc) :
   mStructEnc(network, fault_type, sat_type, sat_option, sat_outp),
   mFaultType(fault_type),
-  mJustifier(just_type, network.node_num()),
+  mJustifier(just_type, network),
   mTimerEnable(true)
 {
   cnf_begin();

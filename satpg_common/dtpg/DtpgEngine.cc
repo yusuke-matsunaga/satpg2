@@ -72,7 +72,7 @@ DtpgEngine::DtpgEngine(const string& sat_type,
   mGvarMap(network.node_num()),
   mFvarMap(network.node_num()),
   mDvarMap(network.node_num()),
-  mJustifier(just_type, network.node_num()),
+  mJustifier(just_type, network),
   mTimerEnable(true)
 {
   mTfoList.reserve(network.node_num());
@@ -111,7 +111,7 @@ DtpgEngine::DtpgEngine(const string& sat_type,
   mGvarMap(network.node_num()),
   mFvarMap(network.node_num()),
   mDvarMap(network.node_num()),
-  mJustifier(just_type, network.node_num()),
+  mJustifier(just_type, network),
   mTimerEnable(true)
 {
   mTfoList.reserve(network.node_num());
@@ -152,7 +152,7 @@ DtpgEngine::DtpgEngine(const string& sat_type,
   mGvarMap(network.node_num()),
   mFvarMap(network.node_num()),
   mDvarMap(network.node_num()),
-  mJustifier(just_type, network.node_num()),
+  mJustifier(just_type, network),
   mTimerEnable(true)
 {
   mTfoList.reserve(network.node_num());
@@ -783,14 +783,12 @@ DtpgEngine::solve(const TpgFault* fault,
     const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
     NodeValList assign_list2 = extract(ffr_root, mGvarMap, mFvarMap, model);
     assign_list2.merge(assign_list);
-    NodeValList nodeval_list;
     if ( mFaultType == FaultType::TransitionDelay ) {
-      mJustifier(assign_list2, mHvarMap, mGvarMap, model, testvect);
+      testvect = mJustifier(assign_list2, mHvarMap, mGvarMap, model);
     }
     else {
-      mJustifier(assign_list2, mGvarMap, model, testvect);
+      testvect = mJustifier(assign_list2, mGvarMap, model);
     }
-    testvect.set_from_assign_list(nodeval_list);
 
     timer.stop();
     mStats.mBackTraceTime += timer.time();

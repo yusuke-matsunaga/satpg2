@@ -53,6 +53,32 @@ public:
 	     int dff_num,
 	     FaultType fault_type);
 
+  /// @brief 割当リストから内容を初期化するコンストラクタ
+  /// @param[in] input_num 入力数
+  /// @param[in] dff_numr DFF数
+  /// @param[in] fault_type 故障の種類
+  /// @param[in] assign_list 割当リスト
+  ///
+  /// assign_list に外部入力とDFF以外の割当が含まれている場合無視する．
+  TestVector(int input_num,
+	     int dff_num,
+	     FaultType fault_type,
+	     const NodeValList& assign_list);
+
+  /// @brief HEX文字列から内容を初期化するコンストラクタ
+  /// @param[in] input_num 入力数
+  /// @param[in] dff_numr DFF数
+  /// @param[in] fault_type 故障の種類
+  /// @param[in] hex_string HEX 文字列
+  ///
+  /// 1時刻目の外部入力，１時刻目のDFF，２時刻目の外部入力の順にならんでいると仮定する．<br>
+  /// hex_string が短い時には残りはXで初期化される．<br>
+  /// hex_string が長い時には余りは捨てられる．<br>
+  TestVector(int input_num,
+	     int dff_num,
+	     FaultType fault_type,
+	     const string& hex_string);
+
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
   TestVector(const TestVector& src) = default;
@@ -261,23 +287,6 @@ public:
   void
   set_aux_input_val(int pos,
 		    Val3 val);
-
-  /// @brief 割当リストから内容を設定する．
-  /// @param[in] assign_list 割当リスト
-  ///
-  /// assign_list に外部入力とDFF以外の割当が含まれている場合無視する．
-  void
-  set_from_assign_list(const NodeValList& assign_list);
-
-  /// @brief HEX文字列から内容を設定する．
-  /// @param[in] hex_string HEX 文字列
-  /// @return hex_string に不適切な文字が含まれていたら false を返す．
-  ///
-  /// 1時刻目の外部入力，１時刻目のDFF，２時刻目の外部入力の順にならんでいると仮定する．<br>
-  /// hex_string が短い時には残りは0で初期化される．<br>
-  /// hex_string が長い時には余りは捨てられる．<br>
-  bool
-  set_from_hex(const string& hex_string);
 
   /// @brief 乱数パタンを設定する．
   /// @param[in] randgen 乱数生成器

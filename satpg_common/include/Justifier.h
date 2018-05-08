@@ -27,9 +27,9 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] type 種類を表す文字列
-  /// @param[in] max_id ID番号の最大値
+  /// @param[in] network 対象のネットワーク
   Justifier(const string& type,
-	    int max_id);
+	    const TpgNetwork& network);
 
   /// @brief デストラクタ
   ~Justifier();
@@ -44,31 +44,33 @@ public:
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] var_map 変数番号のマップ
   /// @param[in] model SAT問題の解
-  /// @param[out] testvect テストベクタ
-  void
+  /// @return テストベクタ
+  TestVector
   operator()(const NodeValList& assign_list,
 	     const VidMap& var_map,
-	     const vector<SatBool3>& model,
-	     TestVector& testvect);
+	     const vector<SatBool3>& model);
 
   /// @brief 正当化に必要な割当を求める(遷移故障用)．
   /// @param[in] assign_list 値の割り当てリスト
   /// @param[in] var1_map 1時刻目の変数番号のマップ
   /// @param[in] var2_map 2時刻目の変数番号のマップ
   /// @param[in] model SAT問題の解
-  /// @param[out] testvect テストベクタ
-  void
+  /// @return テストベクタ
+  TestVector
   operator()(const NodeValList& assign_list,
 	     const VidMap& var1_map,
 	     const VidMap& var2_map,
-	     const vector<SatBool3>& model,
-	     TestVector& testvect);
+	     const vector<SatBool3>& model);
 
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // 対象のネットワーク
+  // input_num, dff_num を取得するために用いる．
+  const TpgNetwork& mNetwork;
 
   // 実装クラス
   std::unique_ptr<JustImpl> mImpl;

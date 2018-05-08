@@ -40,51 +40,99 @@ TestVector::TestVector(int input_num,
 {
 }
 
+// @brief 割当リストから内容を設定する．
+// @param[in] input_num 入力数
+// @param[in] dff_numr DFF数
+// @param[in] fault_type 故障の種類
+// @param[in] assign_list 割当リスト
+//
+// assign_list に外部入力以外の割当が含まれている場合無視する．
+TestVector::TestVector(int input_num,
+		       int dff_num,
+		       FaultType fault_type,
+		       const NodeValList& assign_list) :
+  mInputVector(input_num),
+  mDffVector(dff_num),
+  mAuxInputVector(fault_type == FaultType::StuckAt ? 0 : input_num)
+{
+  for ( auto nv: assign_list ) {
+    Val3 val = nv.val() ? Val3::_1 : Val3::_0;
+    const TpgNode* node = nv.node();
+    ASSERT_COND( node->is_ppi() );
+    if ( fault_type == FaultType::StuckAt ) {
+      ASSERT_COND( nv.time() == 1 );
+
+      int id = node->input_id();
+      set_ppi_val(id, val);
+    }
+    else {
+      if ( node->is_primary_input() ) {
+	int id = node->input_id();
+	if ( nv.time() == 1 ) {
+	  set_aux_input_val(id, val);
+	}
+	else {
+	  set_input_val(id, val);
+	}
+      }
+      else if ( node->is_dff_output() ) {
+	ASSERT_COND( nv.time() == 0 );
+
+	int id = node->dff()->id();
+	set_dff_val(id, val);
+      }
+    }
+  }
+}
+
+// @brief HEX文字列から内容を設定する．
+// @param[in] input_num 入力数
+// @param[in] dff_numr DFF数
+// @param[in] fault_type 故障の種類
+// @param[in] hex_string HEX 文字列
+//
+// hex_string が短い時には残りは0で初期化される．
+// hex_string が長い時には余りは捨てられる．
+TestVector::TestVector(int input_num,
+		       int dff_num,
+		       FaultType fault_type,
+		       const string& hex_string) :
+  mInputVector(input_num),
+  mDffVector(dff_num),
+  mAuxInputVector(fault_type == FaultType::StuckAt ? 0 : input_num)
+{
 #if 0
-// @brief コピーコンストラクタ
-// @param[in] src コピー元のソース
-TestVector::TestVector(const TestVector& src) :
-  mInputVector(src.mInputVector),
-  mDffVector(src.mDffVector),
-  mAuxInputVector(src.mAuxInputVector)
-{
-}
+  // C++ はこういう文字列処理がめんどくさい．
+  string tmp_string(hex_string);
+  if ( mDffVector != nullptr ) {
+    size_t pos1 = tmp_string.find(":");
+    if ( pos1 == string::npos ) {
+      return false;
+    }
+    if ( mAuxInputVector != nullptr ) {
+      size_t pos2 = tmp_string.find(":", pos1 + 1);
+      if ( pos2 == string::npos ) {
+	return false;
+      }
+      string aux_input_str = tmp_string.substr(pos2 + 1, string::npos);
+      bool stat1 = mAuxInputVector.set_from_hex(aux_input_str);
+      if ( !stat1 ) {
+	return false;
+      }
+      tmp_string = tmp_string.substr(0, pos2);
+    }
+    string dff_str = tmp_string.substr(pos1 + 1, string::npos);
+    bool stat2 = mDffVector.set_from_hex(dff_str);
+    if ( !stat2 ) {
+      return false;
+    }
+    tmp_string = tmp_string.substr(0, pos1);
+  }
+  bool stat3 = mInputVector.set_from_hex(tmp_string);
 
-// @brief コピー代入演算子
-// @param[in] src コピー元のソース
-TestVector&
-TestVector::operator=(const TestVector& src)
-{
-  mInputVector = src.mInputVector;
-  mDffVector = src.mDffVector
-  resize(src.input_num(), src.dff_num(), src.fault_type());
-
-  _copy(src);
-
-  return *this;
-}
-
-// @brief ムーブコンストラクタ
-// @param[in] src ムーブ元のソース
-TestVector::TestVector(TestVector&& src) :
-  mInputVector(std::move(src.mInputVector)),
-  mDffVector(std::move(src.mDffVector)),
-  mAuxInputVector(std::move(src.mAuxInputVector))
-{
-}
-
-// @brief ムーブ代入演算子
-// @param[in] src ムーブ元のソース
-TestVector&
-TestVector::operator=(TestVector&& src)
-{
-  mInputVector = std::move(src.mInputVector);
-  mDffVector = std::move(src.mDffVector);
-  mAuxInputVector = std::move(src.mAuxInputVector);
-
-  return *this;
-}
+  return stat3;
 #endif
+}
 
 // @brief デストラクタ
 TestVector::~TestVector()
@@ -269,85 +317,6 @@ TestVector::init()
   mInputVector.init();
   mDffVector.init();
   mAuxInputVector.init();
-}
-
-// @brief 割当リストから内容を設定する．
-// @param[in] assign_list 割当リスト
-//
-// assign_list に外部入力以外の割当が含まれている場合無視する．
-void
-TestVector::set_from_assign_list(const NodeValList& assign_list)
-{
-  for ( auto nv: assign_list ) {
-    Val3 val = nv.val() ? Val3::_1 : Val3::_0;
-    const TpgNode* node = nv.node();
-    ASSERT_COND( node->is_ppi() );
-    if ( fault_type() == FaultType::StuckAt ) {
-      ASSERT_COND( nv.time() == 1 );
-
-      int id = node->input_id();
-      set_ppi_val(id, val);
-    }
-    else {
-      if ( node->is_primary_input() ) {
-	int id = node->input_id();
-	if ( nv.time() == 1 ) {
-	  set_aux_input_val(id, val);
-	}
-	else {
-	  set_input_val(id, val);
-	}
-      }
-      else if ( node->is_dff_output() ) {
-	ASSERT_COND( nv.time() == 0 );
-
-	int id = node->dff()->id();
-	set_dff_val(id, val);
-      }
-    }
-  }
-}
-
-// @brief HEX文字列から内容を設定する．
-// @param[in] hex_string HEX 文字列
-// @return hex_string に不適切な文字が含まれていたら false を返す．
-// @note hex_string が短い時には残りは0で初期化される．
-// @note hex_string が長い時には余りは捨てられる．
-bool
-TestVector::set_from_hex(const string& hex_string)
-{
-#if 0
-  // C++ はこういう文字列処理がめんどくさい．
-  string tmp_string(hex_string);
-  if ( mDffVector != nullptr ) {
-    size_t pos1 = tmp_string.find(":");
-    if ( pos1 == string::npos ) {
-      return false;
-    }
-    if ( mAuxInputVector != nullptr ) {
-      size_t pos2 = tmp_string.find(":", pos1 + 1);
-      if ( pos2 == string::npos ) {
-	return false;
-      }
-      string aux_input_str = tmp_string.substr(pos2 + 1, string::npos);
-      bool stat1 = mAuxInputVector.set_from_hex(aux_input_str);
-      if ( !stat1 ) {
-	return false;
-      }
-      tmp_string = tmp_string.substr(0, pos2);
-    }
-    string dff_str = tmp_string.substr(pos1 + 1, string::npos);
-    bool stat2 = mDffVector.set_from_hex(dff_str);
-    if ( !stat2 ) {
-      return false;
-    }
-    tmp_string = tmp_string.substr(0, pos1);
-  }
-  bool stat3 = mInputVector.set_from_hex(tmp_string);
-
-  return stat3;
-#endif
-  return false;
 }
 
 // @brief 乱数パタンを設定する．

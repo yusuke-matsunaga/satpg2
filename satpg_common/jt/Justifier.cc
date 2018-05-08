@@ -12,6 +12,7 @@
 #include "Just2.h"
 #include "NodeValList.h"
 #include "TestVector.h"
+#include "TpgNetwork.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -41,10 +42,11 @@ END_NONAMESPACE
 
 // @brief コンストラクタ
 // @param[in] just_type Justifier の種類を表す文字列
-// @param[in] max_id ID番号の最大値
+// @param[in] network 対象のネットワーク
 Justifier::Justifier(const string& just_type,
-		     int max_id) :
-  mImpl(new_just(just_type, max_id))
+		     const TpgNetwork& network) :
+  mNetwork(network),
+  mImpl(new_just(just_type, network.node_num()))
 {
 }
 
@@ -57,15 +59,15 @@ Justifier::~Justifier()
 // @param[in] assign_list 値の割り当てリスト
 // @param[in] var_map 変数番号のマップ
 // @param[in] model SAT問題の解
-// @param[out] testvect テストベクタ
-void
+// @return テストベクタ
+TestVector
 Justifier::operator()(const NodeValList& assign_list,
 		      const VidMap& var_map,
-		      const vector<SatBool3>& model,
-		      TestVector& testvect)
+		      const vector<SatBool3>& model)
 {
   NodeValList pi_assign_list = mImpl->justify(assign_list, var_map, model);
-  testvect.set_from_assign_list(pi_assign_list);
+  return TestVector(mNetwork.input_num(), mNetwork.dff_num(), FaultType::StuckAt,
+		    pi_assign_list);
 }
 
 // @brief 正当化に必要な割当を求める(遷移故障用)．
@@ -73,16 +75,16 @@ Justifier::operator()(const NodeValList& assign_list,
 // @param[in] var1_map 1時刻目の変数番号のマップ
 // @param[in] var2_map 2時刻目の変数番号のマップ
 // @param[in] model SAT問題の解
-// @param[out] testvect テストベクタ
-void
+// @return テストベクタ
+TestVector
 Justifier::operator()(const NodeValList& assign_list,
 		      const VidMap& var1_map,
 		      const VidMap& var2_map,
-		      const vector<SatBool3>& model,
-		      TestVector& testvect)
+		      const vector<SatBool3>& model)
 {
   NodeValList pi_assign_list = mImpl->justify(assign_list, var1_map, var2_map, model);
-  testvect.set_from_assign_list(pi_assign_list);
+  return TestVector(mNetwork.input_num(), mNetwork.dff_num(), FaultType::TransitionDelay,
+		    pi_assign_list);
 }
 
 END_NAMESPACE_YM_SATPG
