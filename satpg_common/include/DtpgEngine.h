@@ -14,6 +14,7 @@
 
 #include "TpgNetwork.h"
 #include "TpgNode.h"
+#include "DtpgResult.h"
 #include "DtpgStats.h"
 #include "FaultType.h"
 #include "Justifier.h"
@@ -98,8 +99,8 @@ public:
 
   /// @brief テスト生成を行なう．
   /// @param[in] fault 対象の故障
-  /// @return 結果(SatBool3)とテストベクタのペアを返す．
-  pair<SatBool3, TestVector>
+  /// @return 結果を返す．
+  DtpgResult
   dtpg(const TpgFault* fault);
 
   /// @brief 統計情報を得る．
@@ -253,7 +254,7 @@ protected:
   /// @param[in] fault 対象の故障
   /// @param[in] assumptions 値の決まっている変数のリスト
   /// @return 結果を返す．
-  pair<SatBool3, TestVector>
+  DtpgResult
   solve(const TpgFault* fault,
 	const vector<SatLiteral>& assumptions);
 

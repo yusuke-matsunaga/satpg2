@@ -11,7 +11,7 @@ from CXX_NodeValList cimport NodeVal as CXX_NodeVal
 from CXX_NodeValList cimport NodeValList as CXX_NodeValList
 from CXX_NodeValList cimport check_conflict as CXX_check_conflict
 from CXX_NodeValList cimport check_contain as CXX_check_contain
-from CXX_vector cimport vector
+from libcpp.vector cimport vector
 
 
 ### @brief NodeValList の Python バージョン

@@ -8,7 +8,6 @@
 
 
 from libcpp cimport bool
-from libcpp.pair cimport pair
 from libcpp.string cimport string
 from CXX_iostream cimport ostream
 from CXX_FaultType cimport FaultType
@@ -17,6 +16,7 @@ from CXX_TpgNode cimport TpgNode
 from CXX_TpgFFR cimport TpgFFR
 from CXX_TpgMFFC cimport TpgMFFC
 from CXX_TpgFault cimport TpgFault
+from CXX_DtpgResult cimport DtpgResult
 from CXX_DtpgStats cimport DtpgStats
 from CXX_SatBool3 cimport SatBool3
 from CXX_TestVector cimport TestVector
@@ -31,5 +31,5 @@ cdef extern from "DtpgEngine.h" namespace "nsYm::nsSatpg" :
                    const TpgNetwork&, const TpgFFR&)
         DtpgEngine(const string&, const string&, ostream*, FaultType, const string&,
                    const TpgNetwork&, const TpgMFFC&)
-        pair[SatBool3, TestVector] dtpg(const TpgFault*)
+        DtpgResult dtpg(const TpgFault*)
         const DtpgStats& stats()

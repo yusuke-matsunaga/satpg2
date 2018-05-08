@@ -11,6 +11,7 @@ from CXX_DtpgEngine cimport DtpgEngine as CXX_DtpgEngine
 from CXX_TpgFault cimport TpgFault as CXX_TpgFault
 from CXX_NodeValList cimport NodeValList as CXX_NodeValList
 from CXX_SatBool3 cimport SatBool3 as CXX_SatBool3
+from CXX_DtpgResult cimport DtpgResult as CXX_DtpgResult
 from cython.operator cimport dereference as deref
 
 ### @brief Dtpg の Python バージョン
@@ -35,10 +36,12 @@ cdef class DtpgEngine :
     ### @brief パタン生成を行う．
     def __call__(DtpgEngine self, TpgFault fault) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
-        cdef pair[CXX_SatBool3, CXX_TestVector] c_ans = self._thisptr.dtpg(c_fault)
+        cdef CXX_DtpgResult c_result = self._thisptr.dtpg(c_fault)
+        cdef CXX_SatBool3 c_stat = c_result.stat()
+        cdef const CXX_TestVector* c_tvptr = &c_result.testvector()
         testvect = TestVector()
-        testvect._this = c_ans.second
-        return (to_SatBool3(c_ans.first), testvect)
+        testvect._this = deref(c_tvptr)
+        return to_SatBool3(c_stat), testvect
 
     ### @brief 統計情報を得る．
     @property
@@ -69,10 +72,12 @@ cdef class DtpgEngineFFR :
     ### @brief パタン生成を行う．
     def __call__(DtpgEngine self, TpgFault fault) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
-        cdef pair[CXX_SatBool3, CXX_TestVector] c_ans = self._thisptr.dtpg(c_fault)
+        cdef CXX_DtpgResult c_result = self._thisptr.dtpg(c_fault)
+        cdef CXX_SatBool3 c_stat = c_result.stat()
+        cdef const CXX_TestVector* c_tvptr = &c_result.testvector()
         testvect = TestVector()
-        testvect._this = c_ans.second
-        return (to_SatBool3(c_ans.first), testvect)
+        testvect._this = deref(c_tvptr)
+        return to_SatBool3(c_stat), testvect
 
     ### @brief 統計情報を得る．
     @property
@@ -103,10 +108,12 @@ cdef class DtpgEngineMFFC :
     ### @brief パタン生成を行う．
     def __call__(DtpgEngine self, TpgFault fault) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
-        cdef pair[CXX_SatBool3, CXX_TestVector] c_ans = self._thisptr.dtpg(c_fault)
+        cdef CXX_DtpgResult c_result = self._thisptr.dtpg(c_fault)
+        cdef CXX_SatBool3 c_stat = c_result.stat()
+        cdef const CXX_TestVector* c_tvptr = &c_result.testvector()
         testvect = TestVector()
-        testvect._this = c_ans.second
-        return (to_SatBool3(c_ans.first), testvect)
+        testvect._this = deref(c_tvptr)
+        return to_SatBool3(c_stat), testvect
 
     ### @brief 統計情報を得る．
     @property
