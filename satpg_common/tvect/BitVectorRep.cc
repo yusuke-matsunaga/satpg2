@@ -73,10 +73,84 @@ BitVectorRep::x_count() const
   return vect_len() - n;
 }
 
-// @brief 2つのベクタが両立しないとき true を返す．
+// @brief 2つのビットベクタの等価比較を行う．
+// @param[in] bv1, bv2 対象のビットベクタ
+// @return 2つのビットベクタが等しい時 true を返す．
 bool
-BitVectorRep::is_conflict(const BitVectorRep& bv1,
-			  const BitVectorRep& bv2)
+BitVectorRep::is_eq(const BitVectorRep& bv1,
+		    const BitVectorRep& bv2)
+{
+  ASSERT_COND( bv1.vect_len() == bv2.vect_len() );
+
+  int nb = block_num(bv1.vect_len());
+  for ( int i = 0; i < nb; ++ i ) {
+    if ( bv1.mPat[i] != bv2.mPat[i] ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// @brief 2つのビットベクタの包含関係を調べる．
+// @param[in] bv1, bv2 対象のビットベクタ
+// @return bv1 が真に bv2 に含まれる時 true を返す．
+bool
+BitVectorRep::is_lt(const BitVectorRep& bv1,
+		    const BitVectorRep& bv2)
+{
+  ASSERT_COND( bv1.vect_len() == bv2.vect_len() );
+
+  int nb = block_num(bv1.vect_len());
+  bool diff = false;
+  for ( int i = 0; i < nb; i += 2 ) {
+    int i0 = i;
+    int i1 = i + 1;
+    PackedVal val1_0 = bv1.mPat[i0];
+    PackedVal val1_1 = bv1.mPat[i1];
+    PackedVal val2_0 = bv2.mPat[i0];
+    PackedVal val2_1 = bv2.mPat[i1];
+    if ( (val1_0 & ~val2_0) != kPvAll0 ||
+	 (val1_1 & ~val2_1) != kPvAll0 ) {
+      return false;
+    }
+    if ( val1_0 != val2_0 || val1_1 != val2_1 ) {
+      diff = true;
+    }
+  }
+  return diff;
+}
+
+// @brief 2つのビットベクタの包含関係を調べる．
+// @param[in] bv1, bv2 対象のビットベクタ
+// @return bv1 が bv2 に含まれる時 true を返す．
+//
+// こちらは bv1 と bv2 が等しい場合も true を返す．
+bool
+BitVectorRep::is_le(const BitVectorRep& bv1,
+		    const BitVectorRep& bv2)
+{
+  ASSERT_COND( bv1.vect_len() == bv2.vect_len() );
+
+  int nb = block_num(bv1.vect_len());
+  for ( int i = 0; i < nb; ++ i ) {
+    int i0 = i;
+    int i1 = i + 1;
+    PackedVal val1_0 = bv1.mPat[i0];
+    PackedVal val1_1 = bv1.mPat[i1];
+    PackedVal val2_0 = bv2.mPat[i0];
+    PackedVal val2_1 = bv2.mPat[i1];
+    if ( (val1_0 & ~val2_0) != kPvAll0 ||
+	 (val1_1 & ~val2_1) != kPvAll0 ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// @brief 2つのベクタが両立するとき true を返す．
+bool
+BitVectorRep::is_compat(const BitVectorRep& bv1,
+			const BitVectorRep& bv2)
 {
   ASSERT_COND( bv1.vect_len() == bv2.vect_len() );
 
@@ -93,83 +167,6 @@ BitVectorRep::is_conflict(const BitVectorRep& bv1,
     }
   }
   return false;
-}
-
-// @brief 等価関係の比較を行なう．
-// @param[in] left, right オペランド
-// @return leftと right が等しいとき true を返す．
-bool
-operator==(const BitVectorRep& left,
-	   const BitVectorRep& right)
-{
-  ASSERT_COND( left.vect_len() == right.vect_len() );
-
-  int nb = BitVectorRep::block_num(left.vect_len());
-  for ( int i = 0; i < nb; ++ i ) {
-    if ( left.mPat[i] != right.mPat[i] ) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// @brief 包含関係の比較を行なう
-// @param[in] left, right オペランド
-// @return minterm の集合として right が left を含んでいたら true を返す．
-//
-// - false だからといって逆に left が right を含むとは限らない．
-bool
-operator<(const BitVectorRep& left,
-	  const BitVectorRep& right)
-{
-  ASSERT_COND( left.vect_len() == right.vect_len() );
-
-  int nb = BitVectorRep::block_num(left.vect_len());
-  bool diff = false;
-  for ( int i = 0; i < nb; i += 2 ) {
-    int i0 = i;
-    int i1 = i + 1;
-    PackedVal val1_0 = left.mPat[i0];
-    PackedVal val1_1 = left.mPat[i1];
-    PackedVal val2_0 = right.mPat[i0];
-    PackedVal val2_1 = right.mPat[i1];
-    if ( (val1_0 & ~val2_0) != kPvAll0 ||
-	 (val1_1 & ~val2_1) != kPvAll0 ) {
-      return false;
-    }
-    if ( val1_0 != val2_0 || val1_1 != val2_1 ) {
-      diff = true;
-    }
-  }
-  return diff;
-}
-
-// @brief 包含関係の比較を行なう
-// @param[in] left, right オペランド
-// @return minterm の集合として right が自分自身を含んでいたら true を返す．
-//
-// - こちらは等しい場合も含む．
-// - false だからといって逆に自分自身が right を含むとは限らない．
-bool
-operator<=(const BitVectorRep& left,
-	   const BitVectorRep& right)
-{
-  ASSERT_COND( left.vect_len() == right.vect_len() );
-
-  int nb = BitVectorRep::block_num(left.vect_len());
-  for ( int i = 0; i < nb; ++ i ) {
-    int i0 = i;
-    int i1 = i + 1;
-    PackedVal val1_0 = left.mPat[i0];
-    PackedVal val1_1 = left.mPat[i1];
-    PackedVal val2_0 = right.mPat[i0];
-    PackedVal val2_1 = right.mPat[i1];
-    if ( (val1_0 & ~val2_0) != kPvAll0 ||
-	 (val1_1 & ~val2_1) != kPvAll0 ) {
-      return false;
-    }
-  }
-  return true;
 }
 
 // @brief すべて未定(X) で初期化する．
@@ -295,6 +292,8 @@ BitVectorRep::copy(const BitVectorRep& src)
 bool
 BitVectorRep::merge(const BitVectorRep& src)
 {
+  ASSERT_COND( vect_len() == src.vect_len() );
+
   int nb = block_num(vect_len());
 
   // コンフリクトチェック

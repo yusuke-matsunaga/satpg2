@@ -66,14 +66,40 @@ public:
   int
   x_count() const;
 
-  /// @brief 2つのベクタが両立しないとき true を返す．
+  /// @brief 2つのビットベクタの等価比較を行う．
+  /// @param[in] bv1, bv2 対象のビットベクタ
+  /// @return 2つのビットベクタが等しい時 true を返す．
+  static
+  bool
+  is_eq(const BitVectorRep& bv1,
+	const BitVectorRep& bv2);
+
+  /// @brief 2つのビットベクタの包含関係を調べる．
+  /// @param[in] bv1, bv2 対象のビットベクタ
+  /// @return bv1 が真に bv2 に含まれる時 true を返す．
+  static
+  bool
+  is_lt(const BitVectorRep& bv1,
+	const BitVectorRep& bv2);
+
+  /// @brief 2つのビットベクタの包含関係を調べる．
+  /// @param[in] bv1, bv2 対象のビットベクタ
+  /// @return bv1 が bv2 に含まれる時 true を返す．
+  ///
+  /// こちらは bv1 と bv2 が等しい場合も true を返す．
+  static
+  bool
+  is_le(const BitVectorRep& bv1,
+	const BitVectorRep& bv2);
+
+  /// @brief 2つのベクタが両立している時 true を返す．
   /// @param[in] bv1, bv2 対象のビットベクタ
   ///
   /// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
   static
   bool
-  is_conflict(const BitVectorRep& bv1,
-	      const BitVectorRep& bv2);
+  is_compat(const BitVectorRep& bv1,
+	    const BitVectorRep& bv2);
 
   /// @brief 内容を BIN 形式で表す．
   string
@@ -136,41 +162,6 @@ public:
   merge(const BitVectorRep& src);
 
 
-public:
-  //////////////////////////////////////////////////////////////////////
-  // BitVectorRep の演算
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 等価関係の比較を行なう．
-  /// @param[in] left, right オペランド
-  /// @return left と right が等しいとき true を返す．
-  friend
-  bool
-  operator==(const BitVectorRep& left,
-	     const BitVectorRep& right);
-
-  /// @brief 包含関係の比較を行なう
-  /// @param[in] left, right オペランド
-  /// @return minterm の集合として right が left を含んでいたら true を返す．
-  ///
-  /// - false だからといって逆に left が right を含むとは限らない．
-  friend
-  bool
-  operator<(const BitVectorRep& left,
-	    const BitVectorRep& right);
-
-  /// @brief 包含関係の比較を行なう
-  /// @param[in] left, right オペランド
-  /// @return minterm の集合として right が left を含んでいたら true を返す．
-  ///
-  /// - こちらは等しい場合も含む．
-  /// - false だからといって逆に left が right を含むとは限らない．
-  friend
-  bool
-  operator<=(const BitVectorRep& left,
-	     const BitVectorRep& right);
-
-
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる便利関数
@@ -226,69 +217,6 @@ private:
   const int HPW = kPvBitLen / 4;
 
 };
-
-
-//////////////////////////////////////////////////////////////////////
-// BitVectorRep の演算
-//////////////////////////////////////////////////////////////////////
-
-/// @relates BitVectorRep
-/// @brief 等価関係の比較を行なう．
-/// @param[in] left, right オペランド
-/// @return left 自分自身と right が等しいとき true を返す．
-bool
-operator==(const BitVectorRep& left,
-	   const BitVectorRep& right);
-
-/// @relates BitVectorRep
-/// @brief 等価関係の比較を行なう．
-/// @param[in] left, right オペランド
-/// @return left と right が等しくないとき true を返す．
-bool
-operator!=(const BitVectorRep& left,
-	   const BitVectorRep& right);
-
-/// @relates BitVectorRep
-/// @brief 包含関係の比較を行なう
-/// @param[in] left, right オペランド
-/// @return minterm の集合として right が left を含んでいたら true を返す．
-///
-/// - false だからといって逆に left が right を含むとは限らない．
-bool
-operator<(const BitVectorRep& left,
-	  const BitVectorRep& right);
-
-/// @relates BitVectorRep
-/// @brief 包含関係の比較を行なう．
-/// @param[in] left, right オペランド
-/// @return minterm の集合として left が right を含んでいたら true を返す．
-///
-/// - false だからといって逆に right が left を含むとは限らない．
-bool
-operator>(const BitVectorRep& left,
-	  const BitVectorRep& right);
-
-/// @relates BitVectorRep
-/// @brief 包含関係の比較を行なう
-/// @param[in] left, right オペランド
-/// @return minterm の集合として right が left  を含んでいたら true を返す．
-///
-/// - こちらは等しい場合も含む．
-/// - false だからといって逆に left が right を含むとは限らない．
-bool
-operator<=(const BitVectorRep& left,
-	   const BitVectorRep& right);
-
-/// @relates BitVectorRep
-/// @brief 包含関係の比較を行なう
-/// @param[in] left, right オペランド
-/// @return minterm の集合として left が right を含んでいたら true を返す．
-///
-/// - こちらは等しい場合も含む．
-/// - false だからといって逆に right が left を含むとは限らない．
-bool
-operator>=(const BitVectorRep& left,
-	   const BitVectorRep& right);
 
 /// @relates BitVectorRep
 /// @brief 内容を出力する．
@@ -399,42 +327,6 @@ int
 BitVectorRep::shift_num(int ipos)
 {
   return (kPvBitLen - 1 - ipos) % kPvBitLen;
-}
-
-/// @brief 等価関係の比較を行なう．
-/// @param[in] left, right オペランド
-/// @return left と right が等しくないとき true を返す．
-inline
-bool
-operator!=(const BitVectorRep& left,
-	   const BitVectorRep& right)
-{
-  return !operator==(left, right);
-}
-
-/// @brief 包含関係の比較を行なう．
-/// @param[in] left, right オペランド
-/// @return minterm の集合として left が right を含んでいたら true を返す．
-/// @note false だからといって逆に right が left を含むとは限らない．
-inline
-bool
-operator>(const BitVectorRep& left,
-	  const BitVectorRep& right)
-{
-  return operator<(right, left);
-}
-
-/// @brief 包含関係の比較を行なう
-/// @param[in] left, right オペランド
-/// @return minterm の集合として left が right を含んでいたら true を返す．
-/// @note こちらは等しい場合も含む．
-/// @note false だからといって逆に right が left を含むとは限らない．
-inline
-bool
-operator>=(const BitVectorRep& left,
-	   const BitVectorRep& right)
-{
-  return operator<=(right, left);
 }
 
 // @brief 内容を出力する．

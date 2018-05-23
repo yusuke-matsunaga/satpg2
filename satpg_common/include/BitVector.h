@@ -66,15 +66,6 @@ public:
   int
   x_count() const;
 
-  /// @brief 2つのベクタが両立しないとき true を返す．
-  /// @param[in] bv1, bv2 対象のビットベクタ
-  ///
-  /// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
-  static
-  bool
-  is_conflict(const BitVector& bv1,
-	      const BitVector& bv2);
-
   /// @brief マージして代入する．
   BitVector&
   operator&=(const BitVector& right);
@@ -133,6 +124,14 @@ public:
   // friend 関数の定義(publicに意味はない)
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief 両立関係の比較を行う．
+  /// @param[in] left, right オペランド
+  /// @return left と right が両立する時 true を返す．
+  friend
+  bool
+  operator&&(const BitVector& left,
+	     const BitVector& right);
+
   /// @brief 等価関係の比較を行なう．
   /// @param[in] left, right オペランド
   /// @return left と right が等しいとき true を返す．
@@ -148,7 +147,7 @@ public:
   /// - false だからといって逆に left が right を含むとは限らない．
   friend
   bool
-  operator>(const BitVector& left,
+  operator<(const BitVector& left,
 	    const BitVector& right);
 
   /// @brief 包含関係の比較を行なう
@@ -159,7 +158,7 @@ public:
   /// - false だからといって逆に left が right を含むとは限らない．
   friend
   bool
-  operator>=(const BitVector& left,
+  operator<=(const BitVector& left,
 	     const BitVector& right);
 
 
@@ -167,6 +166,12 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 多重参照の場合に複製して単一参照にする．
+  ///
+  /// 内容を書き換える前に呼ばれる．
+  void
+  uniquefy();
 
 
 private:
@@ -185,6 +190,14 @@ private:
 //////////////////////////////////////////////////////////////////////
 
 /// @relates BitVector
+/// @brief 両立関係の比較を行う．
+/// @param[in] left, right オペランド
+/// @return left と right が両立する時 true を返す．
+bool
+operator&&(const BitVector& left,
+	   const BitVector& right);
+
+/// @relates BitVector
 /// @brief 等価関係の比較を行なう．
 /// @param[in] left, right オペランド
 /// @return left と right が等しいとき true を返す．
@@ -201,6 +214,16 @@ operator!=(const BitVector& left,
 	   const BitVector& right);
 
 /// @relates BitVector
+/// @brief 包含関係の比較を行なう
+/// @param[in] left, right オペランド
+/// @return minterm の集合として right が left を含んでいたら true を返す．
+///
+/// - false だからといって逆に left が right を含むとは限らない．
+bool
+operator<(const BitVector& left,
+	  const BitVector& right);
+
+/// @relates BitVector
 /// @brief 包含関係の比較を行なう．
 /// @param[in] left, right オペランド
 /// @return minterm の集合として left が right を含んでいたら true を返す．
@@ -215,10 +238,11 @@ operator>(const BitVector& left,
 /// @param[in] left, right オペランド
 /// @return minterm の集合として right が left を含んでいたら true を返す．
 ///
+/// - こちらは等しい場合も含む．
 /// - false だからといって逆に left が right を含むとは限らない．
 bool
-operator<(const BitVector& left,
-	  const BitVector& right);
+operator<=(const BitVector& left,
+	   const BitVector& right);
 
 /// @relates BitVector
 /// @brief 包含関係の比較を行なう
@@ -229,17 +253,6 @@ operator<(const BitVector& left,
 /// - false だからといって逆に right が left を含むとは限らない．
 bool
 operator>=(const BitVector& left,
-	   const BitVector& right);
-
-/// @relates BitVector
-/// @brief 包含関係の比較を行なう
-/// @param[in] left, right オペランド
-/// @return minterm の集合として right が left を含んでいたら true を返す．
-///
-/// - こちらは等しい場合も含む．
-/// - false だからといって逆に left が right を含むとは限らない．
-bool
-operator<=(const BitVector& left,
 	   const BitVector& right);
 
 /// @relates BitVector
@@ -323,16 +336,27 @@ BitVector::x_count() const
   return mPtr->x_count();
 }
 
-// @brief 2つのベクタが両立しないとき true を返す．
-// @param[in] bv1, bv2 対象のビットベクタ
-//
-// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
+// @brief マージして代入する．
+inline
+BitVector&
+BitVector::operator&=(const BitVector& right)
+{
+  uniquefy();
+
+  mPtr->merge(*right.mPtr);
+
+  return *this;
+}
+
+// @brief 両立関係の比較を行う．
+// @param[in] left, right オペランド
+// @return left と right が両立する時 true を返す．
 inline
 bool
-BitVector::is_conflict(const BitVector& bv1,
-		       const BitVector& bv2)
+operator&&(const BitVector& left,
+	   const BitVector& right)
 {
-  return BitVectorRep::is_conflict(*bv1.mPtr, *bv2.mPtr);
+  return BitVectorRep::is_compat(*left.mPtr, *right.mPtr);
 }
 
 // @brief 等価関係の比較を行なう．
@@ -343,7 +367,7 @@ bool
 operator==(const BitVector& left,
 	   const BitVector& right)
 {
-  return operator==(*left.mPtr, *right.mPtr);
+  return BitVectorRep::is_eq(*left.mPtr, *right.mPtr);
 }
 
 // @brief 等価関係の比較を行なう．
@@ -364,10 +388,10 @@ operator!=(const BitVector& left,
 // - false だからといって逆に right が left を含むとは限らない．
 inline
 bool
-operator>(const BitVector& left,
+operator<(const BitVector& left,
 	  const BitVector& right)
 {
-  return operator>(*left.mPtr, *right.mPtr);
+  return BitVectorRep::is_lt(*left.mPtr, *right.mPtr);
 }
 
 // @brief 包含関係の比較を行なう
@@ -377,7 +401,7 @@ operator>(const BitVector& left,
 // - false だからといって逆に left が right を含むとは限らない．
 inline
 bool
-operator<(const BitVector& left,
+operator>(const BitVector& left,
 	  const BitVector& right)
 {
   return operator<(right, left);
@@ -391,10 +415,10 @@ operator<(const BitVector& left,
 // - false だからといって逆に right が left を含むとは限らない．
 inline
 bool
-operator>=(const BitVector& left,
+operator<=(const BitVector& left,
 	   const BitVector& right)
 {
-  return operator>=(*left.mPtr, *right.mPtr);
+  return BitVectorRep::is_le(*left.mPtr, *right.mPtr);
 }
 
 // @brief 包含関係の比較を行なう
@@ -405,10 +429,24 @@ operator>=(const BitVector& left,
 // - false だからといって逆に left が right を含むとは限らない．
 inline
 bool
-operator<=(const BitVector& left,
+operator>=(const BitVector& left,
 	   const BitVector& right)
 {
-  return operator>=(right, left);
+  return operator<=(right, left);
+}
+
+// @relates BitVector
+// @brief マージする．
+// @param[in] left, right オペランド
+// @return マージ結果を返す．
+//
+// left と right がコンフリクトしている時の結果は不定
+inline
+BitVector
+operator&(const BitVector& left,
+	  const BitVector& right)
+{
+  return BitVector(left).operator&=(right);
 }
 
 // @brief 内容を BIN 形式で表す．
@@ -433,6 +471,8 @@ inline
 void
 BitVector::init()
 {
+  uniquefy();
+
   mPtr->init();
 }
 
@@ -442,8 +482,10 @@ BitVector::init()
 inline
 void
 BitVector::set_val(int pos,
-		     Val3 val)
+		   Val3 val)
 {
+  uniquefy();
+
   mPtr->set_val(pos, val);
 }
 
@@ -458,6 +500,8 @@ inline
 bool
 BitVector::set_from_hex(const string& hex_string)
 {
+  uniquefy();
+
   return mPtr->set_from_hex(hex_string);
 }
 
@@ -469,6 +513,8 @@ inline
 void
 BitVector::set_from_random(RandGen& randgen)
 {
+  uniquefy();
+
   mPtr->set_from_random(randgen);
 }
 
@@ -478,7 +524,22 @@ inline
 void
 BitVector::fix_x_from_random(RandGen& randgen)
 {
+  uniquefy();
+
   mPtr->fix_x_from_random(randgen);
+}
+
+// @brief 多重参照の場合に複製して単一参照にする．
+//
+// 内容を書き換える前に呼ばれる．
+inline
+void
+BitVector::uniquefy()
+{
+  if ( !mPtr.unique() ) {
+    // 内容を変更するので複製する．
+    mPtr = std::shared_ptr<BitVectorRep>(new BitVectorRep(*mPtr));
+  }
 }
 
 END_NAMESPACE_YM_SATPG

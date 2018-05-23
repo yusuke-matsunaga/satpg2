@@ -172,39 +172,9 @@ public:
   // TestVector の演算
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 2つのベクタが両立しないとき true を返す．
-  /// @param[in] tv1, tv2 対象のテストベクタ
-  ///
-  /// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
-  static
-  bool
-  is_conflict(const TestVector& tv1,
-	      const TestVector& tv2);
-
   /// @brief マージして代入する．
   TestVector&
   operator&=(const TestVector& right);
-
-  /// @brief 等価関係の比較を行なう．
-  /// @param[in] right オペランド
-  /// @return 自分自身と right が等しいとき true を返す．
-  bool
-  operator==(const TestVector& right) const;
-
-  /// @brief 包含関係の比較を行なう
-  /// @param[in] right オペランド
-  /// @return minterm の集合として right が自分自身を含んでいたら true を返す．
-  /// @note false だからといって逆に自分自身が right を含むとは限らない．
-  bool
-  operator<(const TestVector& right) const;
-
-  /// @brief 包含関係の比較を行なう
-  /// @param[in] right オペランド
-  /// @return minterm の集合として right が自分自身を含んでいたら true を返す．
-  /// @note こちらは等しい場合も含む．
-  /// @note false だからといって逆に自分自身が right を含むとは限らない．
-  bool
-  operator<=(const TestVector& right) const;
 
 
 public:
@@ -264,6 +234,49 @@ public:
   fix_x_from_random(RandGen& randgen);
 
 
+public:
+  //////////////////////////////////////////////////////////////////////
+  // friend 関数の定義(publicに意味はない)
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 両立関係の比較を行う．
+  /// @param[in] left, right オペランド
+  /// @return left と right が両立する時 true を返す．
+  friend
+  bool
+  operator&&(const TestVector& left,
+	     const TestVector& right);
+
+  /// @brief 等価関係の比較を行なう．
+  /// @param[in] left, right オペランド
+  /// @return left と right が等しいとき true を返す．
+  friend
+  bool
+  operator==(const TestVector& left,
+	     const TestVector& right);
+
+  /// @brief 包含関係の比較を行なう
+  /// @param[in] left, right オペランド
+  /// @return minterm の集合として right が left を含んでいたら true を返す．
+  ///
+  /// - false だからといって逆に left が right を含むとは限らない．
+  friend
+  bool
+  operator<(const TestVector& left,
+	    const TestVector& right);
+
+  /// @brief 包含関係の比較を行なう
+  /// @param[in] left, right オペランド
+  /// @return minterm の集合として right が left を含んでいたら true を返す．
+  ///
+  /// - こちらは等しい場合も含む．
+  /// - false だからといって逆に left が right を含むとは限らない．
+  friend
+  bool
+  operator<=(const TestVector& left,
+	     const TestVector& right);
+
+
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
@@ -293,6 +306,24 @@ private:
 
 };
 
+/// @relates TestVector
+/// @brief 2つのベクタが両立するとき true を返す．
+/// @param[in] tv1, tv2 対象のテストベクタ
+///
+/// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
+bool
+operator&&(const TestVector& tv1,
+	   const TestVector& tv2);
+
+/// @relates TestVector
+/// @brief 等価関係の比較を行なう．
+/// @param[in] left, right オペランド
+/// @return left と right が等しいとき true を返す．
+bool
+operator==(const TestVector& left,
+	   const TestVector& right);
+
+/// @relates TestVector
 /// @brief 等価関係の比較を行なう．
 /// @param[in] left, right オペランド
 /// @return left と right が等しくないとき true を返す．
@@ -300,6 +331,17 @@ bool
 operator!=(const TestVector& left,
 	   const TestVector& right);
 
+/// @relates TestVector
+/// @brief 包含関係の比較を行なう
+/// @param[in] left, right オペランド
+/// @return minterm の集合として right が left を含んでいたら true を返す．
+///
+/// - false だからといって逆に left が right を含むとは限らない．
+bool
+operator<(const TestVector& left,
+	  const TestVector& right);
+
+/// @relates TestVector
 /// @brief 包含関係の比較を行なう．
 /// @param[in] left, right オペランド
 /// @return minterm の集合として left が right を含んでいたら true を返す．
@@ -308,6 +350,18 @@ bool
 operator>(const TestVector& left,
 	  const TestVector& right);
 
+/// @relates TestVector
+/// @brief 包含関係の比較を行なう
+/// @param[in] left, right オペランド
+/// @return minterm の集合として right が left を含んでいたら true を返す．
+///
+/// - こちらは等しい場合も含む．
+/// - false だからといって逆に left が right を含むとは限らない．
+bool
+operator<=(const TestVector& left,
+	   const TestVector& right);
+
+/// @relates TestVector
 /// @brief 包含関係の比較を行なう
 /// @param[in] left, right オペランド
 /// @return minterm の集合として left が right を含んでいたら true を返す．
@@ -585,20 +639,21 @@ TestVector::x_count() const
 // @brief 2つのベクタが両立しないとき true を返す．
 inline
 bool
-TestVector::is_conflict(const TestVector& tv1,
-			const TestVector& tv2)
+operator&&(const TestVector& tv1,
+	   const TestVector& tv2)
 {
-  return BitVector::is_conflict(tv1.mVector, tv2.mVector);
+  return tv1.mVector && tv2.mVector;
 }
 
 // @brief 等価関係の比較を行なう．
-// @param[in] right オペランド
-// @return 自分自身と right が等しいとき true を返す．
+// @param[in] left, right オペランド
+// @return left と right が等しいとき true を返す．
 inline
 bool
-TestVector::operator==(const TestVector& right) const
+operator==(const TestVector& left,
+	   const TestVector& right)
 {
-  return mVector == right.mVector;
+  return left.mVector == right.mVector;
 }
 
 // @brief 等価関係の比較を行なう．
@@ -609,18 +664,20 @@ bool
 operator!=(const TestVector& left,
 	   const TestVector& right)
 {
-  return !left.operator==(right);
+  return !operator==(left, right);
 }
 
 // @brief 包含関係の比較を行なう
-// @param[in] right オペランド
-// @return minterm の集合として right が自分自身を含んでいたら true を返す．
-// @note false だからといって逆に自分自身が right を含むとは限らない．
+// @param[in] left, right オペランド
+// @return minterm の集合として right が left を含んでいたら true を返す．
+//
+// - false だからといって逆に left が right を含むとは限らない．
 inline
 bool
-TestVector::operator<(const TestVector& right) const
+operator<(const TestVector& left,
+	  const TestVector& right)
 {
-  return mVector < right.mVector;
+  return left.mVector < right.mVector;
 }
 
 // @brief 包含関係の比較を行なう．
@@ -632,19 +689,21 @@ bool
 operator>(const TestVector& left,
 	  const TestVector& right)
 {
-  return right.operator<(left);
+  return operator<(right, left);
 }
 
 // @brief 包含関係の比較を行なう
-// @param[in] right オペランド
-// @return minterm の集合として right が自分自身を含んでいたら true を返す．
-// @note こちらは等しい場合も含む．
-// @note false だからといって逆に自分自身が right を含むとは限らない．
+// @param[in] left, right オペランド
+// @return minterm の集合として right が left を含んでいたら true を返す．
+//
+// - こちらは等しい場合も含む．
+// - false だからといって逆に left が right を含むとは限らない．
 inline
 bool
-TestVector::operator<=(const TestVector& right) const
+operator<=(const TestVector& left,
+	   const TestVector& right)
 {
-  return mVector <= right.mVector;
+  return left.mVector <= right.mVector;
 }
 
 // @brief 包含関係の比較を行なう
@@ -657,7 +716,7 @@ bool
 operator>=(const TestVector& left,
 	   const TestVector& right)
 {
-  return right.operator<=(left);
+  return operator<=(right, left);
 }
 
 // @brief すべて未定(X) で初期化する．
