@@ -27,12 +27,10 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] vect_len ベクタ長
+  ///
+  /// 内容は X で初期化される．
   explicit
-  DffVector(int vect_len);
-
-  /// @brief BitVectorRep を引数にとるコンストラクタ
-  /// @param[in] rep 本体
-  DffVector(BitVectorRep* rep);
+  DffVector(int vect_len = 0);
 
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
@@ -76,14 +74,6 @@ private:
 inline
 DffVector::DffVector(int vect_len) :
   BitVector(vect_len)
-{
-}
-
-// @brief BitVectorRep を引数にとるコンストラクタ
-// @param[in] rep 本体
-inline
-DffVector::DffVector(BitVectorRep* rep) :
-  BitVector(rep)
 {
 }
 

@@ -12,49 +12,47 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
+// @brief ベクタ長を指定してオブジェクトを作る．
+// @param[in] vect_len ベクタ長
+//
+// 内容は X に初期化される．
+BitVectorRep*
+BitVectorRep::new_vector(int vect_len)
+{
+  return new BitVectorRep(vect_len);
+}
+
+// @brief 内容をコピーする．
+// @param[in] src コピー元のオブジェクト
+BitVectorRep*
+BitVectorRep::new_vector(const BitVectorRep& src)
+{
+  auto rep = new BitVectorRep(src.vect_len());
+
+  int n = block_num(src.vect_len());
+  for ( int i = 0; i < n; ++ i ) {
+    rep->mPat[i] = src.mPat[i];
+  }
+  return rep;
+}
+
 // @brief コンストラクタ
 // @param[in] vlen ベクタ長
 BitVectorRep::BitVectorRep(int vlen) :
   mVectLen(vlen),
   mPat(new PackedVal[block_num(vlen)])
 {
-  // X に初期化しておく．
-  init();
-
   // マスクを設定する．
   int k = vect_len() % kPvBitLen;
-  mMask = kPvAll1 << (kPvBitLen - k);
-}
-
-// @brief コピーコンストラクタ
-// @param[in] src コピー元のソース
-BitVectorRep::BitVectorRep(const BitVectorRep& src) :
-  mVectLen(src.mVectLen),
-  mMask(src.mMask),
-  mPat(new PackedVal[block_num(mVectLen)])
-{
-  int n = block_num(mVectLen);
-  for ( int i = 0; i < n; ++ i ) {
-    mPat[i] = src.mPat[i];
+  if ( k == 0 ) {
+    mMask = kPvAll1;
   }
-}
-
-// @brief コピー代入演算子
-// @param[in] src コピー元のソース
-BitVectorRep&
-BitVectorRep::operator=(const BitVectorRep& src)
-{
-  if ( &src != this ) {
-    mVectLen = src.mVectLen;
-    mMask = src.mMask;
-    int n = block_num(mVectLen);
-    mPat = new PackedVal[n];
-    for ( int i = 0; i < n; ++ i ) {
-      mPat[i] = src.mPat[i];
-    }
+  else {
+    mMask = (1ULL << k) - 1;
   }
 
-  return *this;
+  // X に初期化しておく．
+  init();
 }
 
 // @brief X の個数を得る．
@@ -66,11 +64,13 @@ BitVectorRep::x_count() const
   for ( int i = 0; i < nb; i += 2 ) {
     int i0 = i;
     int i1 = i + 1;
-    PackedVal v = mPat[i] | mPat[i + 1];
+    PackedVal pat0 = mPat[i0];
+    PackedVal pat1 = mPat[i1];
+    PackedVal v = pat0 & pat1;
     // v 中の1の数を数える．
     n += count_ones(v);
   }
-  return vect_len() - n;
+  return n;
 }
 
 // @brief 2つのビットベクタの等価比較を行う．
@@ -132,7 +132,7 @@ BitVectorRep::is_le(const BitVectorRep& bv1,
   ASSERT_COND( bv1.vect_len() == bv2.vect_len() );
 
   int nb = block_num(bv1.vect_len());
-  for ( int i = 0; i < nb; ++ i ) {
+  for ( int i = 0; i < nb; i += 2 ) {
     int i0 = i;
     int i1 = i + 1;
     PackedVal val1_0 = bv1.mPat[i0];
@@ -163,10 +163,10 @@ BitVectorRep::is_compat(const BitVectorRep& bv1,
     PackedVal diff0 = (bv1.mPat[i0] ^ bv2.mPat[i0]);
     PackedVal diff1 = (bv1.mPat[i1] ^ bv2.mPat[i1]);
     if ( (diff0 & diff1) != kPvAll0 ) {
-      return true;
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 // @brief すべて未定(X) で初期化する．
@@ -174,16 +174,73 @@ void
 BitVectorRep::init()
 {
   int nb = block_num(vect_len());
-  for ( int i = 0; i < nb; ++ i ) {
-    mPat[i] = kPvAll1;
+  for ( int i = 0; i < nb; i += 2 ) {
+    if ( i < nb - 2 ) {
+      mPat[i + 0] = kPvAll1;
+      mPat[i + 1] = kPvAll1;
+    }
+    else {
+      mPat[i + 0] = mMask;
+      mPat[i + 1] = mMask;
+    }
   }
+}
+
+// @brief BIN文字列から内容を設定する．
+// @param[in] bin_string BIN文字列
+// @retval true 適切に設定された．
+// @retval false bin_string に不適切な文字が含まれていた．
+//
+// - bin_string がベクタ長より短い時には残りはXで初期化される．
+// - bin_string がベクタ長より長い時には余りは切り捨てられる．
+// - 有効な文字は '0', '1', 'x', 'X'
+bool
+BitVectorRep::set_from_bin(const string& bin_string)
+{
+  // よく問題になるが，ここでは最下位ビット側から入力する．
+  int nl = vect_len();
+  int sft = 0;
+  int blk = 0;
+  PackedVal pat0 = kPvAll0;
+  PackedVal pat1 = kPvAll0;
+  for ( int i = 0; i < nl; ++ i ) {
+    char c = (i < bin_string.size()) ? bin_string[i] : 'X';
+    PackedVal b0;
+    PackedVal b1;
+    switch ( c ) {
+    case '0': b0 = 1ULL; b1 = 0ULL; break;
+    case '1': b0 = 0ULL; b1 = 1ULL; break;
+    case 'x':
+    case 'X': b0 = 1ULL; b1 = 1ULL; break;
+    default: // エラー
+      return false;
+    }
+    pat0 |= (b0 << sft);
+    pat1 |= (b1 << sft);
+    ++ sft;
+    if ( sft == kPvBitLen ) {
+      mPat[blk + 0] = pat0;
+      mPat[blk + 1] = pat1;
+      sft = 0;
+      blk += 2;
+      pat0 = kPvAll0;
+      pat1 = kPvAll0;
+    }
+  }
+  if ( sft != 0 ) {
+    mPat[blk + 0] = pat0;
+    mPat[blk + 1] = pat1;
+  }
+
+  return true;
 }
 
 // @brief HEX文字列から内容を設定する．
 // @param[in] hex_string HEX 文字列
 // @return hex_string に不適切な文字が含まれていたら false を返す．
-// @note hex_string が短い時には残りは0で初期化される．
-// @note hex_string が長い時には余りは捨てられる．
+//
+// - hex_string が短い時には残りはXで初期化される．
+// - hex_string が長い時には余りは捨てられる．
 bool
 BitVectorRep::set_from_hex(const string& hex_string)
 {
@@ -193,7 +250,7 @@ BitVectorRep::set_from_hex(const string& hex_string)
   int blk = 0;
   PackedVal pat = kPvAll0;
   for ( int i = 0; i < nl; ++ i ) {
-    char c = (i < hex_string.size()) ? hex_string[i] : '0';
+    char c = (i < hex_string.size()) ? hex_string[i] : 'X';
     PackedVal pat1 = kPvAll0;
     if ( '0' <= c && c <= '9' ) {
       pat1 = static_cast<PackedVal>(c - '0');
@@ -210,8 +267,8 @@ BitVectorRep::set_from_hex(const string& hex_string)
     pat |= (pat1 << sft);
     sft += 4;
     if ( sft == kPvBitLen ) {
-      mPat[blk] = ~pat;
-      mPat[blk + 1] = pat;
+      mPat[blk + 0] = ~pat;
+      mPat[blk + 1] =  pat;
       sft = 0;
       blk += 2;
       pat = kPvAll0;
@@ -219,7 +276,7 @@ BitVectorRep::set_from_hex(const string& hex_string)
   }
   if ( sft != 0 ) {
     mPat[blk + 0] = ~pat;
-    mPat[blk + 1] = pat;
+    mPat[blk + 1] =  pat;
   }
 
   return true;
@@ -269,24 +326,6 @@ BitVectorRep::fix_x_from_random(RandGen& randgen)
   }
 }
 
-// @brief ビットベクタをコピーする．
-// @param[in] src コピー元のビットベクタ
-//
-// - X の部分はコピーしない．
-void
-BitVectorRep::copy(const BitVectorRep& src)
-{
-  int nb = block_num(vect_len());
-  for ( int i = 0; i < nb; i += 2 ) {
-    int i0 = i;
-    int i1 = i + 1;
-    // X のビットマスク
-    PackedVal xmask = src.mPat[i0] & src.mPat[i1];
-    mPat[i0] = (src.mPat[i0] | xmask);
-    mPat[i1] = (src.mPat[i1] | xmask);
-  }
-}
-
 // @breif ビットベクタをマージする．
 // @note X 以外で相異なるビットがあったら false を返す．
 bool
@@ -311,8 +350,8 @@ BitVectorRep::merge(const BitVectorRep& src)
   for ( int i = 0; i < nb; i += 2 ) {
     int i0 = i;
     int i1 = i + 1;
-    mPat[i0] |= src.mPat[i0];
-    mPat[i1] |= src.mPat[i1];
+    mPat[i0] &= src.mPat[i0];
+    mPat[i1] &= src.mPat[i1];
   }
   return true;
 }

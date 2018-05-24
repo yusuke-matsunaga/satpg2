@@ -29,11 +29,7 @@ public:
   ///
   /// 内容は X で初期化される．
   explicit
-  BitVector(int vect_len);
-
-  /// @brief BitVectorRep を引数にとるコンストラクタ
-  /// @param[in] rep 本体
-  BitVector(BitVectorRep* rep);
+  BitVector(int vect_len = 0);
 
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
@@ -43,6 +39,30 @@ public:
   /// @param[in] src コピー元のソース
   BitVector&
   operator=(const BitVector& src);
+
+  /// @brief 2進文字列からオブジェクトを作る．
+  /// @param[in] bin_str 2進文字列
+  ///
+  /// - ベクタ長は文字列の長さから得る．
+  /// - 文字列は '0', '1', 'X', 'x' で構成される．
+  /// - 最初の文字が0ビット目となる．
+  /// - bin_str が不適切な場合には長さ0のベクタを返す．
+  static
+  BitVector
+  from_bin_str(const string& bin_str);
+
+  /// @brief HEX文字列からオブジェクトを作る．
+  /// @param[in] vect_len ベクタ長
+  /// @param[in] hex_str HEX文字列
+  ///
+  /// - hex_string が短い時には残りは0で初期化される．
+  /// - hex_string が長い時には余りは捨てられる．
+  /// - 有効な文字は '0'〜'9', 'a'〜'f', 'A'〜'F'
+  /// - hex_str が不適切な場合には長さ0のベクタを返す．
+  static
+  BitVector
+  from_hex_str(int vect_len,
+	       const string& hex_str);
 
   /// @brief デストラクタ
   ~BitVector();
@@ -96,6 +116,17 @@ public:
   set_val(int pos,
 	  Val3 val);
 
+  /// @brief BIN文字列から内容を設定する．
+  /// @param[in] bin_string BIN文字列
+  /// @retval true 適切に設定された．
+  /// @retval false bin_string に不適切な文字が含まれていた．
+  ///
+  /// - bin_string がベクタ長より短い時には残りはXで初期化される．
+  /// - bin_string がベクタ長より長い時には余りは切り捨てられる．
+  /// - 有効な文字は '0', '1', 'x', 'X'
+  bool
+  set_from_bin(const string& bin_string);
+
   /// @brief HEX文字列から内容を設定する．
   /// @param[in] hex_string HEX 文字列
   /// @retval true 適切に設定された．
@@ -103,6 +134,8 @@ public:
   ///
   /// - hex_string が短い時には残りは0で初期化される．
   /// - hex_string が長い時には余りは捨てられる．
+  /// - 有効な文字は '0'〜'9', 'a'〜'f', 'A'〜'F'
+  /// - この形式は X を扱えない．
   bool
   set_from_hex(const string& hex_string);
 
@@ -274,15 +307,7 @@ operator&(const BitVector& left,
 // @param[in] vect_len ベクタ長
 inline
 BitVector::BitVector(int vect_len) :
-  mPtr(new BitVectorRep(vect_len))
-{
-}
-
-// @brief BitVectorRep を引数にとるコンストラクタ
-// @param[in] rep 本体
-inline
-BitVector::BitVector(BitVectorRep* rep) :
-  mPtr(rep)
+  mPtr(BitVectorRep::new_vector(vect_len))
 {
 }
 
@@ -303,6 +328,45 @@ BitVector::operator=(const BitVector& src)
   mPtr = src.mPtr;
 
   return *this;
+}
+
+// @brief 2進文字列からオブジェクトを作る．
+// @param[in] bin_str 2進文字列
+//
+// 文字列は '0', '1', 'X', 'x' で構成される．
+// 最初の文字が0ビット目となる．
+inline
+BitVector
+BitVector::from_bin_str(const string& bin_str)
+{
+  int l = bin_str.size();
+  BitVector bv(l);
+  if ( bv.set_from_bin(bin_str) ) {
+    return bv;
+  }
+  // エラーの場合
+  return BitVector(0);
+}
+
+// @brief HEX文字列からオブジェクトを作る．
+// @param[in] vect_len ベクタ長
+// @param[in] hex_str HEX文字列
+//
+// - hex_string が短い時には残りは0で初期化される．
+// - hex_string が長い時には余りは捨てられる．
+// - 有効な文字は '0'〜'9', 'a'〜'f', 'A'〜'F'
+// - hex_str が不適切な場合には長さ0のベクタを返す．
+inline
+BitVector
+BitVector::from_hex_str(int vect_len,
+			const string& hex_str)
+{
+  BitVector bv(vect_len);
+  if ( bv.set_from_hex(hex_str) ) {
+    return bv;
+  }
+  // エラーの場合
+  return BitVector(0);
 }
 
 // @brief デストラクタ
@@ -489,6 +553,23 @@ BitVector::set_val(int pos,
   mPtr->set_val(pos, val);
 }
 
+// @brief BIN文字列から内容を設定する．
+// @param[in] bin_string BIN文字列
+// @retval true 適切に設定された．
+// @retval false bin_string に不適切な文字が含まれていた．
+//
+// - bin_string がベクタ長より短い時には残りはXで初期化される．
+// - bin_string がベクタ長より長い時には余りは切り捨てられる．
+// - 有効な文字は '0', '1', 'x', 'X'
+inline
+bool
+BitVector::set_from_bin(const string& bin_string)
+{
+  uniquefy();
+
+  return mPtr->set_from_bin(bin_string);
+}
+
 // @brief HEX文字列から内容を設定する．
 // @param[in] hex_string HEX 文字列
 // @retval true 適切に設定された．
@@ -538,7 +619,7 @@ BitVector::uniquefy()
 {
   if ( !mPtr.unique() ) {
     // 内容を変更するので複製する．
-    mPtr = std::shared_ptr<BitVectorRep>(new BitVectorRep(*mPtr));
+    mPtr = std::shared_ptr<BitVectorRep>(BitVectorRep::new_vector(*mPtr));
   }
 }
 

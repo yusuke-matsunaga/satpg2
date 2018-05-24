@@ -25,24 +25,39 @@ BEGIN_NAMESPACE_YM_SATPG
 /// mPat[i * 2 + 0], mPat[i * 2 + 1] の２つのワードでそれぞれ0のビット
 /// と1のビットを表す．
 /// X の場合は両方のビットに1を立てる．
+///
+/// 要するに mPat[i * 2 + 0], mPat[i * 2 + 1] のビットが
+/// - (0, 0): 未使用
+/// - (1, 0): Val3::_0
+/// - (0, 1): Val3::_1
+/// - (1, 1): Val3::_X
+/// を表している．
+///
+/// 0 番目のビットは 0 ビットめに対応する．
 //////////////////////////////////////////////////////////////////////
 class BitVectorRep
 {
 public:
+  //////////////////////////////////////////////////////////////////////
+  // オブジェクトを作るクラスメソッド
+  //////////////////////////////////////////////////////////////////////
 
-  /// @brief コンストラクタ
+  /// @brief ベクタ長を指定してオブジェクトを作る．
   /// @param[in] vect_len ベクタ長
-  explicit
-  BitVectorRep(int vect_len);
+  ///
+  /// 内容は X に初期化される．
+  static
+  BitVectorRep*
+  new_vector(int vect_len);
 
-  /// @brief コピーコンストラクタ
-  /// @param[in] src コピー元のソース
-  BitVectorRep(const BitVectorRep& src);
+  /// @brief 内容をコピーする．
+  /// @param[in] src コピー元のオブジェクト
+  static
+  BitVectorRep*
+  new_vector(const BitVectorRep& src);
 
-  /// @brief コピー代入演算子
-  /// @param[in] src コピー元のソース
-  BitVectorRep&
-  operator=(const BitVectorRep& src);
+
+public:
 
   /// @brief デストラクタ
   ~BitVectorRep();
@@ -127,13 +142,26 @@ public:
   set_val(int pos,
 	  Val3 val);
 
+  /// @brief BIN文字列から内容を設定する．
+  /// @param[in] bin_string BIN文字列
+  /// @retval true 適切に設定された．
+  /// @retval false bin_string に不適切な文字が含まれていた．
+  ///
+  /// - bin_string がベクタ長より短い時には残りはXで初期化される．
+  /// - bin_string がベクタ長より長い時には余りは切り捨てられる．
+  /// - 有効な文字は '0', '1', 'x', 'X'
+  bool
+  set_from_bin(const string& bin_string);
+
   /// @brief HEX文字列から内容を設定する．
   /// @param[in] hex_string HEX 文字列
   /// @retval true 適切に設定された．
   /// @retval false hex_string に不適切な文字が含まれていた．
   ///
-  /// - hex_string が短い時には残りは0で初期化される．
+  /// - hex_string が短い時には残りはXで初期化される．
   /// - hex_string が長い時には余りは捨てられる．
+  /// - 有効な文字は '0'〜'9', 'a'〜'f', 'A'〜'F'
+  /// - この形式は X を扱えない．
   bool
   set_from_hex(const string& hex_string);
 
@@ -148,13 +176,6 @@ public:
   /// @param[in] randgen 乱数生成器
   void
   fix_x_from_random(RandGen& randgen);
-
-  /// @brief ビットベクタをコピーする．
-  /// @param[in] src コピー元のビットベクタ
-  ///
-  /// src の X の部分はコピーしない．
-  void
-  copy(const BitVectorRep& src);
 
   /// @breif ビットベクタをマージする．
   /// @note X 以外で相異なるビットがあったら false を返す．
@@ -190,6 +211,16 @@ private:
   static
   int
   shift_num(int ipos);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // コンストラクタは外部からは使わせない．
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief コンストラクタ
+  /// @param[in] vect_len ベクタ長
+  BitVectorRep(int vect_len);
 
 
 private:
@@ -326,7 +357,7 @@ inline
 int
 BitVectorRep::shift_num(int ipos)
 {
-  return (kPvBitLen - 1 - ipos) % kPvBitLen;
+  return ipos % kPvBitLen;
 }
 
 // @brief 内容を出力する．

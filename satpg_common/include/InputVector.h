@@ -28,13 +28,9 @@ public:
   /// @brief コンストラクタ
   /// @param[in] vect_len ベクタ長
   ///
-  /// 内容は 0 で初期化される．
+  /// 内容は X で初期化される．
   explicit
-  InputVector(int vect_len);
-
-  /// @brief BitVectorRep を引数にとるコンストラクタ
-  /// @param[in] rep 本体
-  InputVector(BitVectorRep* rep);
+  InputVector(int vect_len = 0);
 
   /// @brief コピーコンストラクタ
   /// @param[in] src コピー元のソース
@@ -78,14 +74,6 @@ private:
 inline
 InputVector::InputVector(int vect_len) :
   BitVector(vect_len)
-{
-}
-
-// @brief BitVectorRep を引数にとるコンストラクタ
-// @param[in] rep 本体
-inline
-InputVector::InputVector(BitVectorRep* rep) :
-  BitVector(rep)
 {
 }
 
