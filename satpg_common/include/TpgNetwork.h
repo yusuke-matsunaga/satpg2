@@ -300,7 +300,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // TpgNetwork の実装
-  TpgNetworkImpl* mImpl;
+  std::unique_ptr<TpgNetworkImpl> mImpl;
 
 };
 

@@ -31,7 +31,6 @@ TpgNetwork::TpgNetwork() :
 // @brief デストラクタ
 TpgNetwork::~TpgNetwork()
 {
-  delete mImpl;
 }
 
 // @brief ノード数を得る．
