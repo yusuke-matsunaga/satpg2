@@ -53,7 +53,6 @@ void
 DopDrop::operator()(const TpgFault* f,
 		    const TestVector& tv)
 {
-  cout << f->str() << " is detected by " << tv.bin_str() << endl;
   mFsim.set_skip(f);
   int n = mFsim.sppfp(tv); // n は未使用
   for ( auto f: mFsim.det_fault_list() ) {
@@ -63,7 +62,6 @@ DopDrop::operator()(const TpgFault* f,
     else {
       mFaultStatusMgr.set(f, FaultStatus::Detected);
       mFsim.set_skip(f);
-      cout << " Also " << f->str() << " is detected." << endl;
     }
   }
 }

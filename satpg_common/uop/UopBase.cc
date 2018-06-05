@@ -44,7 +44,6 @@ UopBase::~UopBase()
 void
 UopBase::operator()(const TpgFault* f)
 {
-  cout << f->str() << " is untestable" << endl;
   mMgr.set(f, FaultStatus::Untestable);
 }
 
