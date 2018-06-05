@@ -45,7 +45,7 @@ class Dtpg :
         for ffr in self.__network.ffr_list() :
             dtpg = DtpgEngineFFR(self.__network, self.__fault_type, ffr)
             for fault in ffr.fault_list() :
-                if self.__fsmgr(fault) == FaultStatus.Undetected :
+                if self.__fsmgr.get(fault) == FaultStatus.Undetected :
                     self.__call_dtpg(dtpg, fault)
         return self.__ndet, self.__nunt, self.__nabt
 
@@ -57,7 +57,7 @@ class Dtpg :
         for mffc in self.__network.mffc_list() :
             dtpg = DtpgEngineMFFC(self.__network, self.__fault_type, mffc)
             for fault in mffc.fault_list() :
-                if self.__fsmgr(fault) == FaultStatus.Undetected :
+                if self.__fsmgr.get(fault) == FaultStatus.Undetected :
                     self.__call_dtpg(dtpg, fault)
         return self.__ndet, self.__nunt, self.__nabt
 
@@ -65,7 +65,7 @@ class Dtpg :
     def __call_dtpg(self, dtpg, fault) :
         stat, testvect = dtpg(fault)
         if stat == FaultStatus.Detected :
-            print('{} is detected by {}'.format(fault.str, testvect.bin_str))
+            #print('{} is detected by {}'.format(fault.str, testvect.bin_str))
             self.__ndet += 1
             # fault を検出可能故障と記録
             self.__fsmgr.set(fault, FaultStatus.Detected)
@@ -77,9 +77,10 @@ class Dtpg :
                 if self.__fsmgr.get(fault) == FaultStatus.Untestable :
                     if self.__fsim3.spsfp(testvect, fault) :
                         print('{} is marked as \'untestable\', but detected'.format(fault.str))
-#assert self.__fsmgr.get(fault) == FaultStatus.Undetected
+                        pass
+                    #assert self.__fsmgr.get(fault) == FaultStatus.Undetected
                 else :
-                    print(' Also {} is detected.'.format(fault.str))
+                    #print(' Also {} is detected.'.format(fault.str))
                     self.__fsim3.set_skip(fault)
                     self.__fsmgr.set(fault, FaultStatus.Detected)
                     self.__ndet += 1
@@ -88,7 +89,7 @@ class Dtpg :
             # fault をテスト不能故障と記録
             self.__fsmgr.set(fault, FaultStatus.Untestable)
             #self.__fsim3.set_skip(fault)
-            print('{} is untestable'.format(fault.str))
+            #print('{} is untestable'.format(fault.str))
         elif stat == FaultStatus.Undetected :
             self.__nabt += 1
         else :
