@@ -1,10 +1,10 @@
-#
-# @file CXX_TestVector.pxd
-# @brief TestVector 用の pxd ファイル
-# @author Yusuke Matsunaga (松永 裕介)
-#
-# Copyright (C) 2017 Yusuke Matsunaga
-# All rights reserved.
+
+### @file CXX_TestVector.pxd
+### @brief TestVector 用の pxd ファイル
+### @author Yusuke Matsunaga (松永 裕介)
+###
+### Copyright (C) 2017 Yusuke Matsunaga
+### All rights reserved.
 
 from libcpp cimport bool
 from libcpp.string cimport string
@@ -14,7 +14,7 @@ from CXX_RandGen cimport RandGen
 
 cdef extern from "TestVector.h" namespace "nsYm::nsSatpg" :
 
-    # TestVector の cython ヴァージョン
+    ### @brief TestVector の cython ヴァージョン
     cdef cppclass TestVector :
         TestVector()
         TestVector(int, int, FaultType)
@@ -38,6 +38,7 @@ cdef extern from "TestVector.h" namespace "nsYm::nsSatpg" :
         void set_from_random(RandGen& randgen)
         void fix_x_from_random(RandGen& randgen)
 
-    bool operator==(const TestVector& left, const TestVector& right)
+    bool is_compatible(const TestVector& left, const TestVector& right)
+    bool is_equal(const TestVector& left, const TestVector& right)
     bool operator<(const TestVector& left, const TestVector& right)
     bool operator<=(const TestVector& left, const TestVector& right)

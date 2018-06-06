@@ -7,6 +7,7 @@
 ### All rights reserved.
 
 from CXX_TestVector cimport TestVector as CXX_TestVector
+from CXX_TestVector cimport is_compatible
 from CXX_FaultType cimport FaultType as CXX_FaultType
 
 
@@ -155,3 +156,7 @@ cdef class TestVector :
     ### @param[in] randgen 乱数発生器
     def fix_x_from_random(TestVector self, RandGen randgen) :
         self._this.fix_x_from_random(randgen._this)
+
+    ### @brief 両立関係演算子
+    def __and__(TestVector self, TestVector other) :
+        return is_compatible(self._this, other._this)

@@ -324,12 +324,29 @@ operator&&(const TestVector& tv1,
 	   const TestVector& tv2);
 
 /// @relates TestVector
+/// @brief operator&& の別名
+/// @param[in] tv1, tv2 対象のテストベクタ
+///
+/// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
+bool
+is_compatible(const TestVector& tv1,
+	      const TestVector& tv2);
+
+/// @relates TestVector
 /// @brief 等価関係の比較を行なう．
 /// @param[in] left, right オペランド
 /// @return left と right が等しいとき true を返す．
 bool
 operator==(const TestVector& left,
 	   const TestVector& right);
+
+/// @relates TestVector
+/// @brief 等価関係の比較を行なう．
+/// @param[in] left, right オペランド
+/// @return left と right が等しいとき true を返す．
+bool
+is_equal(const TestVector& left,
+	 const TestVector& right);
 
 /// @relates TestVector
 /// @brief 等価関係の比較を行なう．
@@ -446,47 +463,6 @@ TestVector::TestVector(int input_num,
   mVector(_calc_vect_len())
 {
 }
-
-#if 0
-// @brief 割当リストから内容を設定する．
-// @param[in] input_num 入力数
-// @param[in] dff_numr DFF数
-// @param[in] fault_type 故障の種類
-// @param[in] assign_list 割当リスト
-//
-// assign_list に外部入力以外の割当が含まれている場合無視する．
-inline
-TestVector::TestVector(int input_num,
-		       int dff_num,
-		       FaultType fault_type,
-		       const NodeValList& assign_list) :
-  mInputNum(input_num),
-  mDffNum(dff_num),
-  mFaultType(fault_type),
-  mVector(_calc_vect_len())
-{
-}
-
-// @brief HEX文字列から内容を設定する．
-// @param[in] input_num 入力数
-// @param[in] dff_numr DFF数
-// @param[in] fault_type 故障の種類
-// @param[in] hex_string HEX 文字列
-//
-// hex_string が短い時には残りは0で初期化される．
-// hex_string が長い時には余りは捨てられる．
-inline
-TestVector::TestVector(int input_num,
-		       int dff_num,
-		       FaultType fault_type,
-		       const string& hex_string) :
-  mInputNum(input_num),
-  mDffNum(dff_num),
-  mFaultType(fault_type),
-  mVector(_calc_vect_len())
-{
-}
-#endif
 
 // @brief コピーコンストラクタ
 // @param[in] src コピー元のソース
@@ -683,6 +659,19 @@ operator&&(const TestVector& tv1,
   return tv1.mVector && tv2.mVector;
 }
 
+// @relates TestVector
+// @brief operator&& の別名
+// @param[in] tv1, tv2 対象のテストベクタ
+//
+// 同じビット位置にそれぞれ 0 と 1 を持つ場合が両立しない場合．
+inline
+bool
+is_compatible(const TestVector& tv1,
+	      const TestVector& tv2)
+{
+  return tv1 && tv2;
+}
+
 // @brief 等価関係の比較を行なう．
 // @param[in] left, right オペランド
 // @return left と right が等しいとき true を返す．
@@ -692,6 +681,18 @@ operator==(const TestVector& left,
 	   const TestVector& right)
 {
   return left.mVector == right.mVector;
+}
+
+// @relates TestVector
+// @brief 等価関係の比較を行なう．
+// @param[in] left, right オペランド
+// @return left と right が等しいとき true を返す．
+inline
+bool
+is_equal(const TestVector& left,
+	 const TestVector& right)
+{
+  return left == right;
 }
 
 // @brief 等価関係の比較を行なう．

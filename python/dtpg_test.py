@@ -113,6 +113,8 @@ def main() :
         elif mode == 'mffc' :
             ndet, nunt, nabt = dtpg.mffc_mode()
 
+        dtpg.compaction()
+
         end = time.process_time()
         cpu_time = end - start
 
