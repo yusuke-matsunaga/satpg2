@@ -172,3 +172,18 @@ cdef class TestVector :
     def __iand__(TestVector self, TestVector other) :
         self._this.merge(other._this)
         return self
+
+    ### @brief 複数オペランドのマージ演算子
+    @staticmethod
+    def merge(tvlist) :
+        n = len(tvlist)
+        if n == 0 :
+            return TestVector()
+        elif n == 1 :
+            return tvlist[0]
+        else :
+            tv0 = tvlist[0]
+            for i in range(1, n) :
+                tv1 = tvlist[i]
+                tv0 &= tv1
+            return tv0

@@ -13,6 +13,8 @@ import time
 from satpg_core import FaultType
 from satpg_core import TpgNetwork
 from dtpg import Dtpg
+from compaction import compaction
+
 
 def main() :
 
@@ -45,6 +47,9 @@ def main() :
                            action = 'store_true',
                            help = 'read ISCAS89 file')
 
+    parser.add_argument('--drop',
+                        action = 'store_true',
+                        help = 'fault drop mode')
     parser.add_argument('file_list', metavar = '<filename>', type = str,
                         nargs = '+',
                         help = 'file name')
@@ -62,6 +67,8 @@ def main() :
     else :
         # デフォルト
         mode = 'single'
+
+    drop = args.drop
 
     if args.stuck_at :
         fault_type = FaultType.StuckAt
@@ -107,16 +114,19 @@ def main() :
         dtpg = Dtpg(network, fault_type)
 
         if mode == 'single' :
-            ndet, nunt, nabt = dtpg.single_mode()
+            ndet, nunt, nabt = dtpg.single_mode(drop)
         elif mode == 'ffr' :
-            ndet, nunt, nabt = dtpg.ffr_mode()
+            ndet, nunt, nabt = dtpg.ffr_mode(drop)
         elif mode == 'mffc' :
-            ndet, nunt, nabt = dtpg.mffc_mode()
+            ndet, nunt, nabt = dtpg.mffc_mode(drop)
 
-        dtpg.compaction()
+        lap1 = time.process_time()
+        cpu_time = lap1 - start
+
+        tvlist = compaction(dtpg.tvlist)
 
         end = time.process_time()
-        cpu_time = end - start
+        cpu_time2 = end - lap1
 
         tf = 0
         for i in network.rep_fault_list() :
@@ -128,7 +138,8 @@ def main() :
         print('# of untestable faults: {}'.format(nunt))
         print('# of aborted faults:    {}'.format(nabt))
         print('# of patterns:          {}'.format(len(dtpg.tvlist)))
-        print('CPU time:               {:8.2f}'.format(cpu_time))
+        print('CPU time(ATPG):         {:8.2f}'.format(cpu_time))
+        print('CPU time(compaction):   {:8.2f}'.format(cpu_time2))
 
 
 if __name__ == '__main__' :

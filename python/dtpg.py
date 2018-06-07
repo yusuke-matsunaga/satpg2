@@ -14,15 +14,11 @@ if debug :
     from satpg_core_d import Fsim
     from satpg_core_d import FaultStatus, FaultStatusMgr
     from satpg_core_d import TestVector
-    from satpg_core_d import UdGraph
-    from satpg_core_d import coloring
 else :
     from satpg_core import DtpgEngine, DtpgEngineFFR, DtpgEngineMFFC
     from satpg_core import Fsim
     from satpg_core import FaultStatus, FaultStatusMgr
     from satpg_core import TestVector
-    from satpg_core import UdGraph
-    from satpg_core import coloring
 
 
 ### @brief DTPG を行うクラス
@@ -36,12 +32,14 @@ class Dtpg :
         self.__fsim3.clear_skip_all()
         self.__fsmgr = FaultStatusMgr(network)
         self.__tvlist = []
+        self.__fault_drop = False
 
     ### @brief single mode でパタン生成を行う．
-    def single_mode(self) :
+    def single_mode(self, drop) :
         self.__ndet = 0
         self.__nunt = 0
         self.__nabt = 0
+        self.__fault_drop = drop
         for fault in self.__network.rep_fault_list() :
             if self.__fsmgr.get(fault) == FaultStatus.Undetected :
                 onode = fault.onode
@@ -50,10 +48,11 @@ class Dtpg :
         return self.__ndet, self.__nunt, self.__nabt
 
     ### @brief FFR mode でパタン生成を行う．
-    def ffr_mode(self) :
+    def ffr_mode(self, drop) :
         self.__ndet = 0
         self.__nunt = 0
         self.__nabt = 0
+        self.__fault_drop = drop
         for ffr in self.__network.ffr_list() :
             dtpg = DtpgEngineFFR(self.__network, self.__fault_type, ffr)
             for fault in ffr.fault_list() :
@@ -62,10 +61,11 @@ class Dtpg :
         return self.__ndet, self.__nunt, self.__nabt
 
     ### @brief MFFC mode でパタン生成を行う．
-    def mffc_mode(self) :
+    def mffc_mode(self, drop) :
         self.__ndet = 0
         self.__nunt = 0
         self.__nabt = 0
+        self.__fault_drop = drop
         for mffc in self.__network.mffc_list() :
             dtpg = DtpgEngineMFFC(self.__network, self.__fault_type, mffc)
             for fault in mffc.fault_list() :
@@ -83,11 +83,12 @@ class Dtpg :
             self.__fsim3.set_skip(fault)
             # fault のパタンとして testvect を記録
             self.__tvlist.append(testvect)
-            # このパタンで検出される他の故障を調べる．
-            for fault in self.__fsim3.sppfp(testvect) :
-                self.__fsmgr.set(fault, FaultStatus.Detected)
-                self.__fsim3.set_skip(fault)
-                self.__ndet += 1
+            if self.__fault_drop :
+                # このパタンで検出される他の故障を調べる．
+                for fault in self.__fsim3.sppfp(testvect) :
+                    self.__fsmgr.set(fault, FaultStatus.Detected)
+                    self.__fsim3.set_skip(fault)
+                    self.__ndet += 1
         elif stat == FaultStatus.Untestable :
             self.__nunt += 1
             # fault をテスト不能故障と記録
@@ -97,40 +98,6 @@ class Dtpg :
             self.__nabt += 1
         else :
             assert False
-
-    ### @brief static compaction を行う．
-    def compaction(self) :
-        n = len(self.__tvlist)
-        graph = UdGraph(n)
-        for i in range(n - 1) :
-            tv1 = self.__tvlist[i]
-            for j in range(i + 1, n) :
-                tv2 = self.__tvlist[j]
-                if not TestVector.is_compatible(tv1, tv2) :
-                    graph.connect(i, j)
-        nc, color_map = coloring(graph)
-        print('# of initial patterns: {}'.format(n))
-        print('# of reduced patterns: {}'.format(nc))
-
-        # color_map から色番号ごとのパタン番号リストを作る．
-        pat_list_array = [ [] for i in range(nc) ]
-        for i in range(n) :
-            c = color_map[i]
-            assert c > 0 and c <= nc
-            tv = self.__tvlist[i]
-            pat_list_array[c - 1].append(tv)
-
-        # 各色に対応するパタンを作る．
-        self.__tvlist = []
-        for i in range(nc) :
-            n1 = len(pat_list_array[i])
-            assert n1 > 0
-            tv0 = pat_list_array[i][0]
-            for j in range(1, n1) :
-                tv1 = pat_list_array[i][j]
-                assert TestVector.is_compatible(tv0, tv1)
-                tv0 &= tv1
-            self.__tvlist.append(tv0)
 
     ### @brief テストパタンのリストを返す．
     @property
