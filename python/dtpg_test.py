@@ -50,6 +50,15 @@ def main() :
     parser.add_argument('--drop',
                         action = 'store_true',
                         help = 'fault drop mode')
+
+    cmp_group = parser.add_mutually_exclusive_group()
+    cmp_group.add_argument('--dsatur',
+                           action = 'store_true',
+                           help = 'use DSATUR compaction')
+    cmp_group.add_argument('--tabucol',
+                           action = 'store_true',
+                           help = 'use TabCol compaction')
+
     parser.add_argument('file_list', metavar = '<filename>', type = str,
                         nargs = '+',
                         help = 'file name')
@@ -84,6 +93,12 @@ def main() :
         file_format = 'iscas89'
     else :
         file_format = None
+
+    algorithm = ''
+    if args.dsatur :
+        algorithm = 'dsatur'
+    elif args.tabucol :
+        algorithm = 'tabucol'
 
     for file_name in args.file_list :
         file_format1 = file_format
@@ -123,7 +138,9 @@ def main() :
         lap1 = time.process_time()
         cpu_time = lap1 - start
 
-        tvlist = compaction(dtpg.tvlist)
+        tvlist = dtpg.tvlist
+        if algorithm != '' :
+            tvlist = compaction(tvlist, algorithm)
 
         end = time.process_time()
         cpu_time2 = end - lap1
@@ -137,7 +154,7 @@ def main() :
         print('# of detected faults:   {}'.format(ndet))
         print('# of untestable faults: {}'.format(nunt))
         print('# of aborted faults:    {}'.format(nabt))
-        print('# of patterns:          {}'.format(len(dtpg.tvlist)))
+        print('# of patterns:          {}'.format(len(tvlist)))
         print('CPU time(ATPG):         {:8.2f}'.format(cpu_time))
         print('CPU time(compaction):   {:8.2f}'.format(cpu_time2))
 

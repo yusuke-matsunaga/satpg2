@@ -19,7 +19,7 @@ else :
     from satpg_core import coloring
 
 ### @brief static compaction を行う．
-def compaction(tvlist) :
+def compaction(tvlist, algorithm) :
     n = len(tvlist)
     print('# of initial patterns: {}'.format(n))
     graph = UdGraph(n)
@@ -29,7 +29,7 @@ def compaction(tvlist) :
             tv2 = tvlist[j]
             if not TestVector.is_compatible(tv1, tv2) :
                 graph.connect(i, j)
-    nc, color_map = coloring(graph)
+    nc, color_map = coloring(graph, algorithm)
     print('# of reduced patterns: {}'.format(nc))
 
     # color_map から色番号ごとのパタン番号リストを作る．
