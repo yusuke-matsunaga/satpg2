@@ -92,7 +92,6 @@ def main() :
         file_format = None
 
     cmp_algorithm = args.compaction
-    print(cmp_algorithm)
 
     for file_name in args.file_list :
         file_format1 = file_format
