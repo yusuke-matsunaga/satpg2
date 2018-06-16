@@ -194,4 +194,26 @@ operator<<(ostream& s,
   return s;
 }
 
+// @brief 大小関係の比較関数
+bool
+operator<(const NodeVal& left,
+	  const NodeVal& right)
+{
+  const TpgNode* node1 = left.node();
+  const TpgNode* node2 = right.node();
+  if ( node1->id() < node2->id() ) {
+    return true;
+  }
+  if ( node1->id() > node2->id() ) {
+    return false;
+  }
+  if ( left.time() < right.time() ) {
+    return true;
+  }
+  if ( left.time() > right.time() ) {
+    return false;
+  }
+  return left.val() < right.val();
+}
+
 END_NAMESPACE_YM_SATPG

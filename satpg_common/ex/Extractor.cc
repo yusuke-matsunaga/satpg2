@@ -74,13 +74,14 @@ Extractor::operator()(const TpgNode* root)
 
   record_sensitized_node(spo, assign_list);
 
-  assign_list.sort();
-
   if ( debug ) {
     ostream& dbg_out = cout;
     dbg_out << "Extract at Node#" << root->id() << endl;
     const char* comma = "";
-    for ( auto nv: assign_list ) {
+    // sort するのでコピーを作る．
+    NodeValList assign_list1(assign_list);
+    assign_list1.sort();
+    for ( auto nv: assign_list1 ) {
       const TpgNode* node = nv.node();
       dbg_out << comma << "Node#" << node->id()
 	      << ":";

@@ -270,15 +270,6 @@ NodeVal::val() const
 // @brief 大小関係の比較関数
 inline
 bool
-operator<(const NodeVal& left,
-	  const NodeVal& right)
-{
-  return left.mPackVal < right.mPackVal;
-}
-
-// @brief 大小関係の比較関数
-inline
-bool
 operator>(const NodeVal& left,
 	  const NodeVal& right)
 {
