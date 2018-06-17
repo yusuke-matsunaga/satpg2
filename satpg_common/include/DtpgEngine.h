@@ -101,7 +101,7 @@ public:
   /// @param[in] fault 対象の故障
   /// @return 結果を返す．
   DtpgResult
-  dtpg(const TpgFault* fault);
+  gen_pattern(const TpgFault* fault);
 
   /// @brief 統計情報を得る．
   const DtpgStats&

@@ -196,7 +196,7 @@ DtpgTest::single_new_test()
     if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
       const TpgNode* node = fault->tpg_onode();
       DtpgEngine dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, node);
-      DtpgResult result = dtpg.dtpg(fault);
+      DtpgResult result = dtpg.gen_pattern(fault);
       update_result(fault, result);
       mStats.merge(dtpg.stats());
     }
@@ -232,7 +232,7 @@ DtpgTest::ffr_new_test()
     DtpgEngine dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
-	DtpgResult result = dtpg.dtpg(fault);
+	DtpgResult result = dtpg.gen_pattern(fault);
 	update_result(fault, result);
       }
     }
@@ -270,7 +270,7 @@ DtpgTest::mffc_new_test()
     for ( auto fault: mffc.fault_list() ) {
       if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
 	// 故障に対するテスト生成を行なう．
-	DtpgResult result = dtpg.dtpg(fault);
+	DtpgResult result = dtpg.gen_pattern(fault);
 	update_result(fault, result);
       }
     }

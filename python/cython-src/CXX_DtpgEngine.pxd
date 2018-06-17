@@ -31,5 +31,5 @@ cdef extern from "DtpgEngine.h" namespace "nsYm::nsSatpg" :
                    const TpgNetwork&, const TpgFFR&)
         DtpgEngine(const string&, const string&, ostream*, FaultType, const string&,
                    const TpgNetwork&, const TpgMFFC&)
-        DtpgResult dtpg(const TpgFault*)
+        DtpgResult gen_pattern(const TpgFault*)
         const DtpgStats& stats()

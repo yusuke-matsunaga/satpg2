@@ -191,7 +191,7 @@ DtpgEngine::~DtpgEngine()
 // @param[out] testvect テストパタンを格納する変数
 // @return 結果を返す．
 DtpgResult
-DtpgEngine::dtpg(const TpgFault* fault)
+DtpgEngine::gen_pattern(const TpgFault* fault)
 {
   vector<SatLiteral> assumptions;
 
