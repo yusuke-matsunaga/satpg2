@@ -10,18 +10,13 @@
 from satpg_core import TestVector
 from satpg_core import UdGraph
 from satpg_core import coloring
+from satpg_core import gen_compat_graph
 
 ### @brief static compaction を行う．
 def compaction(tvlist, algorithm) :
     n = len(tvlist)
     print('# of initial patterns: {}'.format(n))
-    graph = UdGraph(n)
-    for i in range(n - 1) :
-        tv1 = tvlist[i]
-        for j in range(i + 1, n) :
-            tv2 = tvlist[j]
-            if not TestVector.is_compatible(tv1, tv2) :
-                graph.connect(i, j)
+    graph = gen_compat_graph(tvlist)
     nc, color_map = coloring(graph, algorithm)
     print('# of reduced patterns: {}'.format(nc))
 
