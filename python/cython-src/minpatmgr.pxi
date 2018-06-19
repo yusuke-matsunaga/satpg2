@@ -6,6 +6,38 @@
 ### Copyright (C) 2018 Yusuke Matsunaga
 ### All rights reserved.
 
+
+cdef class MinPatMgr :
+    cdef TpgNetwork __network
+
+    ### @brief 初期化
+    ### @param[in] network 対象のネットワーク
+    ### @param[in] fault_type 故障の種類
+    def __init__(MinPatMgr self, TpgNetwork network, fault_type) :
+        self.__network = network
+        self.__fault_type = fault_type
+        self.__fsarray = [ FaultStatus.Undetected for i in range(network.max_fault_id) ]
+        self.__fault_list = []
+
+    ### @brief 故障の状態を設定する．
+    def set_fault_status(MinPatMgr self, TpgFault fault, status) :
+        assert self.__fsarray[fault.id] == FaultStatus.Undetected
+        self.__fsarray[fault.id] = status
+        if status == FaultStatus.Detected :
+            self.__fault_list.append(fault)
+
+    ### @brief テストパタンを追加する．
+    ### @param[in] tv テストパタン
+    def add_pat(MinPatMgr self, TestVector tv) :
+        self.__tvlist.append(tv)
+
+    ### @brief 検出行列を作る．
+    def gen_detection_matrix(MinPatMgr self) :
+        cdef Fsim fsim = Fsim('Fsim3', self.__network, self.__fault_type)
+        fsim.set_skip_all()
+        for fault in self.__fault_list :
+            fsim.clear_skip(fault)
+
 def gen_compat_graph(tv_list) :
     cdef int id1, id2
     cdef TestVector tv1, tv2
