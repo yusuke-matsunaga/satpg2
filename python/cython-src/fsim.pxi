@@ -100,6 +100,7 @@ cdef class Fsim :
         cdef TestVector tv
         cdef const CXX_TpgFault* c_fault
         cdef unsigned long c_pat
+        cdef TpgFault fault
         self._thisptr.clear_patterns()
         pos = 0
         for tv in tv_list :
@@ -109,8 +110,13 @@ cdef class Fsim :
         fault_pat_list = []
         for i in range(n_det) :
             c_fault = self._thisptr.det_fault(i)
-            pat = self._thisptr.det_fault_pat(i)
-            fault_pat_list.append( (to_TpgFault(c_fault), pat) )
+            c_pat = self._thisptr.det_fault_pat(i)
+            fault = to_TpgFault(c_fault)
+            tv_list1 = []
+            for j in range(pos) :
+                if c_pat & (1 << j) :
+                    tv_list1.append(tv_list[j])
+            fault_pat_list.append( (fault, tv_list1) )
         return fault_pat_list
 
     ### @brief 遷移故障モードで信号遷移回数を数える．
