@@ -145,7 +145,7 @@ TvInputVals::set_val2(FSIM_CLASSNAME& fsim) const
 // @param[in] pat_map パタンのセットされているビットに1を立てたビットマップ
 // @param[in] pat_array パタンの配列(サイズは kPvBitLen の固定長)
 Tv2InputVals::Tv2InputVals(PackedVal pat_map,
-			   const TestVector* pat_array[]) :
+			   TestVector pat_array[]) :
   mPatMap(pat_map)
 {
   // パタンのセットされている最初のビット位置を求めておく．
@@ -156,9 +156,6 @@ Tv2InputVals::Tv2InputVals(PackedVal pat_map,
       if ( mPatFirstBit > i ) {
 	mPatFirstBit = i;
       }
-    }
-    else {
-      mPatArray[i] = nullptr;
     }
   }
 }
@@ -180,7 +177,7 @@ Tv2InputVals::set_val(FSIM_CLASSNAME& fsim) const
     PackedVal bit = 1ULL;
     for ( int i = 0; i < kPvBitLen; ++ i, bit <<= 1 ) {
       int pos = (mPatMap & bit) ? i : mPatFirstBit;
-      Val3 ival = mPatArray[pos]->ppi_val(iid);
+      Val3 ival = mPatArray[pos].ppi_val(iid);
       bit_set(val, ival, bit);
     }
     simnode->set_val(val);
@@ -200,7 +197,7 @@ Tv2InputVals::set_val1(FSIM_CLASSNAME& fsim) const
     PackedVal bit = 1ULL;
     for ( int i = 0; i < kPvBitLen; ++ i, bit <<= 1 ) {
       int pos = (mPatMap & bit) ? i : mPatFirstBit;
-      Val3 ival = mPatArray[pos]->ppi_val(iid);
+      Val3 ival = mPatArray[pos].ppi_val(iid);
       bit_set(val, ival, bit);
     }
     simnode->set_val(val);
@@ -220,7 +217,7 @@ Tv2InputVals::set_val2(FSIM_CLASSNAME& fsim) const
     PackedVal bit = 1ULL;
     for ( int i = 0; i < kPvBitLen; ++ i, bit <<= 1 ) {
       int pos = (mPatMap & bit) ? i : mPatFirstBit;
-      Val3 ival = mPatArray[pos]->aux_input_val(iid);
+      Val3 ival = mPatArray[pos].aux_input_val(iid);
       bit_set(val, ival, bit);
     }
     simnode->set_val(val);

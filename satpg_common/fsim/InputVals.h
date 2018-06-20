@@ -140,7 +140,7 @@ public:
   /// @param[in] pat_map パタンのセットされているビットに1を立てたビットマップ
   /// @param[in] pat_array パタンの配列(サイズは kPvBitLen の固定長)
   Tv2InputVals(PackedVal pat_map,
-	       const TestVector* pat_array[]);
+	       TestVector pat_array[]);
 
   /// @brief デストラクタ
   virtual
@@ -190,7 +190,7 @@ private:
   int mPatFirstBit;
 
   // テストベクタの配列
-  const TestVector* mPatArray[kPvBitLen];
+  TestVector mPatArray[kPvBitLen];
 
 };
 

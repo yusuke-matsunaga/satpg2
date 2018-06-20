@@ -416,10 +416,6 @@ FSIM_CLASSNAME::clear_patterns()
 {
   mPatMap = kPvAll0;
   mPatFirstBit = kPvBitLen;
-  for ( int i = 0; i < kPvBitLen; ++ i ) {
-    delete mPatBuff[i];
-    mPatBuff[i] = nullptr;
-  }
 }
 
 // @brief ppsfp 用のパタンを設定する．
@@ -431,7 +427,7 @@ FSIM_CLASSNAME::set_pattern(int pos,
 {
   ASSERT_COND( pos >= 0 && pos < kPvBitLen );
 
-  mPatBuff[pos] = new TestVector(tv);
+  mPatBuff[pos] = tv;
   mPatMap |= (1ULL << pos);
 
   if ( mPatFirstBit > pos ) {
@@ -447,7 +443,7 @@ FSIM_CLASSNAME::get_pattern(int pos)
   ASSERT_COND( pos >= 0 && pos < kPvBitLen );
   ASSERT_COND ( mPatMap & (1ULL << pos) );
 
-  return *mPatBuff[pos];
+  return mPatBuff[pos];
 }
 
 // @brief SPSFP故障シミュレーションの本体

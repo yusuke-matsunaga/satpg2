@@ -17,6 +17,7 @@
 #include "SimFault.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
+#include "TestVector.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -436,7 +437,7 @@ private:
   int mPatFirstBit;
 
   // パタンバッファ
-  const TestVector* mPatBuff[kPvBitLen];
+  TestVector mPatBuff[kPvBitLen];
 
   // イベントキュー
   EventQ mEventQ;
