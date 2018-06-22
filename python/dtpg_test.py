@@ -14,34 +14,51 @@ from satpg_core import FaultType
 from satpg_core import TpgNetwork
 from satpg_core import Fsim
 from satpg_core import TestVector
+from satpg_core import MinCov
 from dtpg import Dtpg
 from compaction import compaction
 #from satpg_core import gen_covering_matrix
 
 
-def gen_covering_matrix(tv_list, network, fault_type) :
+def gen_covering_matrix(fault_list, tv_list, network, fault_type) :
+    nf = len(fault_list)
+    fid_dict = {}
+    fid = 0
+    for fault in fault_list :
+        fid_dict[fault.id] = fid
+        fid += 1
+    assert fid == nf
+
+    mincov = MinCov(nf, len(tv_list))
+    #print('MinCov: {} x {}'.format(nf, len(tv_list)))
     fsim = Fsim('Fsim3', network, fault_type)
-    tv_buff = [ TestVector() for i in range(64) ]
+    tv_buff = []
     wpos = 0
-    pat_list_dict = dict()
+    tid_base = 0
     for tv in tv_list :
-        tv_buff[wpos] = tv
-        wpos += 1
-        if wpos == 64 :
+        tv_buff.append(tv)
+        if len(tv_buff) == 64 :
             fp_list = fsim.ppsfp(tv_buff)
             for fault, patid_list in fp_list :
-                if not fault.id in pat_list_dict :
-                    pat_list_dict[fault.id] = list()
+                fid = fid_dict[fault.id]
                 for patid in patid_list :
-                    pat_list_dict[fault.id].append(tv_buff[patid])
-            wpos = 0
-    if wpos > 0 :
+                    #print('  insert({}, {})'.format(fid, tid_base + patid))
+                    mincov.insert_elem(fid, tid_base + patid)
+            tv_buff = []
+            tid_base += 64
+    if len(tv_buff) > 0 :
         fp_list = fsim.ppsfp(tv_buff)
         for fault, patid_list in fp_list :
-            if not fault.id in pat_list_dict :
-                pat_list_dict[fault.id] = list()
+            fid = fid_dict[fault.id]
             for patid in patid_list :
-                pat_list_dict[fault.id].append(tv_buff[patid])
+                #print('  insert({}, {})'.format(fid, tid_base + patid))
+                mincov.insert_elem(fid, tid_base + patid)
+
+    cost, solution = mincov.heuristic()
+    print('# of initial patterns: {}'.format(len(tv_list)))
+    print('# of reduced patterns: {}'.format(cost))
+    return [ tv_list[id] for id in solution ]
+
 
 def main() :
 
@@ -158,13 +175,13 @@ def main() :
         lap1 = time.process_time()
         cpu_time = lap1 - start
 
-        gen_covering_matrix(dtpg.tvlist, network, fault_type)
+        tvlist = dtpg.tvlist
+        tvlist = gen_covering_matrix(dtpg.fault_list, tvlist, network, fault_type)
 
         lap2 = time.process_time()
         print('CPU time for covering_matrix: {:8.2f}'.format(lap2 - lap1))
         lap1 = lap2
 
-        tvlist = dtpg.tvlist
         if cmp_algorithm :
             tvlist = compaction(tvlist, cmp_algorithm)
 
