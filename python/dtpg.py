@@ -23,6 +23,7 @@ class Dtpg :
         self.__fsim3 = Fsim('Fsim3', network, fault_type)
         self.__fsim3.clear_skip_all()
         self.__fsmgr = FaultStatusMgr(network)
+        self.__fault_list = []
         self.__tvlist = []
         self.__fault_drop = False
 
@@ -73,6 +74,7 @@ class Dtpg :
             # fault を検出可能故障と記録
             self.__fsmgr.set(fault, FaultStatus.Detected)
             self.__fsim3.set_skip(fault)
+            self.__fault_list.append(fault)
             # fault のパタンとして testvect を記録
             self.__tvlist.append(testvect)
             if self.__fault_drop :
@@ -80,6 +82,7 @@ class Dtpg :
                 for fault in self.__fsim3.sppfp(testvect) :
                     self.__fsmgr.set(fault, FaultStatus.Detected)
                     self.__fsim3.set_skip(fault)
+                    self.__fault_list.append(fault)
                     self.__ndet += 1
         elif stat == FaultStatus.Untestable :
             self.__nunt += 1
@@ -90,6 +93,11 @@ class Dtpg :
             self.__nabt += 1
         else :
             assert False
+
+    ### @brief 検出された故障のリストを返す．
+    @property
+    def fault_list(self) :
+        return self.__fault_list
 
     ### @brief テストパタンのリストを返す．
     @property
