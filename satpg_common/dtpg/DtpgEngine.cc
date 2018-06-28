@@ -23,6 +23,7 @@
 #include "ym/SatSolver.h"
 #include "ym/SatStats.h"
 #include "ym/StopWatch.h"
+#include "ym/Range.h"
 
 //#define DEBUG_DTPG
 
@@ -665,8 +666,9 @@ DtpgEngine::make_ffr_condition(const TpgFault* fault)
     Val3 nval = onode->nval();
     if ( nval != Val3::_X ) {
       bool val = (nval == Val3::_1);
-      for ( auto inode1: onode->fanin_list() ) {
-	if ( inode1 != inode ) {
+      for ( auto ipos: Range(onode->fanin_num()) ) {
+	if ( ipos != fault->tpg_pos() ) {
+	  auto inode1 = onode->_fanin(ipos);
 	  add_assign(assign_list, inode1, 1, val);
 	}
       }
