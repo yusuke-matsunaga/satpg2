@@ -24,6 +24,7 @@
 #include "GateEnc.h"
 
 #include "Val3.h"
+#include "ym/Range.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_STRUCTENC
@@ -205,11 +206,11 @@ StructEnc::add_fault_condition(const TpgFault* fault,
     if ( nval != Val3::_X ) {
       bool val = (nval == Val3::_1);
       // inode -> onode の伝搬条件
-      for ( auto inode1: onode->fanin_list() ) {
-	if ( inode1 == inode ) {
-	  continue;
+      for ( auto ipos: Range(onode->fanin_num()) ) {
+	if ( ipos != fault->tpg_pos() ) {
+	  auto inode1 = onode->fanin(ipos);
+	  assign_list.add(inode1, 1, val);
 	}
-	assign_list.add(inode1, 1, val);
       }
     }
   }
