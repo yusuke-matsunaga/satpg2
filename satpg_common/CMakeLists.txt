@@ -100,6 +100,10 @@ set (colcov_SOURCES
   colcov/ColCov.cc
   )
 
+set (minpat_SOURCES
+  minpat/MinPatMgr.cc
+  )
+
 set (sa_SOURCES
 
   sa/minpat/Verifier.cc
@@ -144,6 +148,7 @@ ym_add_object_library ( satpg_common
   ${ex_SOURCES}
   ${jt_SOURCES}
   ${colcov_SOURCES}
+  ${minpat_SOURCES}
 #  ${sa_SOURCES}
 #  ${td_SOURCES}
   )

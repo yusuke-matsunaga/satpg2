@@ -46,7 +46,6 @@ DtpgTest::DtpgTest(const string& sat_type,
 // @brief デストラクタ
 DtpgTest::~DtpgTest()
 {
-  delete mFsim;
 }
 
 // @brief シングルモードのテストを行う．

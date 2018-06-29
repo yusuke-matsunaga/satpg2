@@ -130,7 +130,7 @@ private:
   FaultStatusMgr mFaultMgr;
 
   // 故障シミュレータ
-  Fsim* mFsim;
+  std::unique_ptr<Fsim> mFsim;
 
   // バックトレーサー
   Justifier* mJustifier;

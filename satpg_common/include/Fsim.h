@@ -38,7 +38,7 @@ public:
   /// @param[in] network ネットワーク
   /// @param[in] fault_type 故障の型
   static
-  Fsim*
+  std::unique_ptr<Fsim>
   new_Fsim2(const TpgNetwork& network,
 	    FaultType fault_type);
 
@@ -46,7 +46,7 @@ public:
   /// @param[in] network ネットワーク
   /// @param[in] fault_type 故障の型
   static
-  Fsim*
+  std::unique_ptr<Fsim>
   new_Fsim3(const TpgNetwork& network,
 	    FaultType fault_type);
 

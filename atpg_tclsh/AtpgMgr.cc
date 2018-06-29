@@ -36,11 +36,7 @@ AtpgMgr::AtpgMgr() :
 // @brief デストラクタ
 AtpgMgr::~AtpgMgr()
 {
-  delete mSaFsim2;
-  delete mSaFsim3;
   delete mSaFaultMgr;
-  delete mTdFsim2;
-  delete mTdFsim3;
   delete mTdFaultMgr;
 }
 
@@ -83,11 +79,7 @@ AtpgMgr::misc_time() const
 void
 AtpgMgr::after_set_network()
 {
-  delete mSaFsim2;
-  delete mSaFsim3;
   delete mSaFaultMgr;
-  delete mTdFsim2;
-  delete mTdFsim3;
   delete mTdFaultMgr;
 
   mSaTvList.clear();

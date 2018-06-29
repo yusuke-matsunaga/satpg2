@@ -33,15 +33,15 @@ namespace nsFsimTd3 {
 // Fsim の実装コード
 //////////////////////////////////////////////////////////////////////
 
-Fsim*
+std::unique_ptr<Fsim>
 Fsim::new_Fsim2(const TpgNetwork& network,
 		FaultType fault_type)
 {
   if ( fault_type == FaultType::StuckAt ) {
-    return nsFsimSa2::new_Fsim(network);
+    return static_cast<std::unique_ptr<Fsim>>(nsFsimSa2::new_Fsim(network));
   }
   else if ( fault_type == FaultType::TransitionDelay ) {
-    return nsFsimTd2::new_Fsim(network);
+    return static_cast<std::unique_ptr<Fsim>>(nsFsimTd2::new_Fsim(network));
   }
   else {
     ASSERT_NOT_REACHED;
@@ -49,15 +49,15 @@ Fsim::new_Fsim2(const TpgNetwork& network,
   }
 }
 
-Fsim*
+std::unique_ptr<Fsim>
 Fsim::new_Fsim3(const TpgNetwork& network,
 		FaultType fault_type)
 {
   if ( fault_type == FaultType::StuckAt ) {
-    return nsFsimSa3::new_Fsim(network);
+    return static_cast<std::unique_ptr<Fsim>>(nsFsimSa3::new_Fsim(network));
   }
   else if ( fault_type == FaultType::TransitionDelay ) {
-    return nsFsimTd3::new_Fsim(network);
+    return static_cast<std::unique_ptr<Fsim>>(nsFsimTd3::new_Fsim(network));
   }
   else {
     ASSERT_NOT_REACHED;

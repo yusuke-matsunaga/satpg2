@@ -62,6 +62,7 @@ class ValMap;
 
 class Fsim;
 
+enum class FaultType;
 enum class GateType;
 enum class Val3;
 

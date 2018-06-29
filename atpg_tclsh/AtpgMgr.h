@@ -159,10 +159,10 @@ private:
   TpgNetwork mNetwork;
 
   // 縮退故障用の2値の故障シミュレータ
-  Fsim* mSaFsim2;
+  std::unique_ptr<Fsim> mSaFsim2;
 
   // 縮退故障用の3値の故障シミュレータ
-  Fsim* mSaFsim3;
+  std::unique_ptr<Fsim> mSaFsim3;
 
   // 縮退故障用の故障マネージャ
   FaultStatusMgr* mSaFaultMgr;
@@ -171,10 +171,10 @@ private:
   vector<TestVector> mSaTvList;
 
   // 遷移故障用の2値の故障シミュレータ
-  Fsim* mTdFsim2;
+  std::unique_ptr<Fsim> mTdFsim2;
 
   // 遷移故障用の3値の故障シミュレータ
-  Fsim* mTdFsim3;
+  std::unique_ptr<Fsim> mTdFsim3;
 
   // 遷移故障用の故障マネージャ
   FaultStatusMgr* mTdFaultMgr;

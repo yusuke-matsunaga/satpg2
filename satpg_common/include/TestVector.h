@@ -108,6 +108,15 @@ public:
   // 値を取り出す関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ベクタ長を得る．
+  int
+  vector_size() const;
+
+  /// @brief 値を得る．
+  /// @param[in] pos ビット位置 ( 0 <= pos < vector_size() )
+  Val3
+  val(int pos) const;
+
   /// @brief 外部入力数を得る．
   int
   input_num() const;
@@ -436,7 +445,7 @@ TestVector::TestVector() :
   mInputNum(0),
   mDffNum(0),
   mFaultType(FaultType::StuckAt),
-  mVector(0)
+  mVector(_calc_vect_len())
 {
 }
 
@@ -520,6 +529,23 @@ TestVector::new_from_hex(int input_num,
 inline
 TestVector::~TestVector()
 {
+}
+
+// @brief ベクタ長を得る．
+inline
+int
+TestVector::vector_size() const
+{
+  return mVector.len();
+}
+
+// @brief 値を得る．
+// @param[in] pos ビット位置 ( 0 <= pos < vector_size() )
+inline
+Val3
+TestVector::val(int pos) const
+{
+  return mVector.val(pos);
 }
 
 // @brief 入力数を得る．

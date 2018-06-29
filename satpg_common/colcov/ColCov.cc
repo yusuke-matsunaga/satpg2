@@ -101,6 +101,10 @@ ColCov::heuristic(const string& algorithm,
 		  const string& option,
 		  vector<int>& color_map)
 {
+  cout << "# of rows      = " << row_size() << endl;
+  cout << "# of columns   = " << col_size() << endl;
+  cout << "# of conflicts = " << mConflictList.size() << endl;
+
   int col_num = 0;
 
   if ( algorithm == "mincov+color" ) {
@@ -148,6 +152,8 @@ ColCov::mincov_color(const string& option,
     rcol_map[new_col] = col;
   }
 
+
+  int ne = 0;
   UdGraph graph(new_col_size);
   for ( auto p: mConflictList ) {
     auto col1 = p.first;
@@ -156,8 +162,13 @@ ColCov::mincov_color(const string& option,
     auto new_col2 = col_map[col2];
     if ( new_col1 != -1 && new_col2 != -1 ) {
       graph.connect(new_col1, new_col2);
+      ++ ne;
     }
   }
+
+  cout << "After mincov" << endl
+       << "# of columns   = " << new_col_size << endl
+       << "# of conflicts = " << ne << endl;
 
   vector<int> _color_map;
   int col_num = coloring(graph, "isx", _color_map);

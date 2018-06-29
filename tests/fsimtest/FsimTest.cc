@@ -342,7 +342,7 @@ fsim2test(int argc,
   }
   FaultType fault_type = sa_mode ? FaultType::StuckAt : FaultType::TransitionDelay;
 
-  Fsim* fsim = nullptr;
+  std::unique_ptr<Fsim> fsim;
   if ( fsim2 ) {
     fsim = Fsim::new_Fsim2(network, fault_type);
   }
@@ -374,8 +374,6 @@ fsim2test(int argc,
     // デフォルトフォールバックは SPSFP
     dpnum = spsfp_test(network, *fsim, tv_list);
   }
-
-  delete fsim;
 
   int det_num = dpnum.first;
   int nepat = dpnum.second;
