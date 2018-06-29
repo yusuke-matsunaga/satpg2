@@ -51,18 +51,62 @@ def gen_compat_graph(tv_list) :
                 graph.connect(id1, id2)
     return graph
 
+def gen_colcov(fault_list, tv_list, network, fault_type) :
+    cdef int id1, id2
+    cdef TestVector tv1, tv2
+    cdef int nv = len(tv_list)
+    cdef int nf = len(fault_list)
+    cdef Fsim fsim = Fsim('Fsim3', network, fault_type)
+    cdef TestVector tv
+    cdef int wpos = 0
+    cdef int tid_base = 0
+    cdef int fid = 0
+    cdef ColCov colcov = ColCov(nf, nv)
+    fid_dict = {}
+    for fault in fault_list :
+        fid_dict[fault.id] = fid
+        fid += 1
+    tv_buff = []
+    elem_list = []
+    for tv in tv_list :
+        tv_buff.append(tv)
+        if len(tv_buff) == 64 :
+            fp_list = fsim.ppsfp(tv_buff)
+            for fault, pat_id_list in fp_list :
+                fid = fid_dict[fault.id]
+                for pat_id in pat_id_list :
+                    colcov.insert_elem(fid, tid_base + pat_id)
+            tv_buff = []
+            tid_base += 64
+    if len(tv_buff) > 0 :
+        fp_list = fsim.ppsfp(tv_buff)
+        for fault, pat_id_list in fp_list :
+            fid = fid_dict[fault.id]
+            for pat_id in pat_id_list :
+                colcov.insert_elem(fid, tid_base + pat_id)
+
+    for id1 in range(nv - 1) :
+        tv1 = tv_list[id1]
+        for id2 in range(id1 + 1, nv) :
+            tv2 = tv_list[id2]
+            if not TestVector.is_compatible(tv1, tv2) :
+                colcov.insert_conflict(id1, id2)
+
+    return colcov
+
 def gen_conflict_list(tv_list) :
     cdef int id1, id2
     cdef TestVector tv1, tv2
     cdef int n = len(tv_list)
-    conflict_list = []
+    #conflict_list = []
     for id1 in range(n - 1) :
         tv1 = tv_list[id1]
         for id2 in range(id1 + 1, n) :
             tv2 = tv_list[id2]
             if not TestVector.is_compatible(tv1, tv2) :
-                conflict_list.append( (id1, id2) )
-    return conflict_list
+                #conflict_list.append( (id1, id2) )
+                yield id1, id2
+    #return conflict_list
 
 def gen_elem_list(fault_list, tv_list, network, fault_type) :
     cdef int nf = len(fault_list)

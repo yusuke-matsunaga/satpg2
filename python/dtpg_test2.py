@@ -18,23 +18,13 @@ from satpg_core import MinCov
 from satpg_core import ColCov
 from dtpg import Dtpg
 from compaction import compaction
-from satpg_core import gen_conflict_list
-from satpg_core import gen_elem_list
+from satpg_core import gen_colcov
 
 
 def gen_covering_matrix(fault_list, tv_list, network, fault_type) :
-    nf = len(fault_list)
+    colcov = gen_colcov(fault_list, tv_list, network, fault_type)
+
     nv = len(tv_list)
-    colcov = ColCov(nf, nv)
-
-    elem_list = gen_elem_list(fault_list, tv_list, network, fault_type)
-    for row, col in elem_list :
-        colcov.insert_elem(row, col)
-
-    conflict_list = gen_conflict_list(tv_list)
-    for col1, col2 in conflict_list :
-        colcov.insert_conflict(col1, col2)
-
     print('# of initial patterns: {}'.format(nv))
     n, color_map = colcov.heuristic(algorithm = 'mincov+coloring')
     print('# of reduced patterns: {}'.format(n))
