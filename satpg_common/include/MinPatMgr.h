@@ -9,9 +9,12 @@
 /// All rights reserved.
 
 #include "satpg.h"
+#include "TestVector.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
+
+class MpColGraph;
 
 //////////////////////////////////////////////////////////////////////
 /// @class MinPatMgr MinPatMgr.h "MinPatMgr.h"
@@ -44,6 +47,49 @@ public:
        const TpgNetwork& network,
        FaultType fault_type);
 
+  /// @brief 故障数を得る．
+  int
+  fault_num() const;
+
+  /// @brief 故障を得る．
+  /// @param[in] pos 位置 ( 0 <= pos < fault_num() )
+  const TpgFault*
+  fault(int pos) const;
+
+  /// @brief 故障リストを得る．
+  const vector<const TpgFault*>&
+  fault_list() const;
+
+  /// @brief 初期テストパタン数を得る．
+  int
+  orig_tv_num() const;
+
+  /// @brief 初期テストパタンを得る．
+  /// @param[in] pos 位置 ( 0 <= pos < orig_tv_num() )
+  TestVector
+  orig_tv(int pos) const;
+
+  /// @brief 初期テストパタンのリストを得る．
+  const vector<TestVector>&
+  orig_tv_list() const;
+
+  /// @brief 問題を解く．
+  /// @param[in] algorithm アルゴリズム名
+  /// @param[out] new_tv_list 圧縮したテストパタンのリスト
+  /// @return 結果のパタン数を返す．
+  int
+  solve(const string& algorithm,
+	vector<TestVector>& new_tv_list);
+
+  /// @brief 彩色問題でパタン圧縮を行う．
+  /// @param[in] tv_list 初期テストパタンのリスト
+  /// @param[out] new_tv_list 圧縮結果のテストパタンのリスト
+  /// @return 結果のパタン数を返す．
+  static
+  int
+  coloring(const vector<TestVector>& tv_list,
+	   vector<TestVector>& new_tv_list);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -59,9 +105,36 @@ private:
   gen_covering_matrix(const TpgNetwork& network,
 		      FaultType fault_type);
 
+  /// @brief 故障シミュレーションを行う．
+  void
+  do_fsim(Fsim& fsim,
+	  int tv_base);
+
   /// @brief テストパタンの衝突リストを作る．
   void
   gen_conflict_list();
+
+  /// @brief テストパタンの衝突リストを作る．
+  void
+  gen_conflict_list2();
+
+  /// @brief mincov を解いてから coloring を行う．
+  /// @param[out] color_map 彩色結果
+  /// @return 彩色数を返す．
+  ///
+  /// 彩色数を nc とすると color_map[i] は 0 - nc の値を取る．
+  /// 0 のテストパタンは未彩色を表す．
+  int
+  mincov_coloring(vector<int>& color_map);
+
+  /// @brief coloring を解いてから mincov を行う．
+  /// @param[out] color_map 彩色結果
+  /// @return 彩色数を返す．
+  ///
+  /// 彩色数を nc とすると color_map[i] は 0 - nc の値を取る．
+  /// 0 のテストパタンは未彩色を表す．
+  int
+  coloring_mincov(vector<int>& color_map);
 
 
 private:
@@ -71,6 +144,9 @@ private:
 
   // 対象の故障リスト
   vector<const TpgFault*> mFaultList;
+
+  // 故障のID番号をキーにして mFaultList 上の位置を保持する配列
+  vector<int> mFidMap;
 
   // 元のテストパタンのリスト
   vector<TestVector> mOrigTvList;
@@ -88,6 +164,65 @@ private:
   vector<vector<int>> mConflictListArray2;
 
 };
+
+
+//////////////////////////////////////////////////////////////////////
+// インライン関数の定義
+//////////////////////////////////////////////////////////////////////
+
+// @brief 故障数を得る．
+inline
+int
+MinPatMgr::fault_num() const
+{
+  return mFaultList.size();
+}
+
+// @brief 故障を得る．
+// @param[in] pos 位置 ( 0 <= pos < fault_num() )
+inline
+const TpgFault*
+MinPatMgr::fault(int pos) const
+{
+  ASSERT_COND( pos >= 0 && pos < fault_num() );
+
+  return mFaultList[pos];
+}
+
+// @brief 故障リストを得る．
+inline
+const vector<const TpgFault*>&
+MinPatMgr::fault_list() const
+{
+  return mFaultList;
+}
+
+// @brief 初期テストパタン数を得る．
+inline
+int
+MinPatMgr::orig_tv_num() const
+{
+  return mOrigTvList.size();
+}
+
+// @brief 初期テストパタンを得る．
+// @param[in] pos 位置 ( 0 <= pos < orig_tv_num() )
+inline
+TestVector
+MinPatMgr::orig_tv(int pos) const
+{
+  ASSERT_COND( pos >= 0 && pos < orig_tv_num() );
+
+  return mOrigTvList[pos];
+}
+
+// @brief 初期テストパタンのリストを得る．
+inline
+const vector<TestVector>&
+MinPatMgr::orig_tv_list() const
+{
+  return mOrigTvList;
+}
 
 END_NAMESPACE_YM_SATPG
 

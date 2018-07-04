@@ -196,3 +196,9 @@ cdef class TestVector :
                 tv1 = tvlist[i]
                 tv0 &= tv1
             return tv0
+
+### @brief C++ の TestVector から変換する．
+cdef to_TestVector(CXX_TestVector c_tv) :
+    cdef TestVector tv = TestVector()
+    tv._this = c_tv
+    return tv

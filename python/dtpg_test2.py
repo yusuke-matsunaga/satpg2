@@ -17,7 +17,7 @@ from satpg_core import TestVector
 from satpg_core import MinCov
 from satpg_core import ColCov
 from dtpg import Dtpg
-from compaction import compaction
+from compaction import mincov, coloring
 from satpg_core import gen_colcov
 from satpg_core import MinPatMgr
 
@@ -161,12 +161,40 @@ def main() :
         lap1 = time.process_time()
         cpu_time = lap1 - start
 
-        tvlist = dtpg.tvlist
-        #tvlist = gen_covering_matrix(dtpg.fault_list, tvlist, network, fault_type)
-        minpatmgr = MinPatMgr(dtpg.fault_list, tvlist, network, fault_type)
+        tv_list = dtpg.tvlist
+
+        if cmp_algorithm == 'mincov+dsatur' :
+            tv_list1 = mincov(dtpg.fault_list, tv_list, network, fault_type)
+            tv_list2 = coloring(tv_list1, 'dsatur')
+            tv_list = tv_list2
+        elif cmp_algorithm == 'mincov+isx' :
+            tv_list1 = mincov(dtpg.fault_list, tv_list, network, fault_type)
+            tv_list2 = coloring(tv_list1, 'isx')
+            tv_list = tv_list2
+        elif cmp_algorithm == 'dsatur+mincov' :
+            tv_list1 = coloring(tv_list, 'dsatur')
+            tv_list2 = mincov(dtpg.fault_list, tv_list1, network, fault_type)
+            tv_list = tv_list2
+        elif cmp_algorithm == 'isx+mincov' :
+            tv_list1 = coloring(tv_list, 'isx')
+            tv_list2 = mincov(dtpg.fault_list, tv_list1, network, fault_type)
+            tv_list = tv_list2
+        elif cmp_algorithm == 'dsatur' :
+            tv_list1 = coloring(tv_list, 'dsatur')
+            tv_list = tv_list1
+        elif cmp_algorithm == 'isx' :
+            tv_list1 = coloring(tv_list, 'isx')
+            tv_list = tv_list1
+        elif cmp_algorithm == 'coloring2' :
+            tv_list1 = MinPatMgr.coloring(tv_list)
+            tv_list = tv_list1
+        elif cmp_algorithm == 'mincov' :
+            tv_list1 = mincov(dtpg.fault_list, tv_list, network, fault_type)
+            tv_list = tv_list1
+        elif cmp_algorithm != '' :
+            print('Error: unknown algorithm "{}"'.format(cmp_algorithm))
 
         lap2 = time.process_time()
-        print('CPU time for color-covering: {:8.2f}'.format(lap2 - lap1))
         cpu_time2 = lap2 - lap1
 
         tf = 0
@@ -177,7 +205,7 @@ def main() :
         print('# of detected faults:   {:8d}'.format(ndet))
         print('# of untestable faults: {:8d}'.format(nunt))
         print('# of aborted faults:    {:8d}'.format(nabt))
-        print('# of patterns:          {:8d}'.format(len(tvlist)))
+        print('# of patterns:          {:8d}'.format(len(tv_list)))
         print('CPU time(ATPG):         {:8.2f}'.format(cpu_time))
         print('CPU time(compaction):   {:8.2f}'.format(cpu_time2))
 

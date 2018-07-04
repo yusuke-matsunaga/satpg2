@@ -6,6 +6,7 @@
 ### Copyright (C) 2018 Yusuke Matsunaga
 ### All rights reserved.
 
+from libcpp.string cimport string
 from libcpp.vector cimport vector
 from CXX_TpgFault cimport TpgFault
 from CXX_TestVector cimport TestVector
@@ -21,3 +22,12 @@ cdef extern from "MinPatMgr.h" namespace "nsYm::nsSatpg" :
                   const vector[TestVector]& tv_list,
                   const TpgNetwork& network,
                   FaultType fault_type)
+        int fault_num()
+        const TpgFault* fault(int)
+        int orig_tv_num()
+        TestVector orig_tv(int)
+        int solve(const string& algorithm,
+                  vector[TestVector]& new_tv_list)
+        @staticmethod
+        int coloring(const vector[TestVector]& tv_list,
+                     vector[TestVector]& new_tv_list)

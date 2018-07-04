@@ -6,7 +6,8 @@
 ### Copyright (C) 2018 Yusuke Matsunaga
 ### All rights reserved.
 
-from libcpp cimport vector
+from libcpp.string cimport string
+from libcpp.vector cimport vector
 from CXX_MinPatMgr cimport MinPatMgr as CXX_MinPatMgr
 from CXX_TpgFault cimport TpgFault as CXX_TpgFault
 from CXX_TestVector cimport TestVector as CXX_TestVector
@@ -38,18 +39,71 @@ cdef class MinPatMgr :
             c_tv_list[i] = tv._this
         self._this.init(c_fault_list, c_tv_list, network._this, c_fault_type)
 
+    ### @brief 問題を解く
+    def solve(MinPatMgr self, algorithm) :
+        cdef string c_algorithm = algorithm.encode('UTF-8')
+        cdef vector[CXX_TestVector] c_tv_list
+        cdef CXX_TestVector c_tv
+        cdef int nc = self._this.solve(c_algorithm, c_tv_list)
+        tv_list = [ to_TestVector(c_tv) for c_tv in c_tv_list ]
+        return nc, tv_list
+
+    ### @brief 彩色問題を用いて問題を解く．
+    @staticmethod
+    def coloring(tv_list) :
+        cdef vector[CXX_TestVector] c_tv_list
+        cdef vector[CXX_TestVector] c_new_tv_list
+        cdef TestVector tv
+        cdef int i
+        c_tv_list.resize(len(tv_list))
+        for i in range(len(tv_list)) :
+            tv = tv_list[i]
+            c_tv_list[i] = tv._this
+        CXX_MinPatMgr.coloring(c_tv_list, c_new_tv_list)
+        return [ to_TestVector(c_tv) for c_tv in c_new_tv_list ]
+
+
 def gen_compat_graph(tv_list) :
     cdef int id1, id2
     cdef TestVector tv1, tv2
     cdef int n = len(tv_list)
+    cdef int nbits
+    cdef int bit, bit0, bit1
     cdef UdGraph graph = UdGraph(n)
-    for id1 in range(n - 1) :
+    cdef set id_set
+    assert n > 0
+    nbits = tv_list[0].vector_size
+    conflict_pair_array = []
+    conflict_pos_list = [ [] for i in range(n) ]
+    for bit in range(nbits) :
+        list0 = []
+        list1 = []
+        for id1 in range(n) :
+            tv1 = tv_list[id1]
+            val = tv1.val(bit)
+            if val == Val3._0 :
+                list0.append(id1)
+            elif val == Val3._1 :
+                list1.append(id1)
+        conflict_pair_array.append(list0)
+        conflict_pair_array.append(list1)
+        if len(list0) > 0 and len(list1) :
+            bit0 = bit * 2 + 0
+            bit1 = bit * 2 + 1
+            for id1 in list0 :
+                conflict_pos_list[id1].append(bit1)
+            for id1 in list1 :
+                conflict_pos_list[id1].append(bit0)
+    for id1 in range(n) :
         tv1 = tv_list[id1]
-        for id2 in range(id1 + 1, n) :
-            tv2 = tv_list[id2]
-            if not TestVector.is_compatible(tv1, tv2) :
-                graph.connect(id1, id2)
+        id_set = set()
+        for bit in conflict_pos_list[id1] :
+            for id2 in conflict_pair_array[bit] :
+                if id2 > id1 and id2 not in id_set :
+                    id_set.add(id2)
+                    graph.connect(id1, id2)
     return graph
+
 
 def gen_colcov(fault_list, tv_list, network, fault_type) :
     cdef int id1, id2

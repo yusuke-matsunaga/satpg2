@@ -102,6 +102,8 @@ set (colcov_SOURCES
 
 set (minpat_SOURCES
   minpat/MinPatMgr.cc
+  minpat/MpColGraph.cc
+  minpat/Isx.cc
   )
 
 set (sa_SOURCES

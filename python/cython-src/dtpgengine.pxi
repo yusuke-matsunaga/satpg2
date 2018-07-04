@@ -37,9 +37,7 @@ cdef class DtpgEngine :
     def __call__(DtpgEngine self, TpgFault fault) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
         cdef CXX_DtpgResult c_result = self._thisptr.gen_pattern(c_fault)
-        cdef TestVector testvect = TestVector()
-        testvect._this = c_result.testvector()
-        return to_FaultStatus(c_result.status()), testvect
+        return to_FaultStatus(c_result.status()), to_TestVector(c_result.testvector())
 
     ### @brief 統計情報を得る．
     @property
@@ -71,9 +69,7 @@ cdef class DtpgEngineFFR :
     def __call__(DtpgEngine self, TpgFault fault) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
         cdef CXX_DtpgResult c_result = self._thisptr.gen_pattern(c_fault)
-        cdef TestVector testvect = TestVector()
-        testvect._this = c_result.testvector()
-        return to_FaultStatus(c_result.status()), testvect
+        return to_FaultStatus(c_result.status()), to_TestVector(c_result.testvector())
 
     ### @brief 統計情報を得る．
     @property
@@ -105,9 +101,7 @@ cdef class DtpgEngineMFFC :
     def __call__(DtpgEngine self, TpgFault fault) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
         cdef CXX_DtpgResult c_result = self._thisptr.gen_pattern(c_fault)
-        cdef TestVector testvect = TestVector()
-        testvect._this = c_result.testvector()
-        return to_FaultStatus(c_result.status()), testvect
+        return to_FaultStatus(c_result.status()), to_TestVector(c_result.testvector())
 
     ### @brief 統計情報を得る．
     @property
