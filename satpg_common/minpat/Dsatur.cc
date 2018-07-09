@@ -34,26 +34,32 @@ Dsatur::init()
   if ( n > 0 ) {
     mSatDegree = new int[n];
     mAdjDegree = new int[n];
+    mCovDegree = new int[n];
     for ( auto node_id: Range(n) ) {
       int c = mGraph.color(node_id);
       if ( c != 0 ) {
 	continue;
       }
-      bool has_rows = false;
+      bool row_num = 0;
       for ( auto row_id: mGraph.cover_list(node_id) ) {
 	if ( !mGraph.is_covered(row_id) ) {
-	  has_rows = true;
-	  break;
+	  ++ row_num;
 	}
       }
-      if ( !has_rows ) {
+      if ( row_num == 0 ) {
 	continue;
       }
       mCandList.push_back(node_id);
       vector<bool> used_color(mGraph.color_num() + 1, false);
+      int adj_num = 0;
+      HashSet<int> node_set;
       for ( auto node1_id: mGraph.adj_list(node_id) ) {
-	int c1 = mGraph.color(node1_id);
-	used_color[c1] = true;
+	if ( !node_set.check(node1_id) ) {
+	  node_set.add(node1_id);
+	  ++ adj_num;
+	  int c1 = mGraph.color(node1_id);
+	  used_color[c1] = true;
+	}
       }
       int sat = 0;
       for ( auto c1: Range(1, mGraph.color_num()) ) {
@@ -62,12 +68,14 @@ Dsatur::init()
 	}
       }
       mSatDegree[node_id] = sat;
-      mAdjDegree[node_id] = mGraph.adj_list(node_id).num();
+      mAdjDegree[node_id] = adj_num;
+      mCovDegree[node_id] = row_num;
     }
   }
   else {
     mSatDegree = nullptr;
     mAdjDegree = nullptr;
+    mCovDegree = nullptr;
   }
 }
 
@@ -76,6 +84,7 @@ Dsatur::~Dsatur()
 {
   delete [] mSatDegree;
   delete [] mAdjDegree;
+  delete [] mCovDegree;
 }
 
 // @brief 彩色する．

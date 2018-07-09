@@ -47,14 +47,13 @@ Isx::coloring(int limit)
 {
   int remain_col = mGraph.node_num();
   int remain_row = mGraph.fault_num();
-  while ( remain_col > limit && remain_row > 0 ) {
-    cout << "Isx: remain_row = " << remain_row
-	 << ", remain_col = " << remain_col << endl;
+  while ( remain_row > limit && remain_row > 0 ) {
+    // 未彩色のノードを cand_list に入れる．
+    init_cand_list();
+
     vector<int> indep_set;
     indep_set.reserve(remain_col);
     get_indep_set(indep_set);
-
-    cout << "  size of indep_set: " << indep_set.size() << endl;
 
     // indep_set の各ノードに新しい色を割り当てる．
     mGraph.set_color(indep_set, mGraph.new_color());
@@ -84,18 +83,19 @@ Isx::coloring(int limit)
 void
 Isx::get_indep_set(vector<int>& indep_set)
 {
-  // 未彩色のノードを cand_list に入れる．
-  init_cand_list();
+  vector<int> tmp_list(mCandList);
 
   indep_set.clear();
-  int node_id = select_node0();
-  while ( node_id != -1 ) {
+  for ( ; ; ) {
+    int node_id = select_node0(tmp_list);
+    if ( node_id == -1 ) {
+      break;
+    }
+    indep_set.push_back(node_id);
     for ( auto row_id: mGraph.cover_list(node_id) ) {
       mGraph.set_covered(row_id);
     }
-    indep_set.push_back(node_id);
-    update_cand_list(node_id);
-    node_id = select_node0();
+    update_cand_list(node_id, tmp_list);
   }
   //sort(indep_set.begin(), indep_set.end());
 }
@@ -122,11 +122,17 @@ Isx::init_cand_list()
     }
   }
 
+#if 0
   for ( auto node_id: mCandList ) {
+    HashSet<int> node_set;
     for ( auto node1_id: mGraph.adj_list(node_id) ) {
-      ++ mAdjCount[node1_id];
+      if ( !node_set.check(node1_id) ) {
+	node_set.add(node1_id);
+	++ mAdjCount[node1_id];
+      }
     }
   }
+#endif
 }
 
 // @brief 候補集合に加えるノードを選ぶ．
@@ -134,15 +140,15 @@ Isx::init_cand_list()
 // - 現在の候補集合に隣接していないノードの内，隣接ノード数の少ないものを選ぶ．
 // - 追加できるノードがない場合は -1 を返す．
 int
-Isx::select_node()
+Isx::select_node(const vector<int>& cand_list)
 {
-  ASSERT_COND( mCandList.size() > 0 );
+  ASSERT_COND( cand_list.size() > 0 );
 
   vector<int> tmp_list;
-  tmp_list.reserve(mCandList.size());
+  tmp_list.reserve(cand_list.size());
   int min_num = mGraph.node_num();
   int max_num = 0;
-  for ( auto node_id: mCandList ) {
+  for ( auto node_id: cand_list ) {
     int c = mAdjCount[node_id];
     if ( c > min_num ) {
       continue;
@@ -184,21 +190,20 @@ Isx::select_node()
 // - 現在の候補集合に隣接していないノードの内，隣接ノード数の少ないものを選ぶ．
 // - 追加できるノードがない場合は -1 を返す．
 int
-Isx::select_node0()
+Isx::select_node0(const vector<int>& cand_list)
 {
   vector<int> tmp_list;
-  tmp_list.reserve(mCandList.size());
+  tmp_list.reserve(cand_list.size());
   int max_num = 0;
-  for ( auto node_id: mCandList ) {
+  for ( auto node_id: cand_list ) {
     int v = mValue[node_id];
-    if ( max_num > v ) {
-      continue;
+    if ( max_num <= v ) {
+      if ( max_num < v ) {
+	max_num = v;
+	tmp_list.clear();
+      }
+      tmp_list.push_back(node_id);
     }
-    if ( max_num < v ) {
-      max_num = v;
-      tmp_list.clear();
-    }
-    tmp_list.push_back(node_id);
   }
 
   return random_select(tmp_list);
@@ -207,16 +212,23 @@ Isx::select_node0()
 // @brief 候補リストを更新する．
 // @param[in] node_id 新たに加わったノード
 void
-Isx::update_cand_list(int node_id)
+Isx::update_cand_list(int node_id,
+		      vector<int>& cand_list)
 {
   // node_id と隣接するノードの cand_mark をはずす．
   mCandMark[node_id] = false;
   for ( auto node1_id: mGraph.adj_list(node_id) ) {
     if ( mCandMark[node1_id] ) {
       mCandMark[node1_id] = false;
+#if 0
+      HashSet<int> node_set;
       for ( auto node2_id: mGraph.adj_list(node1_id) ) {
-	-- mAdjCount[node2_id];
+	if ( !node_set.check(node2_id) ) {
+	  node_set.add(node2_id);
+	  -- mAdjCount[node2_id];
+	}
       }
+#endif
     }
   }
 

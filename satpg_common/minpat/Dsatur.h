@@ -81,6 +81,10 @@ private:
   // サイズは mGraph.node_num();
   int* mAdjDegree;
 
+  // ノードの被覆数の配列
+  // サイズは mGraph.node_num();
+  int* mCovDegree;
+
 };
 
 END_NAMESPACE_YM_SATPG
