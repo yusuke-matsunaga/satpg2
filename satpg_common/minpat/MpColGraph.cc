@@ -201,22 +201,55 @@ MpColGraph::containment_check(int node1,
 int
 MpColGraph::conflict_num(int node) const
 {
-  for ( auto oid: mOidListArray[node] ) {
-    for ( auto id: mNodeListArray[oid] ) {
-      if ( mTmpMark[id] == 0 ) {
-	mTmpMark[id] = 1;
-	mTmpList.push_back(id);
-      }
-    }
-  }
-  for ( auto id: mTmpList ) {
-    mTmpMark[id] = 0;
-  }
-
+  get_conflict_list(node, mTmpList);
   int n = mTmpList.size();
   mTmpList.clear();
 
   return n;
+}
+
+// @brief ノードの衝突リストを返す．
+// @param[in] node ノード番号
+// @param[out] conflict_list node に衝突するノードのリスト
+void
+MpColGraph::get_conflict_list(int node,
+			      vector<int>& conflict_list) const
+{
+  conflict_list.clear();
+  for ( auto oid: mOidListArray[node] ) {
+    for ( auto id: mNodeListArray[oid] ) {
+      if ( mTmpMark[id] == 0 ) {
+	mTmpMark[id] = 1;
+	conflict_list.push_back(id);
+      }
+    }
+  }
+  for ( auto id: conflict_list ) {
+    mTmpMark[id] = 0;
+  }
+}
+
+// @brief ノードの衝突リストを返す．
+// @param[in] node_list ノード番号のリスト
+// @param[out] conflict_list node に衝突するノードのリスト
+void
+MpColGraph::get_conflict_list(const vector<int>& node_list,
+			      vector<int>& conflict_list) const
+{
+  conflict_list.clear();
+  for ( auto node: node_list ) {
+    for ( auto oid: mOidListArray[node] ) {
+      for ( auto id: mNodeListArray[oid] ) {
+	if ( mTmpMark[id] == 0 ) {
+	  mTmpMark[id] = 1;
+	  conflict_list.push_back(id);
+	}
+      }
+    }
+  }
+  for ( auto id: conflict_list ) {
+    mTmpMark[id] = 0;
+  }
 }
 
 // @brief color_map を作る．

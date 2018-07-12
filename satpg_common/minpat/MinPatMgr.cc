@@ -143,6 +143,13 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
       for ( auto col: deleted_cols ) {
 	graph.delete_node(col);
       }
+
+      // 衝突グラフの変更を被覆行列に伝搬する．
+      vector<int> conflict_list;
+      graph.get_conflict_list(deleted_cols, conflict_list);
+      for ( auto col1: conflict_list ) {
+	matrix->set_col_dirty(col1);
+      }
     }
 
     // 両立集合を1つ選ぶ．

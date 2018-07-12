@@ -68,6 +68,20 @@ public:
   int
   conflict_num(int node) const;
 
+  /// @brief ノードの衝突リストを返す．
+  /// @param[in] node ノード番号
+  /// @param[out] conflict_list node に衝突するノードのリスト
+  void
+  get_conflict_list(int node,
+		    vector<int>& conflict_list) const;
+
+  /// @brief ノードの衝突リストを返す．
+  /// @param[in] node_list ノード番号のリスト
+  /// @param[out] conflict_list node に衝突するノードのリスト
+  void
+  get_conflict_list(const vector<int>& node_list,
+		    vector<int>& conflict_list) const;
+
   /// @brief ノードを削除する．
   /// @param[in] node 削除するノード番号
   void
