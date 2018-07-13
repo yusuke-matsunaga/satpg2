@@ -11,6 +11,7 @@ from CXX_NodeValList cimport NodeVal as CXX_NodeVal
 from CXX_NodeValList cimport NodeValList as CXX_NodeValList
 from CXX_NodeValList cimport check_conflict as CXX_check_conflict
 from CXX_NodeValList cimport check_contain as CXX_check_contain
+from CXX_NodeValList cimport compare as CXX_compare
 from libcpp.vector cimport vector
 
 
@@ -27,10 +28,6 @@ cdef class NodeValList :
     def add(NodeValList self, TpgNode node, int time, bool val) :
         cdef const CXX_TpgNode* c_node = node._thisptr
         self._this.add(c_node, time, val)
-
-    ### @brief ソートする．
-    def sort(NodeValList self) :
-        self._this.sort()
 
     ### @brief マージする．
     def merge(NodeValList self, NodeValList src_list) :
@@ -57,6 +54,12 @@ cdef check_conflict(NodeValList right, NodeValList left) :
 ### @brief 2つの割当リストの包含関係を調べる．
 cdef check_contain(NodeValList right, NodeValList left) :
     return CXX_check_contain(left._this, right._this)
+
+
+### @brief 2つの割当リストを比較する．
+cdef compare(NodeValList right, NodeValList left) :
+    return CXX_compare(left._this, right._this)
+
 
 ### @brief C++ の NodeValList から Python の NodeValList に変換する．
 cdef to_NodeValList(CXX_NodeValList c_nodeval_list) :

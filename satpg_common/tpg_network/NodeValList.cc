@@ -3,7 +3,7 @@
 /// @brief NodeValList の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2017 Yusuke Matsunaga
+/// Copyright (C) 2017, 2018 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -53,6 +53,7 @@ NodeValList::merge(const NodeValList& src_list)
   }
 
   mAsList = tmp_list;
+  mDirty = false;
 }
 
 // @brief 差分を計算する．
@@ -87,6 +88,7 @@ NodeValList::diff(const NodeValList& src_list)
   }
 
   mAsList = tmp_list;
+  mDirty = false;
 }
 
 // @brief 矛盾した内容になっていないかチェックする．
@@ -100,7 +102,7 @@ NodeValList::sanity_check() const
   NodeVal prev(nullptr, 0, false);
   for (int i = 0; i < mAsList.size(); ++ i) {
     NodeVal nv = mAsList[i];
-    if ( prev.node() == nv.node() && prev.val() != nv.val() ) {
+    if ( prev.node_time() == nv.node_time() && prev.val() != nv.val() ) {
       return false;
     }
     prev = nv;
@@ -108,64 +110,55 @@ NodeValList::sanity_check() const
   return true;
 }
 
-// @brief 2つの割当リストが矛盾しているか調べる．
-bool
-check_conflict(const NodeValList& src_list1,
-	       const NodeValList& src_list2)
+// @brief 2つの割当リストを比較する．
+// @retval -1 矛盾した割当がある．
+// @retval  0 無関係
+// @retval  1 src_list1 が src_list2 を含む．
+// @retval  2 src_list2 が src_list1 を含む．
+// @retval  3 等しい
+int
+compare(const NodeValList& src_list1,
+	const NodeValList& src_list2)
 {
   int n1 = src_list1.size();
   int n2 = src_list2.size();
   int i1 = 0;
   int i2 = 0;
+  int ans = 3;
   while ( i1 < n1 && i2 < n2 ) {
     NodeVal nv1 = src_list1[i1];
     NodeVal nv2 = src_list2[i2];
-    if ( nv1.node() == nv2.node() ) {
+    if ( nv1.node_time() == nv2.node_time() ) {
       if ( nv1.val() != nv2.val() ) {
-	return true;
+	// 矛盾している．
+	return -1;
       }
-      ++ i1;
-      ++ i2;
+      else {
+	// 同一
+	++ i1;
+	++ i2;
+      }
     }
     else if ( nv1 < nv2 ) {
+      // src_list1 に含まれていて src_list2 に含まれていない要素がある．
+      ans &= 1;
       ++ i1;
     }
-    else {
+    else { //  nv1 > nv2
+      // src_list2 に含まれていて src_list1 に含まれていない要素がある．
+      ans &= 2;
       ++ i2;
     }
   }
-  return false;
-}
-
-// @brief 包含関係を調べる．
-bool
-check_contain(const NodeValList& src_list1,
-	      const NodeValList& src_list2)
-{
-  int n1 = src_list1.size();
-  int n2 = src_list2.size();
-  int i1 = 0;
-  int i2 = 0;
-  while ( i1 < n1 && i2 < n2 ) {
-    NodeVal nv1 = src_list1[i1];
-    NodeVal nv2 = src_list2[i2];
-    if ( nv1 < nv2 ) {
-      ++ i1;
-    }
-    else if ( nv1 > nv2 ) {
-      return false;
-    }
-    else {
-      ++ i1;
-      ++ i2;
-    }
+  if ( i1 < n1 ) {
+    // src_list1 に含まれていて src_list2 に含まれていない要素がある．
+    ans &= 1;
   }
   if ( i2 < n2 ) {
-    return false;
+    // src_list2 に含まれていて src_list1 に含まれていない要素がある．
+    ans &= 2;
   }
-  else {
-    return true;
-  }
+  return ans;
 }
 
 // @brief 割当の内容を出力する．

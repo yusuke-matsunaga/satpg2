@@ -26,10 +26,9 @@ cdef extern from "NodeValList.h" namespace "nsYm::nsSatpg" :
         NodeValList()
         void clear()
         void add(const TpgNode* node, int time, bool val)
-        void sort()
         void merge(const NodeValList& src_list)
         void diff(const NodeValList& src_list)
-        ymuint size()
+        int size()
         NodeVal elem(ymuint pos)
 
     bool check_conflict(const NodeValList& src_list1,
@@ -37,3 +36,6 @@ cdef extern from "NodeValList.h" namespace "nsYm::nsSatpg" :
 
     bool check_contain(const NodeValList& src_list1,
                        const NodeValList& src_list2)
+
+    int compare(const NodeValList& src_list1,
+                const NodeValList& src_list2)

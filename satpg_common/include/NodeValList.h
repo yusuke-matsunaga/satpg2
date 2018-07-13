@@ -55,6 +55,12 @@ public:
   int
   time() const;
 
+  /// @brief ノードと時刻をパックした値を返す．
+  ///
+  /// 結果は等価比較のみに用いる．
+  ympuint
+  node_time() const;
+
   /// @brief 値を返す．
   bool
   val() const;
@@ -80,6 +86,8 @@ private:
 //////////////////////////////////////////////////////////////////////
 /// @class NodeValList NodeValList.h "td/NodeValList.h"
 /// @brief ノードに対する値の割当を記録するクラス
+///
+/// このクラスのメソッドはすべてソートされていると仮定している．
 //////////////////////////////////////////////////////////////////////
 class NodeValList
 {
@@ -125,10 +133,6 @@ public:
   add(const TpgNode* node,
       int time,
       bool val);
-
-  /// @brief ソートする．
-  void
-  sort();
 
   /// @brief マージする．
   /// @param[in] src_list マージするリスト
@@ -180,13 +184,22 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ソートされた状態にする．
+  void
+  _sort() const;
+
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+  // ソートが必要かを表すフラグ
+  mutable
+  bool mDirty;
+
   // 値割り当てのリスト
+  mutable
   vector<NodeVal> mAsList;
 
 };
@@ -200,6 +213,16 @@ check_conflict(const NodeValList& src_list1,
 bool
 check_contain(const NodeValList& src_list1,
 	      const NodeValList& src_list2);
+
+/// @brief 2つの割当リストを比較する．
+/// @retval -1 矛盾した割当がある．
+/// @retval  0 無関係
+/// @retval  1 src_list1 が src_list2 を含む．
+/// @retval  2 src_list2 が src_list1 を含む．
+/// @retval  3 等しい
+int
+compare(const NodeValList& src_list1,
+	const NodeValList& src_list2);
 
 /// @brief 割当の内容を出力する．
 /// @param[in] s 出力先のストリーム
@@ -259,6 +282,16 @@ NodeVal::time() const
   return static_cast<int>((mPackVal >> 1) & 1U);
 }
 
+// @brief ノードと時刻をパックした値を返す．
+//
+// 結果は等価比較のみに用いる．
+inline
+ympuint
+NodeVal::node_time() const
+{
+  return mPackVal & ~1UL;
+}
+
 // @brief 値を返す．
 inline
 bool
@@ -296,13 +329,15 @@ operator>=(const NodeVal& left,
 
 // @brief コンストラクタ
 inline
-NodeValList::NodeValList()
+NodeValList::NodeValList() :
+  mDirty(false)
 {
 }
 
 // @brief コピーコンストラクタ
 inline
 NodeValList::NodeValList(const NodeValList& src) :
+  mDirty(src.mDirty),
   mAsList(src.mAsList)
 {
 }
@@ -310,6 +345,7 @@ NodeValList::NodeValList(const NodeValList& src) :
 // @brief ムーブコンストラクタ
 inline
 NodeValList::NodeValList(NodeValList&& src) :
+  mDirty(src.mDirty),
   mAsList(src.mAsList)
 {
   // vector<> はムーブコンストラクタを持っている．
@@ -320,6 +356,7 @@ inline
 NodeValList&
 NodeValList::operator=(const NodeValList& src)
 {
+  mDirty = src.mDirty;
   mAsList = src.mAsList;
 
   return *this;
@@ -330,6 +367,7 @@ inline
 NodeValList&
 NodeValList::operator=(NodeValList&& src)
 {
+  mDirty = src.mDirty;
   // vector<> はムーブ代入演算子を持っている．
   mAsList = src.mAsList;
 
@@ -347,6 +385,7 @@ inline
 void
 NodeValList::clear()
 {
+  mDirty = true;
   mAsList.clear();
 }
 
@@ -361,9 +400,12 @@ NodeValList::size() const
 // @brief ソートする．
 inline
 void
-NodeValList::sort()
+NodeValList::_sort() const
 {
-  std::sort(mAsList.begin(), mAsList.end());
+  if ( mDirty ) {
+    std::sort(mAsList.begin(), mAsList.end());
+    mDirty = false;
+  }
 }
 
 // @brief 値を追加する．
@@ -377,6 +419,7 @@ NodeValList::add(const TpgNode* node,
 		 bool val)
 {
   mAsList.push_back(NodeVal(node, time, val));
+  mDirty = true;
 }
 
 // @brief 要素を返す．
@@ -398,6 +441,7 @@ NodeValList::elem(int pos) const
 {
   ASSERT_COND( pos >= 0 && pos < size() );
 
+  _sort();
   return mAsList[pos];
 }
 
@@ -406,6 +450,7 @@ inline
 vector<NodeVal>::const_iterator
 NodeValList::begin() const
 {
+  _sort();
   return mAsList.begin();
 }
 
@@ -414,7 +459,26 @@ inline
 vector<NodeVal>::const_iterator
 NodeValList::end() const
 {
+  _sort();
   return mAsList.end();
+}
+
+// @brief 2つの割当リストが矛盾しているか調べる．
+inline
+bool
+check_conflict(const NodeValList& src_list1,
+	       const NodeValList& src_list2)
+{
+  return compare(src_list1, src_list2) == -1;
+}
+
+// @brief 包含関係を調べる．
+inline
+bool
+check_contain(const NodeValList& src_list1,
+	      const NodeValList& src_list2)
+{
+  return (compare(src_list1, src_list2) & 1) == 1;
 }
 
 END_NAMESPACE_YM_SATPG

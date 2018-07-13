@@ -78,10 +78,7 @@ Extractor::operator()(const TpgNode* root)
     ostream& dbg_out = cout;
     dbg_out << "Extract at Node#" << root->id() << endl;
     const char* comma = "";
-    // sort するのでコピーを作る．
-    NodeValList assign_list1(assign_list);
-    assign_list1.sort();
-    for ( auto nv: assign_list1 ) {
+    for ( auto nv: assign_list ) {
       const TpgNode* node = nv.node();
       dbg_out << comma << "Node#" << node->id()
 	      << ":";
