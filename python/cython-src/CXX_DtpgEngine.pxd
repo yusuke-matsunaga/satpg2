@@ -26,8 +26,6 @@ cdef extern from "DtpgEngine.h" namespace "nsYm::nsSatpg" :
     ## @brief DtpgEngine の Cython バージョン
     cdef cppclass DtpgEngine :
         DtpgEngine(const string&, const string&, ostream*, FaultType, const string&,
-                   const TpgNetwork&, const TpgNode*)
-        DtpgEngine(const string&, const string&, ostream*, FaultType, const string&,
                    const TpgNetwork&, const TpgFFR&)
         DtpgEngine(const string&, const string&, ostream*, FaultType, const string&,
                    const TpgNetwork&, const TpgMFFC&)

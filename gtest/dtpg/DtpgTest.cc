@@ -174,17 +174,11 @@ DtpgTestWithParam::do_test()
 {
   string mode = test_mode();
   pair<int, int> num_pair;
-  if ( mode == "single" ) {
-    num_pair = mDtpgTest->single_test();
-  }
-  else if ( mode == "ffr" ) {
+  if ( mode == "ffr" ) {
     num_pair = mDtpgTest->ffr_test();
   }
   else if ( mode == "mffc" ) {
     num_pair = mDtpgTest->mffc_test();
-  }
-  else if ( mode == "single_new" ) {
-    num_pair = mDtpgTest->single_new_test();
   }
   else if ( mode == "ffr_new" ) {
     num_pair = mDtpgTest->ffr_new_test();
@@ -274,8 +268,7 @@ TEST_P(DtpgTestWithParam, test1)
 
 INSTANTIATE_TEST_CASE_P(DtpgTest, DtpgTestWithParam,
 			::testing::Combine(::testing::ValuesIn(mydata),
-					   ::testing::Values("single", "single_new",
-							     "ffr",    "ffr_new",
+					   ::testing::Values("ffr",    "ffr_new",
 							     "mffc",   "mffc_new"),
 					   ::testing::Values(FaultType::StuckAt, FaultType::TransitionDelay),
 					   ::testing::Values("just1", "just2")));

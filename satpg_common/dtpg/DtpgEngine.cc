@@ -49,45 +49,6 @@ extract(const TpgNode* root,
 	const VidMap& fvar_map,
 	const vector<SatBool3>& model);
 
-// @brief コンストラクタ(ノードモード)
-// @param[in] sat_type SATソルバの種類を表す文字列
-// @param[in] sat_option SATソルバに渡すオプション文字列
-// @param[in] sat_outp SATソルバ用の出力ストリーム
-// @param[in] fault_type 故障の種類
-// @param[in] just_type Justifier の種類を表す文字列
-// @param[in] network 対象のネットワーク
-// @param[in] node 故障のあるノード
-DtpgEngine::DtpgEngine(const string& sat_type,
-		       const string& sat_option,
-		       ostream* sat_outp,
-		       FaultType fault_type,
-		       const string& just_type,
-		       const TpgNetwork& network,
-		       const TpgNode* node) :
-  mSolver(sat_type, sat_option, sat_outp),
-  mNetwork(network),
-  mFaultType(fault_type),
-  mRoot(node->ffr_root()),
-  mMarkArray(mNetwork.node_num(), 0U),
-  mHvarMap(network.node_num()),
-  mGvarMap(network.node_num()),
-  mFvarMap(network.node_num()),
-  mDvarMap(network.node_num()),
-  mJustifier(just_type, network),
-  mTimerEnable(true)
-{
-  mTfoList.reserve(network.node_num());
-  mTfiList.reserve(network.node_num());
-  mTfi2List.reserve(network.node_num());
-  mOutputList.reserve(network.ppo_num());
-
-  cnf_begin();
-
-  gen_cnf_base();
-
-  cnf_end();
-}
-
 // @brief コンストラクタ
 // @param[in] sat_type SATソルバの種類を表す文字列
 // @param[in] sat_option SATソルバに渡すオプション文字列

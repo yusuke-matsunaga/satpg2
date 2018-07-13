@@ -25,7 +25,7 @@ const char* argv0 = "";
 void
 usage()
 {
-  cerr << "USAGE: " << argv0 << " ?--single|--mffc? --blif|--iscas89 <file>" << endl;
+  cerr << "USAGE: " << argv0 << " ?--mffc? --blif|--iscas89 <file>" << endl;
 }
 
 int
@@ -42,7 +42,6 @@ dtpg_test(int argc,
   bool sa_mode = false;
   bool td_mode = false;
 
-  bool single = false;
   bool ffr = false;
   bool mffc = false;
 
@@ -57,23 +56,16 @@ dtpg_test(int argc,
   int pos = 1;
   for ( ; pos < argc; ++ pos) {
     if ( argv[pos][0] == '-' ) {
-      if ( strcmp(argv[pos], "--single") == 0 ) {
-	if ( ffr || mffc ) {
-	  cerr << "--single, --ffr and --mffc are mutually exclusive" << endl;
-	  return -1;
-	}
-	single = true;
-      }
-      else if ( strcmp(argv[pos], "--ffr") == 0 ) {
-	if ( single || mffc ) {
-	  cerr << "--single, --ffr  and --mffc are mutually exclusive" << endl;
+      if ( strcmp(argv[pos], "--ffr") == 0 ) {
+	if ( mffc ) {
+	  cerr << "--ffr  and --mffc are mutually exclusive" << endl;
 	  return -1;
 	}
 	ffr = true;
       }
       else if ( strcmp(argv[pos], "--mffc") == 0 ) {
-	if ( single || ffr ) {
-	  cerr << "--single, --ffr and --mffc are mutually exclusive" << endl;
+	if ( ffr ) {
+	  cerr << "--ffr and --mffc are mutually exclusive" << endl;
 	  return -1;
 	}
 	mffc = true;
@@ -142,9 +134,9 @@ dtpg_test(int argc,
     return -1;
   }
 
-  if ( !single && !ffr && !mffc ) {
-    // mffc をデフォルトにする．
-    mffc = true;
+  if ( !ffr && !mffc ) {
+    // ffr をデフォルトにする．
+    ffr = true;
   }
 
   if ( !sa_mode && !td_mode ) {
@@ -189,10 +181,7 @@ dtpg_test(int argc,
   DtpgTest dtpgtest(sat_type, sat_option, sat_outp, fault_type, just_type, network);
 
   pair<int, int> num_pair;
-  if ( single ) {
-    num_pair = dtpgtest.single_test();
-  }
-  else if ( ffr ) {
+  if ( ffr ) {
     num_pair = dtpgtest.ffr_test();
   }
   else if ( mffc ) {

@@ -40,22 +40,6 @@ class DtpgEngine
 {
 public:
 
-  /// @brief コンストラクタ(ノードモード)
-  /// @param[in] sat_type SATソルバの種類を表す文字列
-  /// @param[in] sat_option SATソルバに渡すオプション文字列
-  /// @param[in] sat_outp SATソルバ用の出力ストリーム
-  /// @param[in] fault_type 故障の種類
-  /// @param[in] just_type Justifier の種類を表す文字列
-  /// @param[in] network 対象のネットワーク
-  /// @param[in] node 故障のあるFFRの根のノード
-  DtpgEngine(const string& sat_type,
-	     const string& sat_option,
-	     ostream* sat_outp,
-	     FaultType fault_type,
-	     const string& just_type,
-	     const TpgNetwork& network,
-	     const TpgNode* root);
-
   /// @brief コンストラクタ(FFRモード)
   /// @param[in] sat_type SATソルバの種類を表す文字列
   /// @param[in] sat_option SATソルバに渡すオプション文字列

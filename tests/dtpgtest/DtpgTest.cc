@@ -48,50 +48,6 @@ DtpgTest::~DtpgTest()
 {
 }
 
-// @brief シングルモードのテストを行う．
-// @return 検出故障数と冗長故障数を返す．
-pair<int, int>
-DtpgTest::single_test()
-{
-  mTimer.reset();
-  mTimer.start();
-
-  int detect_num = 0;
-  int untest_num = 0;
-
-  for ( auto fault: mNetwork.rep_fault_list() ) {
-    if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
-      const TpgNode* node = fault->tpg_onode();
-      Dtpg_se dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, node);
-      TestVector testvect(mNetwork.input_num(), mNetwork.dff_num(), mFaultType);
-      SatBool3 ans = dtpg.dtpg(fault, testvect);
-      if ( ans == SatBool3::True ) {
-	++ detect_num;
-	mDop(fault, testvect);
-      }
-      else if ( ans == SatBool3::False ) {
-	++ untest_num;
-      }
-      mStats.merge(dtpg.stats());
-    }
-  }
-
-  mTimer.stop();
-
-  int n = mVerifyResult.error_count();
-  for ( int i = 0; i < n; ++ i ) {
-    const TpgFault* f = mVerifyResult.error_fault(i);
-    TestVector tv = mVerifyResult.error_testvector(i);
-    cout << "Error: " << f->str() << " is not detected with "
-	 << tv << endl;
-  }
-  if ( n > 0 ) {
-    return make_pair(0, 0);
-  }
-
-  return make_pair(detect_num, untest_num);
-}
-
 // @brief FFRモードのテストを行う．
 // @return 検出故障数と冗長故障数を返す．
 pair<int, int>
@@ -179,42 +135,6 @@ DtpgTest::mffc_test()
   }
 
   return make_pair(detect_num, untest_num);
-}
-
-// @brief シングルモードのテストを行う．
-// @return 検出故障数と冗長故障数を返す．
-pair<int, int>
-DtpgTest::single_new_test()
-{
-  mTimer.reset();
-  mTimer.start();
-
-  mDetectNum = 0;
-  mUntestNum = 0;
-  for ( auto fault: mNetwork.rep_fault_list() ) {
-    if ( mFaultMgr.get(fault) == FaultStatus::Undetected ) {
-      const TpgNode* node = fault->tpg_onode();
-      DtpgEngine dtpg(mSatType, mSatOption, mSatOutP, mFaultType, mJustType, mNetwork, node);
-      DtpgResult result = dtpg.gen_pattern(fault);
-      update_result(fault, result);
-      mStats.merge(dtpg.stats());
-    }
-  }
-
-  mTimer.stop();
-
-  int n = mVerifyResult.error_count();
-  for ( int i = 0; i < n; ++ i ) {
-    const TpgFault* f = mVerifyResult.error_fault(i);
-    TestVector tv = mVerifyResult.error_testvector(i);
-    cout << "Error: " << f->str() << " is not detected with "
-	 << tv << endl;
-  }
-  if ( n > 0 ) {
-    return make_pair(0, 0);
-  }
-
-  return make_pair(mDetectNum, mUntestNum);
 }
 
 // @brief FFRモードのテストを行う．

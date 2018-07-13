@@ -52,11 +52,6 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief シングルモードのテストを行う．
-  /// @return 検出故障数と冗長故障数を返す．
-  pair<int, int>
-  single_test();
-
   /// @brief FFRモードのテストを行う．
   /// @return 検出故障数と冗長故障数を返す．
   pair<int, int>
@@ -66,11 +61,6 @@ public:
   /// @return 検出故障数と冗長故障数を返す．
   pair<int, int>
   mffc_test();
-
-  /// @brief シングルモードのテストを行う．
-  /// @return 検出故障数と冗長故障数を返す．
-  pair<int, int>
-  single_new_test();
 
   /// @brief FFRモードのテストを行う．
   /// @return 検出故障数と冗長故障数を返す．

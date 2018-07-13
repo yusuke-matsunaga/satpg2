@@ -30,34 +30,6 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 void
-run_single_new(const string& sat_type,
-	       const string& sat_option,
-	       ostream* sat_outp,
-	       FaultType fault_type,
-	       const string& just_type,
-	       const TpgNetwork& network,
-	       FaultStatusMgr& fmgr,
-	       DetectOp& dop,
-	       UntestOp& uop,
-	       DtpgStats& stats)
-{
-  for ( auto fault: network.rep_fault_list() ) {
-    if ( fmgr.get(fault) == FaultStatus::Undetected ) {
-      const TpgNode* node = fault->tpg_onode();
-      DtpgEngine dtpg(sat_type, sat_option, sat_outp, fault_type, just_type, network, node);
-      DtpgResult result = dtpg.gen_pattern(fault);
-      if ( result.status() == FaultStatus::Detected ) {
-	dop(fault, result.testvector());
-      }
-      else if ( result.status() == FaultStatus::Untestable ) {
-	uop(fault);
-      }
-      stats.merge(dtpg.stats());
-    }
-  }
-}
-
-void
 run_ffr_new(const string& sat_type,
 	    const string& sat_option,
 	    ostream* sat_outp,
@@ -71,8 +43,7 @@ run_ffr_new(const string& sat_type,
 {
   int nffr = network.ffr_num();
   for ( auto& ffr: network.ffr_list() ) {
-    const TpgNode* root = ffr.root();
-    DtpgEngine dtpg(sat_type, sat_option, sat_outp, fault_type, just_type, network, root);
+    DtpgEngine dtpg(sat_type, sat_option, sat_outp, fault_type, just_type, network, ffr);
     for ( auto fault: ffr.fault_list() ) {
       if ( fmgr.get(fault) == FaultStatus::Undetected ) {
 	DtpgResult result = dtpg.gen_pattern(fault);
@@ -116,35 +87,6 @@ run_mffc_new(const string& sat_type,
       }
     }
     stats.merge(dtpg.stats());
-  }
-}
-
-void
-run_single(const string& sat_type,
-	   const string& sat_option,
-	   ostream* sat_outp,
-	   FaultType fault_type,
-	   const string& just_type,
-	   const TpgNetwork& network,
-	   FaultStatusMgr& fmgr,
-	   DetectOp& dop,
-	   UntestOp& uop,
-	   DtpgStats& stats)
-{
-  for ( auto fault: network.rep_fault_list() ) {
-    if ( fmgr.get(fault) == FaultStatus::Undetected ) {
-      const TpgNode* node = fault->tpg_onode();
-      Dtpg_se dtpg(sat_type, sat_option, sat_outp, fault_type, just_type, network, node);
-      TestVector testvect(network.input_num(), network.dff_num(), fault_type);
-      SatBool3 ans = dtpg.dtpg(fault, testvect);
-      if ( ans == SatBool3::True ) {
-	dop(fault, testvect);
-      }
-      else if ( ans == SatBool3::False ) {
-	uop(fault);
-      }
-      stats.merge(dtpg.stats());
-    }
   }
 }
 
@@ -235,8 +177,6 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 				"print statistics");
   mPoptNew = new TclPopt(this, "new",
 			 "use 'new' engine");
-  mPoptSingle = new TclPopt(this, "single",
-			    "single mode");
   mPoptFFR = new TclPopt(this, "ffr",
 			 "FFR mode");
   mPoptMFFC = new TclPopt(this, "mffc",
@@ -310,21 +250,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   string engine_type;
   int mode_val = 0;
   int kdet_val = 0;
-  if ( mPoptSingle->is_specified() ) {
-    if ( mPoptKDet->is_specified() ) {
-      engine_type = "single_kdet";
-      kdet_val = mPoptKDet->val();
-    }
-    else {
-      if ( mPoptNew->is_specified() ) {
-	engine_type = "single_new";
-      }
-      else {
-	engine_type = "single";
-      }
-    }
-  }
-  else if ( mPoptFFR->is_specified() ) {
+  if ( mPoptFFR->is_specified() ) {
     if ( mPoptNew->is_specified() ) {
       engine_type = "ffr_new";
     }
@@ -400,21 +326,13 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   }
 
   DtpgStats stats;
-  if ( engine_type == "single" ) {
-    run_single(sat_type, sat_option, outp, fault_type, just_type,
-	       _network(), fault_mgr, dop_list, uop_list, stats);
-  }
-  else if ( engine_type == "ffr" ) {
+  if ( engine_type == "ffr" ) {
     run_ffr(sat_type, sat_option, outp, fault_type, just_type,
 	    _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else if ( engine_type == "mffc" ) {
     run_mffc(sat_type, sat_option, outp, fault_type, just_type,
 	     _network(), fault_mgr, dop_list, uop_list, stats);
-  }
-  else if ( engine_type == "single_new" ) {
-    run_single_new(sat_type, sat_option, outp, fault_type, just_type,
-		   _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else if ( engine_type == "ffr_new" ) {
     run_ffr_new(sat_type, sat_option, outp, fault_type, just_type,
@@ -425,8 +343,8 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 		 _network(), fault_mgr, dop_list, uop_list, stats);
   }
   else {
-    run_single(sat_type, sat_option, outp, fault_type, just_type,
-	       _network(), fault_mgr, dop_list, uop_list, stats);
+    run_ffr_new(sat_type, sat_option, outp, fault_type, just_type,
+		_network(), fault_mgr, dop_list, uop_list, stats);
   }
 
   after_update_faults();

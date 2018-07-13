@@ -65,12 +65,9 @@ def main() :
     parser = argparse.ArgumentParser()
 
     mode_group = parser.add_mutually_exclusive_group()
-    mode_group.add_argument('-s', '--single',
-                            action = 'store_true',
-                            help = 'run in single mode [default]')
     mode_group.add_argument('-f', '--ffr',
                             action = 'store_true',
-                            help = 'run in FFR mode')
+                            help = 'run in FFR mode [default]')
     mode_group.add_argument('-m', '--mffc',
                             action = 'store_true',
                             help = 'run in MFFC mode')
@@ -108,15 +105,13 @@ def main() :
     if not args :
         exit(1)
 
-    if args.single :
-        mode = 'single'
-    elif args.ffr :
+    if args.ffr :
         mode = 'ffr'
     elif args.mffc :
         mode = 'mffc'
     else :
         # デフォルト
-        mode = 'single'
+        mode = 'ffr'
 
     drop = args.drop
 
@@ -165,9 +160,7 @@ def main() :
 
         dtpg = Dtpg(network, fault_type)
 
-        if mode == 'single' :
-            ndet, nunt, nabt = dtpg.single_mode(drop)
-        elif mode == 'ffr' :
+        if mode == 'ffr' :
             ndet, nunt, nabt = dtpg.ffr_mode(drop)
         elif mode == 'mffc' :
             ndet, nunt, nabt = dtpg.mffc_mode(drop)
