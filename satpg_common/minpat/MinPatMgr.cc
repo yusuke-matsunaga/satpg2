@@ -250,10 +250,26 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
 	     << endl;
       }
 
-      // 被覆行列の縮約を行う．
-      vector<int> deleted_cols;
-      matrix->reduce(selected_cols, deleted_cols, comp);
-      ASSERT_COND( !selected_cols.empty() || matrix->active_row_num() > 0 );
+      for ( ; ; ) {
+	// 被覆行列の縮約を行う．
+	vector<int> deleted_cols;
+	if ( !matrix->reduce(selected_cols, deleted_cols, comp) ) {
+	  break;
+	}
+	ASSERT_COND( !selected_cols.empty() || matrix->active_row_num() > 0 );
+
+	// 今の縮約で削除された列を衝突グラフからも削除する．
+	for ( auto col: deleted_cols ) {
+	  graph.delete_node(col);
+	}
+
+	// 衝突グラフの変更を被覆行列に伝搬する．
+	vector<int> conflict_list;
+	graph.get_conflict_list(deleted_cols, conflict_list);
+	for ( auto col1: conflict_list ) {
+	  matrix->set_col_dirty(col1);
+	}
+      }
 
       {
 	timer.stop();
@@ -262,18 +278,6 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
 	     << matrix->active_row_num() << " x " << matrix->active_col_num()
 	     << ", # of selected_cols = " << selected_cols.size()
 	     << ", " << time << endl;
-      }
-
-      // 今の縮約で削除された列を衝突グラフからも削除する．
-      for ( auto col: deleted_cols ) {
-	graph.delete_node(col);
-      }
-
-      // 衝突グラフの変更を被覆行列に伝搬する．
-      vector<int> conflict_list;
-      graph.get_conflict_list(deleted_cols, conflict_list);
-      for ( auto col1: conflict_list ) {
-	matrix->set_col_dirty(col1);
       }
     }
 
@@ -294,11 +298,6 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
 	//changed = true;
       }
     }
-    {
-      cout << "# of selected columns: " << node_list.size() << endl
-	   << " ==> " << matrix->active_row_num()
-	   << " x " << matrix->active_col_num() << endl;
-    }
 
     // selected_cols の更新を行う．
     if ( !selected_cols.empty() ) {
@@ -318,6 +317,14 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
       }
       selected_cols.erase(selected_cols.begin() + wpos, selected_cols.end());
     }
+
+    {
+      cout << "COL#" << graph.color_num()
+	   << ", # of colored columns: " << node_list.size()
+	   << ": # of selected cols " << selected_cols.size() << endl
+	   << " ==> " << matrix->active_row_num()
+	   << " x " << matrix->active_col_num() << endl;
+    }
   }
 
   vector<int> color_map;
@@ -327,20 +334,6 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
   cout << "# of reduced patterns: " << nc << endl;
 
   return nc;
-}
-
-int
-conflict_num(const MpColGraph& graph,
-	     int id,
-	     const vector<int>& cand_list)
-{
-  int n = 0;
-  for ( auto id1: cand_list ) {
-    if ( !graph.compatible_check(id, id1) ) {
-      ++ n;
-    }
-  }
-  return n;
 }
 
 // @brief 両立集合を取り出す．
@@ -387,10 +380,24 @@ MinPatMgr::get_compatible_nodes(const MpColGraph& graph,
 
     // min_id に両立するノードを cand_list に入れる．
     vector<int> cand_list;
+    vector<int> cnum_array(graph.node_num(), 0);
     cand_list.reserve(selected_nodes.size());
     for ( auto id: selected_nodes ) {
       if ( !col_mark[id] && graph.compatible_check(id, min_id) ) {
 	cand_list.push_back(id);
+      }
+    }
+    if ( !cand_list.empty() ) {
+      int n = cand_list.size();
+      for ( auto pos1: Range(n - 1) ) {
+	auto id1 = cand_list[pos1];
+	for ( auto pos2: Range(pos1 + 1, n) ) {
+	  auto id2 = cand_list[pos2];
+	  if ( !graph.compatible_check(id1, id2) ) {
+	    ++ cnum_array[id1];
+	    ++ cnum_array[id2];
+	  }
+	}
       }
     }
     while ( !cand_list.empty() ) {
@@ -399,7 +406,7 @@ MinPatMgr::get_compatible_nodes(const MpColGraph& graph,
       int min_c = graph.node_num() + 1;
       int min_id = -1;
       for ( auto id: cand_list ) {
-	int c = conflict_num(graph, id, cand_list);
+	int c = cnum_array[id];
 	if ( min_c > c ) {
 	  min_c = c;
 	  min_id = id;
@@ -411,15 +418,30 @@ MinPatMgr::get_compatible_nodes(const MpColGraph& graph,
       int rpos = 0;
       int wpos = 0;
       int n = cand_list.size();
+      vector<int> del_nodes;
+      del_nodes.reserve(n);
       for ( ; rpos < n; ++ rpos ) {
 	auto id = cand_list[rpos];
-	if ( id != min_id && graph.compatible_check(id, min_id) ) {
+	if ( id == min_id ) {
+	  continue;
+	}
+	if ( graph.compatible_check(id, min_id) ) {
 	  cand_list[wpos] = id;
 	  ++ wpos;
+	}
+	else {
+	  del_nodes.push_back(id);
 	}
       }
       // 最低でも min_id は削除される．
       cand_list.erase(cand_list.begin() + wpos, cand_list.end());
+      for ( auto id1: cand_list ) {
+	for ( auto id2: del_nodes ) {
+	  if ( !graph.compatible_check(id1, id2) ) {
+	    -- cnum_array[id1];
+	  }
+	}
+      }
     }
   }
 
