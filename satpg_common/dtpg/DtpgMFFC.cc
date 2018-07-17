@@ -22,12 +22,10 @@
 #define DEBUG_OUT cout
 BEGIN_NONAMESPACE
 #ifdef DEBUG_DTPG
-int debug_dtpg = 1;
+int debug_mffc = 1;
 #else
-const int debug_dtpg = 0;
+const int debug_mffc = 0;
 #endif
-
-bool debug_mffccone = false;
 
 END_NONAMESPACE
 
@@ -138,7 +136,7 @@ DtpgMFFC::gen_cnf_mffc()
   for ( int i = 0; i < mElemArray.size(); ++ i ) {
     mElemVarArray[i] = solver().new_variable();
 
-    if ( debug_mffccone ) {
+    if ( debug_mffc ) {
       DEBUG_OUT << "cvar(Elem#" << i << ") = " << mElemVarArray[i] << endl;
     }
   }
@@ -159,7 +157,7 @@ DtpgMFFC::gen_cnf_mffc()
 	set_fvar(onode, var);
 	node_list.push_back(onode);
 
-	if ( debug_mffccone ) {
+	if ( debug_mffc ) {
 	  DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
 	}
       }
@@ -176,7 +174,7 @@ DtpgMFFC::gen_cnf_mffc()
 	set_fvar(onode, var);
 	node_list.push_back(onode);
 
-	if ( debug_mffccone ) {
+	if ( debug_mffc ) {
 	  DEBUG_OUT << "fvar(Node#" << onode->id() << ") = " << var << endl;
 	}
       }
@@ -217,7 +215,7 @@ DtpgMFFC::gen_cnf_mffc()
       fval_enc.make_cnf(node);
     }
 
-    if ( debug_mffccone ) {
+    if ( debug_mffc ) {
       DEBUG_OUT << "Node#" << node->id() << ": ofvar("
 		<< ovar << ") := " << node->gate_type()
 		<< "(";
@@ -243,7 +241,7 @@ DtpgMFFC::inject_fault(int ffr_pos,
 
   solver().add_xorgate_rel(lit1, lit2, olit);
 
-  if ( debug_mffccone ) {
+  if ( debug_mffc ) {
     DEBUG_OUT << "inject fault: " << ovar << " -> " << fvar(node)
 	      << " with cvar = " << mElemVarArray[ffr_pos] << endl;
   }
