@@ -304,10 +304,21 @@ MinPatMgr::heuristic1(McMatrix& matrix,
 {
   while ( !selected_cols.empty() || matrix.active_row_num() > 0 ) {
 
+    if ( 0 ) {
+      cout << "matrix: " << matrix.active_row_num()
+	   << " x " << matrix.active_col_num()
+	   << ", selected_cols: " << selected_cols.size()
+	   << endl;
+    }
+
     // 両立集合を1つ選ぶ．
     vector<int> node_list;
     get_compatible_nodes(graph, matrix, selected_cols, node_list);
     ASSERT_COND( !node_list.empty() );
+
+    if ( 0 ) {
+      cout << "chosse " << node_list.size() << " cols" << endl;
+    }
 
     // 選ばれた両立集合に彩色を行う．
     int color = graph.new_color();
