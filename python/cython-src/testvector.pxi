@@ -191,7 +191,7 @@ cdef class TestVector :
         elif n == 1 :
             return tvlist[0]
         else :
-            tv0 = tvlist[0]
+            tv0 = TestVector(tvlist[0])
             for i in range(1, n) :
                 tv1 = tvlist[i]
                 tv0 &= tv1
