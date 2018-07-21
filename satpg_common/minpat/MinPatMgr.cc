@@ -231,9 +231,40 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
 
   //cout << " McMatrix generated" << endl;
 
+  {
+    cout << "# of faults: " << fault_list.size() << endl;
+    int n_sum = 0;
+    int n_max = 0;
+    for ( auto row: matrix.row_head_list() ) {
+      int n = matrix.row_elem_num(row);
+      n_sum += n;
+      if ( n_max < n ) {
+	n_max = n;
+      }
+    }
+    cout << "# of max detects: " << n_max << endl
+	 << "# of avg. detects: " << (n_sum / static_cast<double>(fault_list.size())) << endl;
+  }
+
   // 被覆行列の縮約を行う．
   vector<int> selected_cols;
   reduce(matrix, graph, selected_cols);
+
+  {
+    int nf = matrix.active_row_num();
+    cout << "# of reduced faults: " << nf << endl;
+    int n_sum = 0;
+    int n_max = 0;
+    for ( auto row: matrix.row_head_list() ) {
+      int n = matrix.row_elem_num(row);
+      n_sum += n;
+      if ( n_max < n ) {
+	n_max = n;
+      }
+    }
+    cout << "# of max detects: " << n_max << endl
+	 << "# of avg. detects: " << (n_sum / static_cast<double>(nf)) << endl;
+  }
 
   heuristic1(matrix, graph, selected_cols);
 

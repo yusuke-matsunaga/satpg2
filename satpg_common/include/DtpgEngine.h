@@ -73,6 +73,17 @@ public:
   NodeValList
   make_ffr_condition(const TpgFault* fault);
 
+  /// @brief 値割り当てをリテラルに変換する．
+  SatLiteral
+  conv_to_literal(NodeVal node_val);
+
+  /// @brief 値割り当てをリテラルのリストに変換する．
+  /// @param[in] assign_list 値の割り当てリスト
+  /// @param[out] assumptions 変換したリテラルを追加するリスト
+  void
+  conv_to_assumptions(const NodeValList& assign_list,
+		      vector<SatLiteral>& assumptions);
+
   /// @brief 一つの SAT問題を解く．
   /// @param[in] assumptions 値の決まっている変数のリスト
   /// @param[out] model SAT モデル
@@ -82,6 +93,16 @@ public:
   SatBool3
   solve(const vector<SatLiteral>& assumptions,
 	vector<SatBool3>& model);
+
+  /// @brief 十分条件を取り出す．
+  /// @param[in] fault 対象の故障
+  /// @param[in] model SATモデル
+  /// @return 十分条件を表す割当リストを返す．
+  ///
+  /// FFR内の故障伝搬条件は含まない．
+  NodeValList
+  get_sufficient_condition(const TpgFault* fault,
+			   const vector<SatBool3>& model);
 
 
 protected:
@@ -114,21 +135,14 @@ protected:
   timer_stop();
 
   /// @brief バックトレースを行う．
-  /// @param[in] ffr_root 故障のある FFR の根のノード
+  /// @param[in] fault 故障
   /// @param[in] ffr_cond FFR 内の故障伝搬条件
   /// @param[in] model SATの解
   /// @return テストパタンを返す．
   TestVector
-  backtrace(const TpgNode* ffr_root,
+  backtrace(const TpgFault* fault,
 	    const NodeValList& ffr_cond,
 	    const vector<SatBool3>& model);
-
-  /// @brief 値割り当てをリテラルのリストに変換する．
-  /// @param[in] assign_list 値の割り当てリスト
-  /// @param[out] assumptions 変換したリテラルを追加するリスト
-  void
-  conv_to_assumptions(const NodeValList& assign_list,
-		      vector<SatLiteral>& assumptions);
 
   /// @brief SATソルバを返す．
   SatSolver&

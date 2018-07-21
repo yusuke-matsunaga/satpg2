@@ -55,6 +55,19 @@ public:
   DtpgResult
   gen_pattern(const TpgFault* fault);
 
+  /// @brief テスト生成を行なう．
+  /// @param[in] fault 対象の故障
+  /// @param[in] k 求めるベクタ数
+  /// @param[out] tv_list ベクタを入れるリスト
+  /// @return 結果を返す．
+  ///
+  /// * tv_list[0] は DtpgResult のベクタと同じ．
+  /// * tv_list の要素数が k より少ない場合がある．
+  DtpgResult
+  gen_k_patterns(const TpgFault* fault,
+		 int k,
+		 vector<TestVector>& tv_list);
+
 
 protected:
   //////////////////////////////////////////////////////////////////////

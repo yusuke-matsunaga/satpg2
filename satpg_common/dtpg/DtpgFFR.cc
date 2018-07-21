@@ -12,6 +12,7 @@
 #include "TpgFFR.h"
 #include "NodeValList.h"
 #include "TestVector.h"
+#include "ym/Range.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -65,8 +66,87 @@ DtpgFFR::gen_pattern(const TpgFault* fault)
   vector<SatBool3> model;
   SatBool3 sat_res = solve(assumptions, model);
   if ( sat_res == SatBool3::True ) {
-    TestVector testvect = backtrace(ffr_root, ffr_cond, model);
+    TestVector testvect = backtrace(fault, ffr_cond, model);
     return DtpgResult(testvect);
+  }
+  else if ( sat_res == SatBool3::False ) {
+    return DtpgResult::make_untestable();
+  }
+  else { // sat_res == SatBool3::X
+    return DtpgResult::make_undetected();
+  }
+}
+
+// @brief テスト生成を行なう．
+// @param[in] fault 対象の故障
+// @param[in] k 求めるベクタ数
+// @param[out] tv_list ベクタを入れるリスト
+// @return 結果を返す．
+//
+// * tv_list[0] は DtpgResult のベクタと同じ．
+// * tv_list の要素数が k より少ない場合がある．
+DtpgResult
+DtpgFFR::gen_k_patterns(const TpgFault* fault,
+			int k,
+			vector<TestVector>& tv_list)
+{
+  const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
+  ASSERT_COND( ffr_root == root_node() );
+
+  // FFR 内の故障伝搬条件を ffr_cond に入れる．
+  NodeValList ffr_cond = make_ffr_condition(fault);
+
+  // ffr_cond の内容を assumptions に追加する．
+  vector<SatLiteral> assumptions;
+  conv_to_assumptions(ffr_cond, assumptions);
+
+  vector<SatBool3> model;
+  SatBool3 sat_res = solve(assumptions, model);
+  if ( sat_res == SatBool3::True ) {
+    TestVector testvect = backtrace(fault, ffr_cond, model);
+    DtpgResult ans(testvect);
+    tv_list.clear();
+    tv_list.push_back(testvect);
+
+    if ( k > 1 ) {
+      // ここで追加するCNF式を制御する変数
+      SatVarId cvar = solver().new_variable();
+      SatLiteral clit(cvar);
+
+      for ( auto i: Range(k - 1) ) {
+	// testvect の否定を表すCNF式を追加する．
+	vector<SatLiteral> tmp_lits;
+	tmp_lits.push_back(~clit);
+	for ( auto pos: Range(testvect.ppi_num()) ) {
+	  Val3 val = testvect.ppi_val(pos);
+	  if ( val == Val3::_X ) {
+	    continue;
+	  }
+	  const TpgNode* node = network().ppi(pos);
+	  SatLiteral lit(gvar(node));
+	  if ( val == Val3::_0 ) {
+	    tmp_lits.push_back(lit);
+	  }
+	  else {
+	    tmp_lits.push_back(~lit);
+	  }
+	}
+	solver().add_clause(tmp_lits);
+	vector<SatLiteral> assumptions1(assumptions);
+	assumptions1.push_back(clit);
+	vector<SatBool3> model;
+	SatBool3 sat_res = solve(assumptions1, model);
+	if ( sat_res == SatBool3::True ) {
+	  testvect = backtrace(fault, ffr_cond, model);
+	  tv_list.push_back(testvect);
+	}
+	else {
+	  break;
+	}
+      }
+    }
+
+    return ans;
   }
   else if ( sat_res == SatBool3::False ) {
     return DtpgResult::make_untestable();

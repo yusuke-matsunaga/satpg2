@@ -1,0 +1,70 @@
+#ifndef ANALYZER_H
+#define ANALYZER_H
+
+/// @file Analyzer.h
+/// @brief Analyzer のヘッダファイル
+/// @author Yusuke Matsunaga (松永 裕介)
+///
+/// Copyright (C) 2018 Yusuke Matsunaga
+/// All rights reserved.
+
+#include "satpg.h"
+
+
+BEGIN_NAMESPACE_YM_SATPG
+
+class FaultInfo;
+
+//////////////////////////////////////////////////////////////////////
+/// @class Analyzer Analyzer.h "Analyzer.h"
+/// @brief 故障の情報を解析するクラス
+//////////////////////////////////////////////////////////////////////
+class Analyzer
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] network 対象のネットワーク
+  /// @param[in] fault_type 故障の種類
+  Analyzer(const TpgNetwork& network,
+	   FaultType fault_type);
+
+  /// @brief デストラクタ
+  ~Analyzer();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 初期化する
+  void
+  init();
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // 対象のネットワーク
+  const TpgNetwork& mNetwork;
+
+  // 故障の種類
+  FaultType mFaultType;
+
+  // 故障情報のリスト
+  vector<FaultInfo*> mFaultInfoList;
+
+};
+
+END_NAMESPACE_YM_SATPG
+
+#endif // ANALYZER_H

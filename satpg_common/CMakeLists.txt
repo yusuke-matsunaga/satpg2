@@ -106,6 +106,7 @@ set (minpat_SOURCES
   minpat/MinPatMgr.cc
   minpat/MpColGraph.cc
   minpat/MatrixGen.cc
+  minpat/Analyzer.cc
   )
 
 set (sa_SOURCES

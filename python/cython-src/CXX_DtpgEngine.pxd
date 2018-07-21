@@ -9,6 +9,7 @@
 
 from libcpp cimport bool
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from CXX_iostream cimport ostream
 from CXX_FaultType cimport FaultType
 from CXX_TpgNetwork cimport TpgNetwork
@@ -28,6 +29,7 @@ cdef extern from "DtpgFFR.h" namespace "nsYm::nsSatpg" :
         DtpgFFR(const string&, const string&, ostream*, FaultType, const string&,
                 const TpgNetwork&, const TpgFFR&)
         DtpgResult gen_pattern(const TpgFault*)
+        DtpgResult gen_k_patterns(const TpgFault*, int, vector[TestVector])
         const DtpgStats& stats()
 
 

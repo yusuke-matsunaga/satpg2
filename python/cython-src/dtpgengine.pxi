@@ -7,6 +7,7 @@
 ### All rights reserved.
 
 from libcpp.pair cimport pair
+from libcpp.vector cimport vector
 from CXX_DtpgEngine cimport DtpgFFR as CXX_DtpgFFR
 from CXX_DtpgEngine cimport DtpgMFFC as CXX_DtpgMFFC
 from CXX_TpgFault cimport TpgFault as CXX_TpgFault
@@ -35,10 +36,17 @@ cdef class DtpgFFR :
             del self._thisptr
 
     ### @brief パタン生成を行う．
-    def __call__(DtpgFFR self, TpgFault fault) :
+    def __call__(DtpgFFR self, TpgFault fault, k = 1) :
         cdef const CXX_TpgFault* c_fault = from_TpgFault(fault)
-        cdef CXX_DtpgResult c_result = self._thisptr.gen_pattern(c_fault)
-        return to_FaultStatus(c_result.status()), to_TestVector(c_result.testvector())
+        cdef CXX_DtpgResult c_result
+        cdef CXX_TestVector c_tv
+        cdef vector[CXX_TestVector] c_tv_list
+        if k > 1 :
+            c_result = self._thisptr.gen_k_patterns(c_fault, k, c_tv_list)
+            return to_FaultStatus(c_result.status()), [ to_TestVector(c_tv) for c_tv in c_tv_list ]
+        else :
+            c_result = self._thisptr.gen_pattern(c_fault)
+            return to_FaultStatus(c_result.status()), to_TestVector(c_result.testvector())
 
     ### @brief 統計情報を得る．
     @property

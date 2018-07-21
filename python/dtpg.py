@@ -40,6 +40,18 @@ class Dtpg :
                     self.__call_dtpg(dtpg, fault)
         return self.__ndet, self.__nunt, self.__nabt
 
+    ### @brief FFR mode でパタン生成を行う．
+    def k_ffr_mode(self, k) :
+        self.__ndet = 0
+        self.__nunt = 0
+        self.__nabt = 0
+        for ffr in self.__network.ffr_list() :
+            dtpg = DtpgFFR(self.__network, self.__fault_type, ffr)
+            for fault in ffr.fault_list() :
+                if self.__fsmgr.get(fault) == FaultStatus.Undetected :
+                    self.__call_dtpg_k(dtpg, fault, k)
+        return self.__ndet, self.__nunt, self.__nabt
+
     ### @brief MFFC mode でパタン生成を行う．
     def mffc_mode(self, drop) :
         self.__ndet = 0
@@ -71,6 +83,28 @@ class Dtpg :
                     self.__fsim3.set_skip(fault)
                     self.__fault_list.append(fault)
                     self.__ndet += 1
+        elif stat == FaultStatus.Untestable :
+            self.__nunt += 1
+            # fault をテスト不能故障と記録
+            self.__fsmgr.set(fault, FaultStatus.Untestable)
+            self.__fsim3.set_skip(fault)
+        elif stat == FaultStatus.Undetected :
+            self.__nabt += 1
+        else :
+            assert False
+
+    ### @brief 全モードで共通な処理
+    def __call_dtpg_k(self, dtpg, fault, k) :
+        stat, testvect_list = dtpg(fault, k)
+        if stat == FaultStatus.Detected :
+            self.__ndet += 1
+            # fault を検出可能故障と記録
+            self.__fsmgr.set(fault, FaultStatus.Detected)
+            self.__fsim3.set_skip(fault)
+            self.__fault_list.append(fault)
+            # fault のパタンとして testvect を記録
+            for testvect in testvect_list :
+                self.__tvlist.append(testvect)
         elif stat == FaultStatus.Untestable :
             self.__nunt += 1
             # fault をテスト不能故障と記録

@@ -137,6 +137,11 @@ public:
       int time,
       bool val);
 
+  /// @brief 値を追加する．
+  /// @param[in] node_val 値の割り当て情報
+  void
+  add(NodeVal node_val);
+
   /// @brief マージする．
   /// @param[in] src_list マージするリスト
   ///
@@ -421,7 +426,16 @@ NodeValList::add(const TpgNode* node,
 		 int time,
 		 bool val)
 {
-  mAsList.push_back(NodeVal(node, time, val));
+  add(NodeVal(node, time, val));
+}
+
+// @brief 値を追加する．
+// @param[in] node_val 値の割り当て情報
+inline
+void
+NodeValList::add(NodeVal node_val)
+{
+  mAsList.push_back(node_val);
   mDirty = true;
 }
 

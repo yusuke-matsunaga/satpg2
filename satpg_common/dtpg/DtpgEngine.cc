@@ -38,13 +38,6 @@ END_NONAMESPACE
 
 BEGIN_NAMESPACE_YM_SATPG
 
-extern
-NodeValList
-extract(const TpgNode* root,
-	const VidMap& gvar_map,
-	const VidMap& fvar_map,
-	const vector<SatBool3>& model);
-
 // @brief コンストラクタ
 // @param[in] sat_type SATソルバの種類を表す文字列
 // @param[in] sat_option SATソルバに渡すオプション文字列
@@ -469,12 +462,12 @@ DtpgEngine::add_assign(NodeValList& assign_list,
 }
 
 // @brief バックトレースを行う．
-// @param[in] ffr_root 故障のある FFR の根のノード
+// @param[in] fault 故障
 // @param[in] ffr_cond FFR 内の故障伝搬条件
 // @param[in] model SATの解
 // @return テストパタンを返す．
 TestVector
-DtpgEngine::backtrace(const TpgNode* ffr_root,
+DtpgEngine::backtrace(const TpgFault* fault,
 		      const NodeValList& ffr_cond,
 		      const vector<SatBool3>& model)
 {
@@ -482,7 +475,7 @@ DtpgEngine::backtrace(const TpgNode* ffr_root,
   timer.start();
 
   // バックトレースを行う．
-  NodeValList assign_list = extract(ffr_root, mGvarMap, mFvarMap, model);
+  NodeValList assign_list = get_sufficient_condition(fault, model);
   assign_list.merge(ffr_cond);
   TestVector testvect;
   if ( mFaultType == FaultType::TransitionDelay ) {
@@ -498,21 +491,29 @@ DtpgEngine::backtrace(const TpgNode* ffr_root,
   return testvect;
 }
 
+// @brief 値割り当てをリテラルに変換する．
+SatLiteral
+DtpgEngine::conv_to_literal(NodeVal node_val)
+{
+  const TpgNode* node = node_val.node();
+  bool inode_val = !node_val.val();
+  SatVarId vid = (node_val.time() == 0) ? hvar(node) : gvar(node);
+  return SatLiteral(vid, inv);
+ }
+
 // @brief 値割り当てをリテラルのリストに変換する．
 // @param[in] assign_list 値の割り当てリスト
 // @param[out] assumptions 変換したリテラルを追加するリスト
 void
 DtpgEngine::conv_to_assumptions(const NodeValList& assign_list,
-			     vector<SatLiteral>& assumptions)
+				vector<SatLiteral>& assumptions)
 {
   int n0 = assumptions.size();
   int n = assign_list.size();
   assumptions.reserve(n + n0);
   for ( auto nv: assign_list ) {
-    const TpgNode* node = nv.node();
-    bool inv = !nv.val();
-    SatVarId vid = (nv.time() == 0) ? hvar(node) : gvar(node);
-    assumptions.push_back(SatLiteral(vid, inv));
+    auto lit = conv_to_literal(nv);
+    assumptions.push_back(lit);
   }
 }
 
@@ -553,6 +554,25 @@ DtpgEngine::solve(const vector<SatLiteral>& assumptions,
   }
 
   return ans;
+}
+
+// @brief 十分条件を取り出す．
+// @param[in] fault 対象の故障
+// @param[in] model SATモデル
+// @return 十分条件を表す割当リストを返す．
+NodeValList
+DtpgEngine::get_sufficient_condition(const TpgFault* fault,
+				     const vector<SatBool3>& model)
+{
+  extern
+  NodeValList
+  extract(const TpgNode* root,
+	  const VidMap& gvar_map,
+	  const VidMap& fvar_map,
+	  const vector<SatBool3>& model);
+
+  const TpgNode* ffr_root = fault->tpg_onode()->ffr_root();
+  return extract(ffr_root, mGvarMap, mFvarMap, model);
 }
 
 END_NAMESPACE_YM_SATPG
