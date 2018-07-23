@@ -247,3 +247,20 @@ cdef class TpgNetwork :
         for i in range(0, n) :
             c_fault = self._this.rep_fault(i)
             yield to_TpgFault(c_fault)
+
+    ### @brief ノードに関係した代表故障を返す．
+    ### @param[in] node_id ノード番号
+    def node_rep_fault_num(TpgNetwork self, int node_id) :
+        return self._this.node_rep_fault_num(node_id)
+
+    ### @brief ノードに関係した代表故障のリストを返す．
+    ### @param[in] node_id ノード番号
+    ###
+    ### 正確にはジェネレータを返す．
+    def node_rep_fault_list(TpgNetwork self, int node_id) :
+        cdef const CXX_TpgFault* c_fault
+        cdef int n = self._this.node_rep_fault_num(node_id)
+        cdef int i
+        for i in range(0, n) :
+            c_fault = self._this.node_rep_fault(node_id, i)
+            yield to_TpgFault(c_fault)

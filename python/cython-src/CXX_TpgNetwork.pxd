@@ -43,3 +43,5 @@ cdef extern from "TpgNetwork.h" namespace "nsYm::nsSatpg" :
         int max_fault_id()
         int rep_fault_num()
         const TpgFault* rep_fault(int pos)
+        int node_rep_fault_num(int)
+        const TpgFault* node_rep_fault(int, int)
