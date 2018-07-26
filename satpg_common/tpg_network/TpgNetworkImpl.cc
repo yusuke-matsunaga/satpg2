@@ -395,9 +395,9 @@ TpgNetworkImpl::set(const BnNetwork& network)
       }
     }
   }
-  mInputNum = input_map.size();
-  mOutputNum = output_map.size();
-  mDffNum = network.dff_num();
+  int input_num = input_map.size();
+  int output_num = output_map.size();
+  int dff_num = network.dff_num();
 
   int dff_control_num = 0;
   for ( auto dff: network.dff_list() ) {
@@ -413,21 +413,8 @@ TpgNetworkImpl::set(const BnNetwork& network)
     }
   }
 
-  mDffArray = new TpgDff[mDffNum];
-  for ( auto i: Range(mDffNum) ) {
-    mDffArray[i].mId = i;
-  }
-
-  int nn = mInputNum + mOutputNum + mDffNum * 2 + nl + extra_node_num + dff_control_num;
-  mNodeArray = new TpgNode*[nn];
-  mAuxInfoArray = new AuxNodeInfo[nn];
-
-  int nppi = mInputNum + mDffNum;
-  mPPIArray = new TpgNode*[nppi];
-
-  int nppo = mOutputNum + mDffNum;
-  mPPOArray = new TpgNode*[nppo];
-  mPPOArray2 = new TpgNode*[nppo];
+  int nn = input_num + output_num + dff_num * 2 + nl + extra_node_num + dff_control_num;
+  set_size(input_num, output_num, dff_num, nn);
 
   NodeMap node_map;
 
@@ -724,6 +711,32 @@ TpgNetworkImpl::set(const BnNetwork& network)
     TpgMFFC* mffc = &mMffcArray[i];
     set_mffc(node, mffc);
   }
+}
+
+// @brief サイズを設定する．
+void
+TpgNetworkImpl::set_size(int input_num,
+			 int output_num,
+			 int dff_num,
+			 int node_num)
+{
+  mInputNum = input_num;
+  mOutputNum = output_num;
+  mDffNum = dff_num;
+  mDffArray = new TpgDff[mDffNum];
+  for ( auto i: Range(mDffNum) ) {
+    mDffArray[i].mId = i;
+  }
+
+  mNodeArray = new TpgNode*[node_num];
+  mAuxInfoArray = new AuxNodeInfo[node_num];
+
+  int nppi = mInputNum + mDffNum;
+  mPPIArray = new TpgNode*[nppi];
+
+  int nppo = mOutputNum + mDffNum;
+  mPPOArray = new TpgNode*[nppo];
+  mPPOArray2 = new TpgNode*[nppo];
 }
 
 // @brief 代表故障を設定する．
