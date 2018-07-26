@@ -12,7 +12,7 @@
 #include "ym/SatSolver.h"
 
 
-BEGIN_NAMESPACE_BEGIN_NAMESPACE_YM_SATPG
+BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
 /// @class FaultyGateEnc FaultyGateEnc.h "FaultyGateEnc.h"
@@ -40,18 +40,15 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
   void
-  make_cnf(const TpgNode* node);
+  make_cnf();
 
   /// @brief ノードの入出力の関係を表すCNF式を作る．
-  /// @param[in] node 対象のノード
   /// @param[in] ovar 出力の変数番号
   ///
   /// 出力の変数番号のみ指定するバージョン
   void
-  make_cnf(const TpgNode* node,
-	   SatVarId ovar);
+  make_cnf(SatVarId ovar);
 
 
 private:
@@ -80,6 +77,6 @@ private:
 
 };
 
-END_NAMESPACE_BEGIN_NAMESPACE_YM_SATPG
+END_NAMESPACE_YM_SATPG
 
 #endif // FAULTYGATEENC_H

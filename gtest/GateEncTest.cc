@@ -11,6 +11,7 @@
 #include "GateEnc.h"
 #include "GateType.h"
 #include "TpgNetworkImpl.h"
+#include "TpgGateInfo.h"
 #include "TpgNode.h"
 #include "VidMap.h"
 #include "ym/Range.h"
@@ -76,6 +77,8 @@ GateEncTest::check(int input_num,
 {
   mNetworkImpl.set_size(input_num, 0, 0, input_num + 1);
 
+  TpgGateInfoMgr gimgr;
+
   // 入力ノードを作る．
   vector<TpgNode*> input_list(input_num);
   for ( int i: Range(input_num) ) {
@@ -84,8 +87,8 @@ GateEncTest::check(int input_num,
   }
   // ゲートを作る．
   vector<pair<int, int>> connection_list;
-  TpgNode* node = mNetworkImpl.make_prim_node(string(), gate_type, input_list,
-					      0, connection_list);
+  TpgNode* node = mNetworkImpl.make_logic_node(string(), gimgr.simple_type(gate_type),
+					       input_list, 0, connection_list);
 
   ASSERT_EQ( input_num + 1, mNetworkImpl.node_num() );
 

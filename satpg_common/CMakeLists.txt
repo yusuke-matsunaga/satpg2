@@ -57,6 +57,7 @@ set (fsim_SOURCES
 
 set (struct_enc_SOURCES
   struct_enc/GateEnc.cc
+  struct_enc/FaultyGateEnc.cc
   struct_enc/PropCone.cc
   struct_enc/SimplePropCone.cc
   struct_enc/MffcPropCone.cc
