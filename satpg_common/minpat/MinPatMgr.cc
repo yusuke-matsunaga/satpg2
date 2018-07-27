@@ -222,6 +222,7 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
     return 0;
   }
 
+#if 1
   cout << "Analyze start" << endl;
   Analyzer analyzer(network, fault_type);
   //analyzer.init(0);
@@ -243,6 +244,9 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
   }
   //cout << "*** coloring ***" << endl;
   //cout << "# of initial patterns: " << nv << endl;
+#else
+  auto& red_fault_list = fault_list;
+#endif
 
   MpColGraph graph(tv_list);
 

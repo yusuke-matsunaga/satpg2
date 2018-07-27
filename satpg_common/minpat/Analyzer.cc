@@ -13,11 +13,13 @@
 #include "DtpgFFR2.h"
 #include "UndetChecker.h"
 #include "DomChecker.h"
+#include "DomChecker2.h"
 #include "TpgFFR.h"
 #include "TpgFault.h"
 #include "MatrixGen.h"
 #include "ym/McMatrix.h"
 #include "ym/Range.h"
+#include "ym/RandGen.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -49,6 +51,7 @@ Analyzer::gen_fault_list(vector<FaultInfo*>& fi_list)
   ostream* sat_outp = nullptr;
   string just_type;
 
+  RandGen randgen;
   int n0 = 0;
   int n1 = 0;
   for ( auto& ffr: mNetwork.ffr_list() ) {
@@ -65,6 +68,7 @@ Analyzer::gen_fault_list(vector<FaultInfo*>& fi_list)
 	NodeValList suf_cond = dtpg.get_sufficient_condition(fault, model);
 	suf_cond.merge(ffr_cond);
 	TestVector testvect = dtpg.backtrace(fault, suf_cond, model);
+	testvect.fix_x_from_random(randgen);
 	FaultInfo* fi = new FaultInfo(fault, ffr_cond, suf_cond, testvect);
 	tmp_fi_list.push_back(fi);
 	++ n0;
@@ -131,6 +135,9 @@ Analyzer::gen_fault_list(vector<FaultInfo*>& fi_list)
 void
 Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list)
 {
+  StopWatch timer;
+  timer.start();
+
   int nf = fi_list.size();
   vector<const TpgFault*> fault_list;
   fault_list.reserve(nf);
@@ -147,6 +154,10 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list)
   string sat_option;
   ostream* sat_outp = nullptr;
   string just_type;
+
+  int check_num = 0;
+  int success_num = 0;
+  //int checker_num = 0;
 
   vector<bool> mark(nf, false);
   for ( int i1 = 0; i1 < nf; ++ i1 ) {
@@ -171,7 +182,7 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list)
 	  break;
 	}
       }
-      if ( false && not_covered ) {
+      if ( not_covered ) {
 	continue;
       }
       auto fi2 = fi_list[i2];
@@ -194,49 +205,13 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list)
 	  continue;
 	}
       }
+      ++ check_num;
       SatBool3 res = undet_checker.check_detectable(fault2);
       if ( res == SatBool3::False ) {
+	++ success_num;
 	// fault2 が検出可能の条件のもとで fault が検出不能となることはない．
 	// fault2 が fault を支配している．
 	mark[i1] = true;
-	{
-	  vector<bool> col1_mark(nf, false);
-	  vector<bool> col2_mark(nf, false);
-	  for ( auto col: matrix.row_list(i1) ) {
-	    col1_mark[col] = true;
-	  }
-	  for ( auto col: matrix.row_list(i2) ) {
-	    col2_mark[col] = true;
-	  }
-
-	  vector<int> f1_list;
-	  for ( auto col: matrix.row_list(i1) ) {
-	    if ( !col2_mark[col] ) {
-	      f1_list.push_back(col);
-	    }
-	  }
-	  vector<int> f2_list;
-	  for ( auto col: matrix.row_list(i2) ) {
-	    if ( !col1_mark[col] ) {
-	      f2_list.push_back(col);
-	    }
-	  }
-	  if ( f2_list.size() ) {
-	    Fsim fsim;
-	    fsim.init_fsim3(mNetwork, mFaultType);
-	    auto col = f2_list[0];
-	    TestVector tv = tv_list[col];
-	    bool res1 = fsim.spsfp(tv, fault1);
-	    bool res2 = fsim.spsfp(tv, fault2);
-	    cout << "fault1: " << fault1->str() << ": " << res1 << endl
-		 << "fault2: " << fault2->str() << ": " << res2 << endl;
-	    DomChecker dc(sat_type, sat_option, sat_outp, mFaultType, mNetwork,
-			  fault2->tpg_onode()->ffr_root(), fault1);
-	    SatBool3 res3 = dc.check_detectable(fault2);
-	    cout << res3 << endl
-		 << endl;
-	  }
-	}
 	break;
       }
     }
@@ -253,17 +228,44 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list)
   if ( wpos < nf ) {
     fi_list.erase(fi_list.begin() + wpos, fi_list.end());
   }
-  cout << "after semi-global dominance reduction: " << wpos << endl;
+
+  timer.stop();
+  cout << "after semi-global dominance reduction: " << wpos << endl
+       << "# of total checks:                     " << check_num << endl
+       << "# of total successes:                  " << success_num << endl
+       << "CPU time:                              " << timer.time() << endl;
 }
 
 // @brief 異なる FFR 間の支配故障の簡易チェックを行う．
 void
 Analyzer::dom_reduction2(vector<FaultInfo*>& fi_list)
 {
+  StopWatch timer;
+  timer.start();
+
+  int nf = fi_list.size();
+  vector<const TpgFault*> fault_list;
+  fault_list.reserve(nf);
+  vector<TestVector> tv_list;
+  tv_list.reserve(nf);
+  HashMap<int, int> fid_map;
+  for ( auto fi: fi_list ) {
+    int row = fault_list.size();
+    auto fault = fi->fault();
+    fid_map.add(fault->id(), row);
+    fault_list.push_back(fault);
+    tv_list.push_back(fi->testvect());
+  }
+  MatrixGen matgen(fault_list, tv_list, mNetwork, mFaultType);
+  McMatrix matrix = matgen.generate();
+
   string sat_type;
   string sat_option;
   ostream* sat_outp = nullptr;
 
+  int check_num = 0;
+  int dom_num = 0;
+  int success_num = 0;
   int n = fi_list.size();
   vector<bool> mark(mNetwork.max_fault_id(), false);
   for ( int i1 = 0; i1 < n; ++ i1 ) {
@@ -274,18 +276,47 @@ Analyzer::dom_reduction2(vector<FaultInfo*>& fi_list)
   for ( int i1 = 0; i1 < n; ++ i1 ) {
     auto fi1 = fi_list[i1];
     auto fault1 = fi1->fault();
+    // fault2 が fault1 を支配している時
+    // fault2 に含まれる列は必ず fault1 にも含まれなければならない．
+    vector<bool> col_mark(nf, false);
+    for ( auto col: matrix.row_list(i1) ) {
+      col_mark[col] = true;
+    }
     for ( auto& ffr2: mNetwork.ffr_list() ) {
       if ( ffr2.root() == fault1->tpg_onode()->ffr_root() ) {
 	continue;
       }
-      DomChecker dom_checker(sat_type, sat_option, sat_outp, mFaultType, mNetwork,
-			     ffr2.root(), fault1);
+      vector<const TpgFault*> fault2_list;
       for ( auto fault2: ffr2.fault_list() ) {
 	if ( !mark[fault2->id()] ) {
 	  continue;
 	}
+
+	bool not_covered = false;
+	int i2;
+	fid_map.find(fault2->id(), i2);
+	for ( auto col: matrix.row_list(i2) ) {
+	  if ( !col_mark[col] ) {
+	    not_covered = true;
+	    break;
+	  }
+	}
+	if ( not_covered ) {
+	  continue;
+	}
+	fault2_list.push_back(fault2);
+      }
+      if ( fault2_list.empty() ) {
+	continue;
+      }
+      ++ dom_num;
+      DomChecker dom_checker(sat_type, sat_option, sat_outp, mFaultType, mNetwork,
+			     ffr2.root(), fault1);
+      for ( auto fault2: fault2_list ) {
+	++ check_num;
 	SatBool3 res = dom_checker.check_detectable(fault2);
 	if ( res == SatBool3::False ) {
+	  ++ success_num;
 	  // fault2 が検出可能の条件のもとで fault1 が検出不能となることはない．
 	  // fault2 が fault1 を支配している．
 	  mark[fault1->id()] = false;
@@ -310,7 +341,12 @@ Analyzer::dom_reduction2(vector<FaultInfo*>& fi_list)
   if ( wpos < n ) {
     fi_list.erase(fi_list.begin() + wpos, fi_list.end());
   }
+  timer.stop();
   cout << "after global dominance reduction: " << fi_list.size() << endl;
+  cout << "# of total checkes:   " << check_num << endl
+       << "# of total successes: " << success_num << endl
+       << "# of DomCheckers:     " << dom_num << endl
+       << "CPU time:             " << timer.time() << endl;
 }
 
 // @brief 初期化する

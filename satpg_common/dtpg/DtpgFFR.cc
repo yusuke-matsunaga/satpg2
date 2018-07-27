@@ -105,7 +105,9 @@ DtpgFFR::gen_k_patterns(const TpgFault* fault,
   vector<SatBool3> model;
   SatBool3 sat_res = solve(assumptions, model);
   if ( sat_res == SatBool3::True ) {
-    TestVector testvect = backtrace(fault, ffr_cond, model);
+    NodeValList suf_cond = get_sufficient_condition(fault, model);
+    suf_cond.merge(ffr_cond);
+    TestVector testvect = backtrace(fault, suf_cond, model);
     DtpgResult ans(testvect);
     tv_list.clear();
     tv_list.push_back(testvect);
@@ -139,7 +141,9 @@ DtpgFFR::gen_k_patterns(const TpgFault* fault,
 	vector<SatBool3> model;
 	SatBool3 sat_res = solve(assumptions1, model);
 	if ( sat_res == SatBool3::True ) {
-	  testvect = backtrace(fault, ffr_cond, model);
+	  NodeValList suf_cond = get_sufficient_condition(fault, model);
+	  suf_cond.merge(ffr_cond);
+	  testvect = backtrace(fault, suf_cond, model);
 	  tv_list.push_back(testvect);
 	}
 	else {
