@@ -244,6 +244,10 @@ protected:
   const TpgNode*
   root_node() const;
 
+  /// @brief root_node() の TFO に含まれる出力のノードのリストを返す．
+  const vector<const TpgNode*>&
+  output_list() const;
+
   /// @brief 関係するノードのリストを返す．
   const vector<const TpgNode*>&
   cur_node_list() const;
@@ -264,6 +268,7 @@ protected:
   void
   gen_faulty_cnf();
 
+#if 0
   /// @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
   void
   gen_detect_cnf();
@@ -271,6 +276,7 @@ protected:
   /// @brief 故障の伝搬しない条件を表す CNF 式を作る．
   void
   gen_undetect_cnf();
+#endif
 
 
 private:
@@ -441,6 +447,14 @@ const TpgNode*
 DtpgEngine::root_node() const
 {
   return mRoot;
+}
+
+// @brief root_node() の TFO に含まれる出力のノードのリストを返す．
+inline
+const vector<const TpgNode*>&
+DtpgEngine::output_list() const
+{
+  return mOutputList;
 }
 
 // @brief 1時刻前の正常値の変数を返す．

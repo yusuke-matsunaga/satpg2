@@ -24,6 +24,8 @@ BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
 
+bool debug = false;
+
 class MpComp :
   public McColComp
 {
@@ -225,10 +227,8 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
 
   vector<const TpgFault*> red_fault_list(fault_list);
   if ( red_algorithm != string() ) {
-    cout << "Analyze start" << endl;
     Analyzer analyzer(network, fault_type);
     analyzer.fault_reduction(red_fault_list, red_algorithm);
-    cout << "Analyze end" << endl;
   }
 
   MpColGraph graph(tv_list);
@@ -240,7 +240,7 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
 
   //cout << " McMatrix generated" << endl;
 
-  {
+  if ( debug ) {
     cout << "# of faults: " << red_fault_list.size() << endl;
     int n_sum = 0;
     int n_max = 0;
@@ -259,7 +259,7 @@ MinPatMgr::coloring(const vector<const TpgFault*>& fault_list,
   vector<int> selected_cols;
   reduce(matrix, graph, selected_cols);
 
-  {
+  if ( debug ) {
     int nf = matrix.active_row_num();
     cout << "# of reduced faults: " << nf << endl;
     int n_sum = 0;

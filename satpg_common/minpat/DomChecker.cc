@@ -69,7 +69,7 @@ DomChecker::DomChecker(const string& sat_type,
     mTfoList[pos].reserve(network.node_num());
     mOutputList[pos].reserve(network.ppo_num());
     mFvarMap[pos].init(network.node_num());
-    mDvarMap[pos].init(network.node_num());
+    mDvarMap.init(network.node_num());
   }
 
   // 変数割り当て
@@ -89,14 +89,14 @@ DomChecker::DomChecker(const string& sat_type,
     vector<SatLiteral> odiff(no);
     for (int i = 0; i < no; ++ i) {
       const TpgNode* node = mOutputList[0][i];
-      SatLiteral dlit(dvar(node, 0));
+      SatLiteral dlit(dvar(node));
       odiff[i] = dlit;
     }
     mSolver.add_clause(odiff);
 
     if ( !mRoot[0]->is_ppo() ) {
       // mRoot の dlit が1でなければならない．
-      mSolver.add_clause(SatLiteral(dvar(mRoot[0], 0)));
+      mSolver.add_clause(SatLiteral(dvar(mRoot[0])));
     }
   }
 
@@ -233,21 +233,24 @@ DomChecker::prepare_vars()
     // TFO の部分に変数を割り当てる．
     for ( auto node: mTfoList[pos] ) {
       SatVarId fvar = mSolver.new_variable();
-      SatVarId dvar = mSolver.new_variable();
-
       mFvarMap[pos].set_vid(node, fvar);
-      mDvarMap[pos].set_vid(node, dvar);
+      if ( pos == 0 ) {
+	SatVarId dvar = mSolver.new_variable();
+	mDvarMap.set_vid(node, dvar);
+      }
 
       if ( debug_dtpg ) {
 	DEBUG_OUT << "gvar(";
 	print_node(DEBUG_OUT, mNetwork, node);
-	DEBUG_OUT << ") = " << mGvarMap(node) << endl;
-	DEBUG_OUT << "f[" << pos << "]var(";
+	DEBUG_OUT << ") = " << gvar(node) << endl;
+	DEBUG_OUT << "fvar[" << pos << "](";
 	print_node(DEBUG_OUT, mNetwork, node);
 	DEBUG_OUT << ") = " << fvar << endl;
-	DEBUG_OUT << "d[" << pos << "]var(";
-	print_node(DEBUG_OUT, mNetwork, node);
-	DEBUG_OUT << ") = " << dvar << endl;
+	if ( pos == 0 ) {
+	  DEBUG_OUT << "dvar(";
+	  print_node(DEBUG_OUT, mNetwork, node);
+	  DEBUG_OUT << ") = " << dvar(node) << endl;
+	}
       }
     }
   }
@@ -255,7 +258,6 @@ DomChecker::prepare_vars()
   // prev TFI の部分に変数を割り当てる．
   for ( auto node: mPrevTfiList ) {
     SatVarId hvar = mSolver.new_variable();
-
     mHvarMap.set_vid(node, hvar);
 
     if ( debug_dtpg ) {
@@ -344,7 +346,7 @@ DomChecker::gen_faulty_cnf()
 	}
       }
       if ( pos == 0 ) {
-	make_dchain_cnf(node, pos);
+	make_dchain_cnf(node);
       }
     }
   }
@@ -353,12 +355,11 @@ DomChecker::gen_faulty_cnf()
 // @brief 故障伝搬条件を表すCNF式を生成する．
 // @param[in] node 対象のノード
 void
-DomChecker::make_dchain_cnf(const TpgNode* node,
-			    int pos)
+DomChecker::make_dchain_cnf(const TpgNode* node)
 {
   SatLiteral glit(mGvarMap(node));
-  SatLiteral flit(mFvarMap[pos](node));
-  SatLiteral dlit(mDvarMap[pos](node));
+  SatLiteral flit(mFvarMap[0](node));
+  SatLiteral dlit(mDvarMap(node));
 
   // dlit -> XOR(glit, flit) を追加する．
   // 要するに正常回路と故障回路で異なっているとき dlit が 1 となる．
@@ -367,7 +368,7 @@ DomChecker::make_dchain_cnf(const TpgNode* node,
 
   if ( debug_dtpg ) {
     print_node(DEBUG_OUT, mNetwork, node);
-    DEBUG_OUT << ": dvar[" << pos << "] -> " << glit << " != " << flit << endl;
+    DEBUG_OUT << ": dvar -> " << glit << " != " << flit << endl;
   }
 
   if ( node->is_ppo() ) {
@@ -376,7 +377,7 @@ DomChecker::make_dchain_cnf(const TpgNode* node,
 
     if ( debug_dtpg ) {
       print_node(DEBUG_OUT, mNetwork, node);
-      DEBUG_OUT << ": !dvar[" << pos << "] -> "	<< glit << " == " << flit << endl;
+      DEBUG_OUT << ": !dvar -> " << glit << " == " << flit << endl;
     }
   }
   else {
@@ -384,12 +385,12 @@ DomChecker::make_dchain_cnf(const TpgNode* node,
 
     if ( debug_dtpg ) {
       print_node(DEBUG_OUT, mNetwork, node);
-      DEBUG_OUT << ": dvar[" << pos << "] -> ";
+      DEBUG_OUT << ": dvar -> ";
     }
     int nfo = node->fanout_num();
     if ( nfo == 1 ) {
       auto onode = node->fanout_list()[0];
-      SatLiteral odlit(mDvarMap[pos](onode));
+      SatLiteral odlit(mDvarMap(onode));
       mSolver.add_clause(~dlit, odlit);
 
       if ( debug_dtpg ) {
@@ -401,7 +402,7 @@ DomChecker::make_dchain_cnf(const TpgNode* node,
       vector<SatLiteral> tmp_lits;
       tmp_lits.reserve(nfo + 1);
       for ( auto onode: node->fanout_list() ) {
-	SatLiteral dlit1(mDvarMap[pos](onode));
+	SatLiteral dlit1(mDvarMap(onode));
 	tmp_lits.push_back(dlit1);
 
 	if ( debug_dtpg ) {
@@ -419,12 +420,12 @@ DomChecker::make_dchain_cnf(const TpgNode* node,
 
       const TpgNode* imm_dom = node->imm_dom();
       if ( imm_dom != nullptr ) {
-	SatLiteral odlit(mDvarMap[pos](imm_dom));
+	SatLiteral odlit(mDvarMap(imm_dom));
 	mSolver.add_clause(~dlit, odlit);
 
 	if ( debug_dtpg ) {
 	  print_node(DEBUG_OUT, mNetwork, node);
-	  DEBUG_OUT << ": dvar[" << pos << "] -> ";
+	  DEBUG_OUT << ": dvar -> ";
 	  print_node(DEBUG_OUT, mNetwork, imm_dom);
 	  DEBUG_OUT << ": " << odlit << endl;
 	}

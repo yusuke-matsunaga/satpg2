@@ -97,7 +97,7 @@ UndetChecker::~UndetChecker()
 // @param[in] fault 故障
 // @return 結果を返す．
 SatBool3
-UndetChecker::check_detectable(const TpgFault* fault)
+UndetChecker::check(const TpgFault* fault)
 {
   NodeValList ffr_cond = ffr_propagate_condition(fault, mFaultType);
 

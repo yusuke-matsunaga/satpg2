@@ -154,8 +154,7 @@ protected:
   /// @brief 伝搬条件の変数を返す．
   /// @param[in] node 対象のノード
   SatVarId
-  dvar(const TpgNode* node,
-       int pos);
+  dvar(const TpgNode* node);
 
   /// @brief 1時刻前の正常値の変数を設定する．
   /// @param[in] node 対象のノード
@@ -184,8 +183,7 @@ protected:
   /// @param[in] var 設定する変数
   void
   set_dvar(const TpgNode* node,
-	   SatVarId var,
-	   int pos);
+	   SatVarId var);
 
   /// @brief 1時刻前の正常値の変数マップを返す．
   const VidMap&
@@ -240,8 +238,7 @@ private:
   /// @brief 故障伝搬条件を表すCNF式を生成する．
   /// @param[in] node 対象のノード
   void
-  make_dchain_cnf(const TpgNode* node,
-		  int pos);
+  make_dchain_cnf(const TpgNode* node);
 
   /// @brief TFO マークをつける．
   /// @param[in] node 対象のノード
@@ -320,7 +317,7 @@ private:
   VidMap mFvarMap[2];
 
   // 故障伝搬条件を表す変数のマップ
-  VidMap mDvarMap[2];
+  VidMap mDvarMap;
 
   // 時間計測を行なうかどうかの制御フラグ
   bool mTimerEnable;
@@ -425,10 +422,9 @@ DomChecker::fvar(const TpgNode* node,
 // @param[in] node 対象のノード
 inline
 SatVarId
-DomChecker::dvar(const TpgNode* node,
-		 int pos)
+DomChecker::dvar(const TpgNode* node)
 {
-  return mDvarMap[pos](node);
+  return mDvarMap(node);
 }
 
 // @brief 1時刻前の正常値の変数を設定する．
@@ -471,10 +467,9 @@ DomChecker::set_fvar(const TpgNode* node,
 inline
 void
 DomChecker::set_dvar(const TpgNode* node,
-		     SatVarId var,
-		     int pos)
+		     SatVarId var)
 {
-  mDvarMap[pos].set_vid(node, var);
+  mDvarMap.set_vid(node, var);
 }
 
 // @brief 1時刻前の正常値の変数マップを返す．

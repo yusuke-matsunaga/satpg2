@@ -65,7 +65,7 @@ public:
   /// @param[in] fault 故障
   /// @return 結果を返す．
   SatBool3
-  check_detectable(const TpgFault* fault);
+  check(const TpgFault* fault);
 
   /// @brief 統計情報を得る．
   const DtpgStats&
@@ -81,14 +81,6 @@ public:
   void
   conv_to_assumptions(const NodeValList& assign_list,
 		      vector<SatLiteral>& assumptions);
-
-  /// @brief SATソルバに変数を割り当てる．
-  SatVarId
-  new_variable();
-
-  /// @brief SATソルバに節を追加する．
-  void
-  add_clause(const vector<SatLiteral>& lits);
 
   /// @brief 一つの SAT問題を解く．
   /// @param[in] assumptions 値の決まっている変数のリスト
@@ -335,22 +327,6 @@ const DtpgStats&
 UndetChecker::stats() const
 {
   return mStats;
-}
-
-// @brief SATソルバに変数を割り当てる．
-inline
-SatVarId
-UndetChecker::new_variable()
-{
-  return solver().new_variable();
-}
-
-// @brief SATソルバに節を追加する．
-inline
-void
-UndetChecker::add_clause(const vector<SatLiteral>& lits)
-{
-  solver().add_clause(lits);
 }
 
 // @brief SATソルバを返す．

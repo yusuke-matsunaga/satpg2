@@ -61,7 +61,33 @@ DtpgMFFC::DtpgMFFC(const string& sat_type,
 
   cnf_begin();
 
-  gen_detect_cnf();
+  // 変数割り当て
+  prepare_vars();
+
+  // 正常回路の CNF を生成
+  gen_good_cnf();
+
+  // 故障回路の CNF を生成
+  gen_faulty_cnf();
+
+  //////////////////////////////////////////////////////////////////////
+  // 故障の検出条件(正確には mRoot から外部出力までの故障の伝搬条件)
+  //////////////////////////////////////////////////////////////////////
+  {
+    vector<SatLiteral> odiff;
+    odiff.reserve(output_list().size());
+    for ( auto node: output_list() ) {
+      SatLiteral dlit(dvar(node));
+      odiff.push_back(dlit);
+    }
+    solver().add_clause(odiff);
+
+    if ( !root_node()->is_ppo() ) {
+      // root_node() の dlit が1でなければならない．
+      SatLiteral dlit0(dvar(root_node()));
+      solver().add_clause(dlit0);
+    }
+  }
 
   gen_mffc_cnf();
 

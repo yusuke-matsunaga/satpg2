@@ -25,6 +25,8 @@ BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
 
+bool debug = false;
+
 // オプション文字列をパーズする
 // * オプションは
 //   <オプションキーワード>[:<オプション値>][, <オプションキーワード>[:<オプション値>]]
@@ -208,8 +210,10 @@ Analyzer::gen_fault_list(const vector<bool>& mark,
       }
     }
   }
-  cout << "# of initial faults: " << n0 << endl
-       << "after FFR dominance reduction: " << n1 << endl;
+  if ( debug ) {
+    cout << "# of initial faults: " << n0 << endl
+	 << "after FFR dominance reduction: " << n1 << endl;
+  }
 }
 
 // @brief 異なる FFR 間の支配故障の簡易チェックを行う．
@@ -288,7 +292,7 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list,
 	}
       }
       ++ check_num;
-      SatBool3 res = undet_checker.check_detectable(fault2);
+      SatBool3 res = undet_checker.check(fault2);
       if ( res == SatBool3::False ) {
 	++ success_num;
 	// fault2 が検出可能の条件のもとで fault が検出不能となることはない．
@@ -312,10 +316,12 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list,
   }
 
   timer.stop();
-  cout << "after semi-global dominance reduction: " << wpos << endl
-       << "# of total checks:                     " << check_num << endl
-       << "# of total successes:                  " << success_num << endl
-       << "CPU time:                              " << timer.time() << endl;
+  if ( debug ) {
+    cout << "after semi-global dominance reduction: " << wpos << endl
+	 << "# of total checks:                     " << check_num << endl
+	 << "# of total successes:                  " << success_num << endl
+	 << "CPU time:                              " << timer.time() << endl;
+  }
 }
 
 // @brief 異なる FFR 間の支配故障の簡易チェックを行う．
@@ -424,11 +430,13 @@ Analyzer::dom_reduction2(vector<FaultInfo*>& fi_list)
     fi_list.erase(fi_list.begin() + wpos, fi_list.end());
   }
   timer.stop();
-  cout << "after global dominance reduction: " << fi_list.size() << endl;
-  cout << "# of total checkes:   " << check_num << endl
-       << "# of total successes: " << success_num << endl
-       << "# of DomCheckers:     " << dom_num << endl
-       << "CPU time:             " << timer.time() << endl;
+  if ( debug ) {
+    cout << "after global dominance reduction: " << fi_list.size() << endl;
+    cout << "# of total checkes:   " << check_num << endl
+	 << "# of total successes: " << success_num << endl
+	 << "# of DomCheckers:     " << dom_num << endl
+	 << "CPU time:             " << timer.time() << endl;
+  }
 }
 
 // @brief 初期化する
@@ -521,8 +529,10 @@ Analyzer::init(int loop_limit)
       }
     }
   }
-  cout << "# of initial faults: " << mNetwork.rep_fault_num() << endl
-       << "after FFR dominance reduction: " << n1 << endl;
+  if ( debug ) {
+    cout << "# of initial faults: " << mNetwork.rep_fault_num() << endl
+	 << "after FFR dominance reduction: " << n1 << endl;
+  }
 
   for ( auto& ffr: mNetwork.ffr_list() ) {
     for ( auto fault: ffr.fault_list() ) {
@@ -553,7 +563,7 @@ Analyzer::init(int loop_limit)
 	      continue;
 	    }
 	  }
-	  SatBool3 res = undet_checker.check_detectable(fault2);
+	  SatBool3 res = undet_checker.check(fault2);
 	  if ( res == SatBool3::False ) {
 	    // fault2 が検出可能の条件のもとで fault が検出不能となることはない．
 	    // fault2 が fault を支配している．
@@ -573,7 +583,9 @@ Analyzer::init(int loop_limit)
       ++ n2;
     }
   }
-  cout << "after semi-global dominance reduction: " << n2 << endl;
+  if ( debug ) {
+    cout << "after semi-global dominance reduction: " << n2 << endl;
+  }
 
   for ( auto& ffr: mNetwork.ffr_list() ) {
     //DtpgFFR2 dtpg(sat_type, sat_option, sat_outp, mFaultType, just_type, mNetwork, ffr);
@@ -611,7 +623,9 @@ Analyzer::init(int loop_limit)
       ++ n3;
     }
   }
-  cout << "after global dominance reduction: " << n3 << endl;
+  if ( debug ) {
+    cout << "after global dominance reduction: " << n3 << endl;
+  }
 
 #if 0
   int nf = tmp_fault_list.size();

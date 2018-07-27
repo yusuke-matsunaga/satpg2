@@ -287,6 +287,7 @@ DtpgEngine::gen_faulty_cnf()
   }
 }
 
+#if 0
 // @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
 void
 DtpgEngine::gen_detect_cnf()
@@ -339,6 +340,7 @@ DtpgEngine::gen_undetect_cnf()
     mSolver.add_clause(~dlit);
   }
 }
+#endif
 
 // @brief 故障伝搬条件を表すCNF式を生成する．
 // @param[in] node 対象のノード
