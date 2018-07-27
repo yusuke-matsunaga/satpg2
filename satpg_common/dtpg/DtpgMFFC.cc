@@ -51,8 +51,6 @@ DtpgMFFC::DtpgMFFC(const string& sat_type,
   mElemArray(mffc.ffr_num()),
   mElemVarArray(mffc.ffr_num())
 {
-  ASSERT_COND ( mffc.ffr_num() > 1 );
-
   int ffr_id = 0;
   for ( auto ffr: mffc.ffr_list() ) {
     mElemArray[ffr_id] = ffr->root();
@@ -234,7 +232,7 @@ DtpgMFFC::gen_mffc_cnf()
 // @param[in] ovar ゲートの出力の変数
 void
 DtpgMFFC::inject_fault(int ffr_pos,
-			 SatVarId ovar)
+		       SatVarId ovar)
 {
   SatLiteral lit1(ovar);
   SatLiteral lit2(mElemVarArray[ffr_pos]);
