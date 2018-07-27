@@ -66,7 +66,6 @@ UndetChecker::UndetChecker(const string& sat_type,
   mTfoList.reserve(network.node_num());
   mOutputList.reserve(network.ppo_num());
   mFvarMap.init(network.node_num());
-  mDvarMap.init(network.node_num());
 
   // 変数割り当て
   prepare_vars();
@@ -202,16 +201,13 @@ UndetChecker::prepare_vars()
   for ( auto node: mTfoList ) {
     SatVarId gvar = mSolver.new_variable();
     SatVarId fvar = mSolver.new_variable();
-    //SatVarId dvar = mSolver.new_variable();
 
     set_gvar(node, gvar);
     set_fvar(node, fvar);
-    //mDvarMap.set_vid(node, dvar);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "gvar(Node#" << node->id() << ") = " << mGvarMap(node) << endl
 		<< "fvar(Node#" << node->id() << ") = " << fvar << endl;
-      //<< "dvar(Node#" << node->id() << ") = " << dvar << endl;
     }
   }
 
@@ -301,82 +297,6 @@ UndetChecker::gen_faulty_cnf()
       DEBUG_OUT << ")" << endl;
     }
     //make_dchain_cnf(node);
-  }
-}
-
-// @brief 故障伝搬条件を表すCNF式を生成する．
-// @param[in] node 対象のノード
-void
-UndetChecker::make_dchain_cnf(const TpgNode* node)
-{
-  SatLiteral glit(mGvarMap(node));
-  SatLiteral flit(mFvarMap(node));
-  SatLiteral dlit(mDvarMap(node));
-
-  // dlit -> XOR(glit, flit) を追加する．
-  // 要するに正常回路と故障回路で異なっているとき dlit が 1 となる．
-  mSolver.add_clause(~glit, ~flit, ~dlit);
-  mSolver.add_clause( glit,  flit, ~dlit);
-
-  if ( debug_dtpg ) {
-    DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
-	      << glit << " XOR " << flit << endl;
-  }
-
-  if ( node->is_ppo() ) {
-    mSolver.add_clause(~glit,  flit,  dlit);
-    mSolver.add_clause( glit, ~flit,  dlit);
-
-    if ( debug_dtpg ) {
-      DEBUG_OUT << "!dvar(Node#" << node->id() << ") -> "
-		<< glit << " = " << flit << endl;
-    }
-  }
-  else {
-    // dlit -> ファンアウト先のノードの dlit の一つが 1
-
-    if ( debug_dtpg ) {
-      DEBUG_OUT << "dvar(Node#" << node->id() << ") -> ";
-    }
-    int nfo = node->fanout_num();
-    if ( nfo == 1 ) {
-      auto onode = node->fanout_list()[0];
-      SatLiteral odlit(mDvarMap(onode));
-      mSolver.add_clause(~dlit, odlit);
-
-      if ( debug_dtpg ) {
-	DEBUG_OUT << odlit << endl;
-      }
-    }
-    else {
-      vector<SatLiteral> tmp_lits;
-      tmp_lits.reserve(nfo + 1);
-      for ( auto onode: node->fanout_list() ) {
-	SatLiteral dlit1(mDvarMap(onode));
-	tmp_lits.push_back(dlit1);
-
-	if ( debug_dtpg ) {
-	  DEBUG_OUT << " " << dlit1;
-	}
-      }
-
-      if ( debug_dtpg ) {
-	DEBUG_OUT << endl;
-      }
-      tmp_lits.push_back(~dlit);
-      mSolver.add_clause(tmp_lits);
-
-      const TpgNode* imm_dom = node->imm_dom();
-      if ( imm_dom != nullptr ) {
-	SatLiteral odlit(mDvarMap(imm_dom));
-	mSolver.add_clause(~dlit, odlit);
-
-	if ( debug_dtpg ) {
-	  DEBUG_OUT << "dvar(Node#" << node->id() << ") -> "
-		    << odlit << endl;
-	}
-      }
-    }
   }
 }
 

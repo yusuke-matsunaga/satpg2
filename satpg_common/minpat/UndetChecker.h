@@ -121,11 +121,6 @@ public:
   SatVarId
   fvar(const TpgNode* node);
 
-  /// @brief 伝搬条件の変数を返す．
-  /// @param[in] node 対象のノード
-  SatVarId
-  dvar(const TpgNode* node);
-
   /// @brief gvar が割り当てられている時に true を返す．
   bool
   has_gvar(const TpgNode* node) const;
@@ -187,13 +182,6 @@ protected:
   /// @param[in] var 設定する変数
   void
   set_fvar(const TpgNode* node,
-	   SatVarId var);
-
-  /// @brief 故障伝搬条件の変数を設定する．
-  /// @param[in] node 対象のノード
-  /// @param[in] var 設定する変数
-  void
-  set_dvar(const TpgNode* node,
 	   SatVarId var);
 
   /// @brief 1時刻前の正常値の変数マップを返す．
@@ -373,9 +361,6 @@ private:
   // 故障値を表す変数のマップ
   VidMap mFvarMap;
 
-  // 故障伝搬条件を表す変数のマップ
-  VidMap mDvarMap;
-
   // 時間計測を行なうかどうかの制御フラグ
   bool mTimerEnable;
 
@@ -474,15 +459,6 @@ UndetChecker::fvar(const TpgNode* node)
   return mFvarMap(node);
 }
 
-// @brief 伝搬条件の変数を返す．
-// @param[in] node 対象のノード
-inline
-SatVarId
-UndetChecker::dvar(const TpgNode* node)
-{
-  return mDvarMap(node);
-}
-
 // @brief 1時刻前の正常値の変数を設定する．
 // @param[in] node 対象のノード
 // @param[in] var 設定する変数
@@ -543,17 +519,6 @@ UndetChecker::set_fvar(const TpgNode* node,
 		       SatVarId var)
 {
   mFvarMap.set_vid(node, var);
-}
-
-// @brief 故障伝搬条件の変数を設定する．
-// @param[in] node 対象のノード
-// @param[in] var 設定する変数
-inline
-void
-UndetChecker::set_dvar(const TpgNode* node,
-		       SatVarId var)
-{
-  mDvarMap.set_vid(node, var);
 }
 
 // @brief 1時刻前の正常値の変数マップを返す．
