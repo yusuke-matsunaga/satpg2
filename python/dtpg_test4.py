@@ -22,7 +22,7 @@ from satpg_core import gen_colcov
 from satpg_core import MinPatMgr
 
 #algorithm_list = ('coloring2', 'mincov+dsatur', 'mincov+isx', 'isx+mincov', 'dsatur+mincov')
-algorithm_list = ('coloring2', 'coloring3', 'coloring4', 'coloring5', 'mincov+dsatur', 'mincov+isx')
+algorithm_list = ('coloring2', 'coloring3', 'coloring4', 'coloring5', 'coloring6', 'mincov+dsatur', 'mincov+isx')
 
 def minpat(tv_list, fault_list, network, fault_type, cmp_algorithm) :
     if cmp_algorithm == 'mincov+dsatur' :
@@ -57,7 +57,7 @@ def minpat(tv_list, fault_list, network, fault_type, cmp_algorithm) :
         tv_list1 = MinPatMgr.coloring(fault_list, tv_list, network, fault_type, "red1")
         return tv_list1
     elif cmp_algorithm == 'coloring5' :
-        tv_list1 = MinPatMgr.coloring(fault_list, tv_list, network, fault_type, "red1:narrowing,red2")
+        tv_list1 = MinPatMgr.coloring(fault_list, tv_list, network, fault_type, "red2")
         return tv_list1
     elif cmp_algorithm == 'coloring6' :
         tv_list1 = MinPatMgr.coloring(fault_list, tv_list, network, fault_type, "red1,red2")
