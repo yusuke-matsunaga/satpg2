@@ -80,7 +80,7 @@ DtpgFFR2::check_untestable(const TpgFault* fault,
   }
   tmp_lits.push_back(dlit);
 #else
-  NodeValList ffr_cond = make_ffr_condition(fault);
+  NodeValList ffr_cond = ffr_propagate_condition(fault, fault_type());
   vector<SatLiteral> tmp_lits;
   tmp_lits.reserve(ffr_cond.size() + 1);
   tmp_lits.push_back(~nlit);
@@ -138,7 +138,7 @@ DtpgFFR2::gen_ffr2_cnf()
     const TpgNode* onode = node->fanout(0);
     SatLiteral dlit2 = get_plit(onode);
     NodeValList tmp_cond;
-    add_side_input(onode, node, tmp_cond);
+    //add_side_input(onode, node, tmp_cond);
     tmp_lits.reserve(tmp_cond.size() + 2);
     tmp_lits.push_back(~dlit1);
     for ( auto nv: tmp_cond ) {

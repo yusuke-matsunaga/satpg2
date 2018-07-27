@@ -120,6 +120,14 @@ public:
 };
 
 /// @relates TpgFault
+/// @brief 故障が励起してFFRの根まで伝搬する条件を求める．
+/// @param[in] fault 故障
+/// @param[in] fault_type 故障の種類
+NodeValList
+ffr_propagate_condition(const TpgFault* fault,
+			FaultType fault_type);
+
+/// @relates TpgFault
 /// @brief ストリーム出力演算子
 /// @param[in] s 出力先のストリーム
 /// @param[in] f 故障

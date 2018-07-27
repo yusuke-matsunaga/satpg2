@@ -140,7 +140,7 @@ Analyzer::gen_fault_list(const vector<bool>& mark,
       if ( !mark[fault->id()] ) {
 	continue;
       }
-      NodeValList ffr_cond = dtpg.make_ffr_condition(fault);
+      NodeValList ffr_cond = ffr_propagate_condition(fault, mFaultType);
       vector<SatLiteral> assumptions;
       dtpg.conv_to_assumptions(ffr_cond, assumptions);
       vector<SatBool3> model;
@@ -453,7 +453,7 @@ Analyzer::init(int loop_limit)
     vector<NodeValList> ffr_cond_list;
     vector<NodeValList> suf_cond_list;
     for ( auto fault: ffr.fault_list() ) {
-      NodeValList ffr_cond = dtpg.make_ffr_condition(fault);
+      NodeValList ffr_cond = ffr_propagate_condition(fault, mFaultType);
       vector<SatLiteral> assumptions;
       dtpg.conv_to_assumptions(ffr_cond, assumptions);
       vector<SatBool3> model;
@@ -714,7 +714,7 @@ Analyzer::analyze_fault(DtpgFFR& dtpg,
 {
 #if 0
   // FFR 内の伝搬条件をリテラルに変換して加えたSAT問題を解く．
-  NodeValList ffr_cond = dtpg.make_ffr_condition(fault);
+  NodeValList ffr_cond = ffr_propagate_condition(fault, mFaultType);
   SatBool3 sat_res;
   vector<SatBool3> model;
   {

@@ -99,7 +99,7 @@ UndetChecker::~UndetChecker()
 SatBool3
 UndetChecker::check_detectable(const TpgFault* fault)
 {
-  NodeValList ffr_cond = make_ffr_condition(fault);
+  NodeValList ffr_cond = ffr_propagate_condition(fault, mFaultType);
 
   vector<SatLiteral> assumptions;
   conv_to_assumptions(ffr_cond, assumptions);
@@ -300,74 +300,6 @@ UndetChecker::gen_faulty_cnf()
   }
 }
 
-// @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
-// @param[in] fault 対象の故障
-// @param[out] assign_list 結果の値割り当てリスト
-NodeValList
-UndetChecker::make_ffr_condition(const TpgFault* fault)
-{
-  if ( debug_dtpg ) {
-    DEBUG_OUT << "make_ffr_condition" << endl;
-  }
-
-  NodeValList assign_list;
-
-  // 故障の活性化条件を作る．
-  const TpgNode* inode = fault->tpg_inode();
-  // 0 縮退故障の時に 1 にする．
-  bool val = (fault->val() == 0);
-  add_assign(assign_list, inode, 1, val);
-
-  if ( mFaultType == FaultType::TransitionDelay ) {
-    // 1時刻前の値が逆の値である条件を作る．
-    add_assign(assign_list, inode, 0, !val);
-  }
-
-  // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
-  if ( fault->is_branch_fault() ) {
-    const TpgNode* onode = fault->tpg_onode();
-    add_side_input(onode, fault->tpg_pos(), assign_list);
-  }
-
-  // FFR の根までの伝搬条件を作る．
-  for ( const TpgNode* node = fault->tpg_onode(); node->fanout_num() == 1;
-	node = node->fanout_list()[0]) {
-    const TpgNode* fonode = node->fanout_list()[0];
-    add_side_input(fonode, node, assign_list);
-  }
-
-  if ( debug_dtpg ) {
-    DEBUG_OUT << endl;
-  }
-
-  return assign_list;
-}
-
-// @brief NodeValList に追加する．
-// @param[in] assign_list 追加するリスト
-// @param[in] node 対象のノード
-// @param[in] time 時刻 ( 0 or 1 )
-// @param[in] val 値
-void
-UndetChecker::add_assign(NodeValList& assign_list,
-		       const TpgNode* node,
-		       int time,
-		       bool val)
-{
-  assign_list.add(node, time, val);
-
-  if ( debug_dtpg ) {
-    print_node(DEBUG_OUT, mNetwork, node);
-    DEBUG_OUT << "@" << time << ": ";
-    if ( val ) {
-      DEBUG_OUT << "1" << endl;
-    }
-    else {
-      DEBUG_OUT << "0" << endl;
-    }
-  }
-}
-
 // @brief 値割り当てをリテラルに変換する．
 SatLiteral
 UndetChecker::conv_to_literal(NodeVal node_val)
@@ -439,57 +371,6 @@ UndetChecker::solve(const vector<SatLiteral>& assumptions,
   }
 
   return ans;
-}
-
-// @brief side-input の割り当てを得る．
-// @param[in] node ノード
-// @param[in] ipos 対象のファンイン番号
-// @param[out] nodeval_list 割り当てリスト
-//
-// * node が非制御値を持たない場合は nodeval_list は空になる．
-void
-UndetChecker::add_side_input(const TpgNode* node,
-			   int ipos,
-			   NodeValList& nodeval_list)
-{
-  Val3 nval = node->nval();
-  if ( nval != Val3::_X ) {
-    bool val = (nval == Val3::_1);
-    for ( auto ipos1: Range(node->fanin_num()) ) {
-      if ( ipos1 != ipos ) {
-	auto inode1 = node->fanin(ipos1);
-	add_assign(nodeval_list, inode1, 1, val);
-      }
-    }
-  }
-}
-
-// @brief side-input の割り当てを得る．
-// @param[in] node ノード
-// @param[in] inode 対象のファンイン
-// @param[out] nodeval_list 割り当てリスト
-//
-// * node が非制御値を持たない場合は nodeval_list は空になる．
-// * 上の関数との違いは同じノードが重複してファンインとなっている場合
-void
-UndetChecker::add_side_input(const TpgNode* node,
-			     const TpgNode* inode,
-			     NodeValList& nodeval_list)
-{
-  int ni = node->fanin_num();
-  if ( ni == 1 ) {
-    return;
-  }
-  Val3 nval = node->nval();
-  if ( nval == Val3::_X ) {
-    return;
-  }
-  bool val = (nval == Val3::_1);
-  for ( auto inode1: node->fanin_list() ) {
-    if ( inode1 != inode ) {
-      add_assign(nodeval_list, inode1, 1, val);
-    }
-  }
 }
 
 // @brief 正常回路の CNF を作る．

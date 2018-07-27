@@ -57,7 +57,7 @@ DtpgFFR::gen_pattern(const TpgFault* fault)
   ASSERT_COND( ffr_root == root_node() );
 
   // FFR 内の故障伝搬条件を ffr_cond に入れる．
-  NodeValList ffr_cond = make_ffr_condition(fault);
+  NodeValList ffr_cond = ffr_propagate_condition(fault, fault_type());
 
   // ffr_cond の内容を assumptions に追加する．
   vector<SatLiteral> assumptions;
@@ -96,7 +96,7 @@ DtpgFFR::gen_k_patterns(const TpgFault* fault,
   ASSERT_COND( ffr_root == root_node() );
 
   // FFR 内の故障伝搬条件を ffr_cond に入れる．
-  NodeValList ffr_cond = make_ffr_condition(fault);
+  NodeValList ffr_cond = ffr_propagate_condition(fault, fault_type());
 
   // ffr_cond の内容を assumptions に追加する．
   vector<SatLiteral> assumptions;

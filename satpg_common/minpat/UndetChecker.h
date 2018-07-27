@@ -71,12 +71,6 @@ public:
   const DtpgStats&
   stats() const;
 
-  /// @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
-  /// @param[in] fault 対象の故障
-  /// @param[out] assign_list 結果の値割り当てリスト
-  NodeValList
-  make_ffr_condition(const TpgFault* fault);
-
   /// @brief 値割り当てをリテラルに変換する．
   SatLiteral
   conv_to_literal(NodeVal node_val);
@@ -228,50 +222,11 @@ protected:
   void
   gen_undetect_cnf();
 
-  /// @brief side-input の割り当てを追加する．
-  /// @param[in] node ノード
-  /// @param[in] ipos 対象のファンイン番号
-  /// @param[out] nodeval_list 割り当てを追加するリスト
-  ///
-  /// * node が非制御値を持たない場合はなにもしない．
-  void
-  add_side_input(const TpgNode* node,
-		 int ipos,
-		 NodeValList& nodeval_list);
-
-  /// @brief side-input の割り当てを追加する．
-  /// @param[in] node ノード
-  /// @param[in] inode 対象のファンイン
-  /// @param[out] nodeval_list 割り当てを追加するリスト
-  ///
-  /// * node が非制御値を持たない場合はなにもしない．
-  /// * 上の関数との違いは同じノードが重複してファンインとなっている場合
-  void
-  add_side_input(const TpgNode* node,
-		 const TpgNode* inode,
-		 NodeValList& nodeval_list);
-
-  /// @brief NodeValList に追加する．
-  /// @param[in] assign_list 追加するリスト
-  /// @param[in] node 対象のノード
-  /// @param[in] time 時刻 ( 0 or 1 )
-  /// @param[in] val 値
-  void
-  add_assign(NodeValList& assign_list,
-	     const TpgNode* node,
-	     int time,
-	     bool val);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障伝搬条件を表すCNF式を生成する．
-  /// @param[in] node 対象のノード
-  void
-  make_dchain_cnf(const TpgNode* node);
 
   /// @brief TFO マークをつける．
   /// @param[in] node 対象のノード

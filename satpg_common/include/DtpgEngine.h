@@ -152,6 +152,10 @@ protected:
   const TpgNetwork&
   network() const;
 
+  /// @brief 故障の種類を返す．
+  FaultType
+  fault_type() const;
+
   /// @brief ノード番号の最大値を返す．
   int
   max_node_id() const;
@@ -267,40 +271,6 @@ protected:
   /// @brief 故障の伝搬しない条件を表す CNF 式を作る．
   void
   gen_undetect_cnf();
-
-  /// @brief side-input の割り当てを追加する．
-  /// @param[in] node ノード
-  /// @param[in] ipos 対象のファンイン番号
-  /// @param[out] nodeval_list 割り当てを追加するリスト
-  ///
-  /// * node が非制御値を持たない場合はなにもしない．
-  void
-  add_side_input(const TpgNode* node,
-		 int ipos,
-		 NodeValList& nodeval_list);
-
-  /// @brief side-input の割り当てを追加する．
-  /// @param[in] node ノード
-  /// @param[in] inode 対象のファンイン
-  /// @param[out] nodeval_list 割り当てを追加するリスト
-  ///
-  /// * node が非制御値を持たない場合はなにもしない．
-  /// * 上の関数との違いは同じノードが重複してファンインとなっている場合
-  void
-  add_side_input(const TpgNode* node,
-		 const TpgNode* inode,
-		 NodeValList& nodeval_list);
-
-  /// @brief NodeValList に追加する．
-  /// @param[in] assign_list 追加するリスト
-  /// @param[in] node 対象のノード
-  /// @param[in] time 時刻 ( 0 or 1 )
-  /// @param[in] val 値
-  void
-  add_assign(NodeValList& assign_list,
-	     const TpgNode* node,
-	     int time,
-	     bool val);
 
 
 private:
@@ -447,6 +417,14 @@ const TpgNetwork&
 DtpgEngine::network() const
 {
   return mNetwork;
+}
+
+// @brief 故障の種類を返す．
+inline
+FaultType
+DtpgEngine::fault_type() const
+{
+  return mFaultType;
 }
 
 // @brief ノード番号の最大値を返す．

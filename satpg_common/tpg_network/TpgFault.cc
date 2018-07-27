@@ -12,10 +12,74 @@
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
 #include "TpgNode.h"
+#include "FaultType.h"
+#include "NodeValList.h"
 #include "Val3.h"
+#include "ym/Range.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
+
+// @relates TpgFault
+// @brief 故障が励起してFFRの根まで伝搬する条件を求める．
+// @param[in] fault 故障
+// @param[in] fault_type 故障の種類
+NodeValList
+ffr_propagate_condition(const TpgFault* fault,
+			FaultType fault_type)
+{
+  NodeValList assign_list;
+
+  // 故障の活性化条件を作る．
+  const TpgNode* inode = fault->tpg_inode();
+  // 0 縮退故障の時に 1 にする．
+  bool val = (fault->val() == 0);
+  assign_list.add(inode, 1, val);
+
+  if ( fault_type == FaultType::TransitionDelay ) {
+    // 1時刻前の値が逆の値である条件を作る．
+    assign_list.add(inode, 0, !val);
+  }
+
+  // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
+  if ( fault->is_branch_fault() ) {
+    const TpgNode* onode = fault->tpg_onode();
+    int fpos = fault->tpg_pos();
+    Val3 nval = onode->nval();
+    if ( nval != Val3::_X ) {
+      bool val = (nval == Val3::_1);
+      for ( auto ipos: Range(onode->fanin_num()) ) {
+	if ( ipos != fpos ) {
+	  auto inode1 = onode->fanin(ipos);
+	  assign_list.add(inode1, 1, val);
+	}
+      }
+    }
+  }
+
+  // FFR の根までの伝搬条件を作る．
+  for ( const TpgNode* node = fault->tpg_onode(); node->fanout_num() == 1;
+	node = node->fanout_list()[0]) {
+    const TpgNode* fonode = node->fanout_list()[0];
+    int ni = fonode->fanin_num();
+    if ( ni == 1 ) {
+      continue;
+    }
+    Val3 nval = fonode->nval();
+    if ( nval == Val3::_X ) {
+      continue;
+    }
+    bool val = (nval == Val3::_1);
+    for ( auto inode1: fonode->fanin_list() ) {
+      if ( inode1 != node ) {
+	assign_list.add(inode1, 1, val);
+      }
+    }
+  }
+
+  return assign_list;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgFaultBase

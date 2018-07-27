@@ -106,7 +106,7 @@ DtpgMFFC::gen_pattern(const TpgFault* fault)
   }
 
   // FFR 内の故障伝搬条件を ffr_cond に入れる．
-  NodeValList ffr_cond = make_ffr_condition(fault);
+  NodeValList ffr_cond = ffr_propagate_condition(fault, fault_type());
 
   // ffr_cond の内容を assumptions に追加する．
   conv_to_assumptions(ffr_cond, assumptions);
