@@ -16,14 +16,21 @@ from satpg_core import Val3
 
 
 ### @brief グラフ彩色を用いた圧縮を行う．
-def coloring(tv_list, algorithm = '') :
+def coloring(tv_list, algorithm = '', debug = False) :
     n = len(tv_list)
-    print('*** Graph Coloring({}) ***'.format(algorithm))
-    print('# of initial patterns: {:8d}'.format(n))
+    if debug :
+        print('*** Graph Coloring({}) ***'.format(algorithm))
+        print('# of initial patterns: {:8d}'.format(n))
+
     graph = gen_compat_graph(tv_list)
-    print('gen_compat_graph() end')
+
+    if debug :
+        print('gen_compat_graph() end')
+
     nc, color_map = graph.coloring(algorithm)
-    #print('# of reduced patterns: {:8d}'.format(nc))
+
+    if debug :
+        print('# of reduced patterns: {:8d}'.format(nc))
 
     # color_map から色番号ごとのパタン番号リストを作る．
     pat_list_array = [ [] for i in range(nc) ]
@@ -43,10 +50,11 @@ def coloring(tv_list, algorithm = '') :
 
 
 ### @brief 最小被覆を用いた圧縮を行う．
-def mincov(fault_list, tv_list, network, fault_type, algorithm = '') :
+def mincov(fault_list, tv_list, network, fault_type, algorithm = '', debug = False) :
 
-    #print('*** Minimum Covering ***')
-    #print('# of initial patterns: {:8d}'.format(len(tv_list)))
+    if debug :
+        print('*** Minimum Covering ***')
+        print('# of initial patterns: {:8d}'.format(len(tv_list)))
 
     def do_fsim(fsim, tv_buff, fid_dict, tid_base, mincov) :
         assert len(tv_buff) <= 64
@@ -84,6 +92,7 @@ def mincov(fault_list, tv_list, network, fault_type, algorithm = '') :
 
     cost, solution = mincov.heuristic()
 
-    #print('# of reduced patterns: {:8d}'.format(cost))
+    if debug :
+        print('# of reduced patterns: {:8d}'.format(cost))
 
     return [ tv_list[id] for id in solution ]
