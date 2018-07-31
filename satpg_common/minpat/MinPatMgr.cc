@@ -220,6 +220,35 @@ MinPatMgr::fault_reduction(vector<const TpgFault*>& fault_list,
   }
 }
 
+// @brief 極大両立集合を求める．
+void
+MinPatMgr::gen_mcsets(const vector<TestVector>& tv_list,
+		      vector<TestVector>& new_tv_list)
+{
+  new_tv_list.clear();
+  if ( tv_list.empty() ) {
+    return;
+  }
+
+  // 各ビットに0/1を持つパタンのリストを作る．
+  int n = tv_list.size();
+  int nb = tv_list[0].vector_size();
+  vector<vector<int>> p_list(nb * 2);
+  for ( int i: Range(n) ) {
+    const TestVector& tv = tv_list[i];
+    for ( int b: Range(nb) ) {
+      Val3 val = tv.val(b);
+      if ( val == Val3::_0 ) {
+	p_list[b * 2 + 0].push_back(i);
+      }
+      else if ( val == Val3::_1 ) {
+	p_list[b * 2 + 1].push_back(i);
+      }
+    }
+  }
+
+}
+
 // @brief 彩色問題でパタン圧縮を行う．
 // @param[in] tv_list 初期テストパタンのリストnn
 // @param[out] new_tv_list 圧縮結果のテストパタンのリスト
