@@ -10,6 +10,7 @@
 #include "TestVector.h"
 #include "TpgNode.h"
 #include "NodeValList.h"
+#include "ym/Range.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -53,6 +54,26 @@ TestVector::new_from_assign_list(int input_num,
   }
 
   return tv;
+}
+
+// @brief 複数のテストベクタをマージする．
+// @param[in] tv_list マージするテストベクタのリスト
+// @return マージ結果を返す．
+//
+// tv_list の要素が互いにコンフリクトしている時の結果は不定
+TestVector
+merge(const vector<TestVector>& tv_list)
+{
+  int n = tv_list.size();
+  if ( n == 0 ) {
+    return TestVector();
+  }
+
+  TestVector ans(tv_list[0]);
+  for ( int i: Range(1, n) ) {
+    ans &= tv_list[i];
+  }
+  return ans;
 }
 
 END_NAMESPACE_YM_SATPG

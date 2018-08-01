@@ -418,6 +418,14 @@ TestVector
 operator&(const TestVector& left,
 	  const TestVector& right);
 
+/// @brief 複数のテストベクタをマージする．
+/// @param[in] tv_list マージするテストベクタのリスト
+/// @return マージ結果を返す．
+///
+/// tv_list の要素が互いにコンフリクトしている時の結果は不定
+TestVector
+merge(const vector<TestVector>& tv_list);
+
 /// @brief 内容を出力する．
 /// @param[in] s 出力先のストリーム
 /// @param[in] tv テストベクタ

@@ -46,6 +46,7 @@ public:
 		  const string& algorithm);
 
   /// @brief 極大両立集合を求める．
+  static
   void
   gen_mcsets(const vector<TestVector>& tv_list,
 	     vector<TestVector>& new_tv_list);
@@ -67,19 +68,6 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief greedy に極大両立集合を作る．
-  void
-  greedy_mcset(int nb,
-	       const vector<vector<int>>& p_list_array,
-	       vector<int>& mcset);
-
-  /// @brief tabu-search を用いて極大集合を列挙する．
-  void
-  tabu_mcset(int nb,
-	     const vector<vector<int>>& p_list_array,
-	     vector<int>& mcset,
-	     vector<vector<int>>& mcset_list);
 
   /// @brief 縮約を行う．
   /// @param[in] matrix 対象の被覆行列

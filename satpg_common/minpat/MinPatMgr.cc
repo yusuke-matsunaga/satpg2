@@ -14,6 +14,7 @@
 #include "MatrixGen.h"
 #include "FaultReducer.h"
 #include "FaultInfo.h"
+#include "TvMerger.h"
 #include "ym/McMatrix.h"
 #include "ym/HashSet.h"
 #include "ym/Range.h"
@@ -220,170 +221,13 @@ MinPatMgr::fault_reduction(vector<const TpgFault*>& fault_list,
   }
 }
 
-// @brief 極大両立集合を求める．
+// テストベクタをマージして極大集合を求める．
 void
 MinPatMgr::gen_mcsets(const vector<TestVector>& tv_list,
 		      vector<TestVector>& new_tv_list)
 {
-  new_tv_list.clear();
-  if ( tv_list.empty() ) {
-    return;
-  }
-
-  // 各ビットに0/1を持つパタンのリストを作る．
-  int n = tv_list.size();
-  int nb = tv_list[0].vector_size();
-  vector<vector<int>> p_list_array(nb * 2);
-  for ( int i: Range(n) ) {
-    const TestVector& tv = tv_list[i];
-    for ( int b: Range(nb) ) {
-      Val3 val = tv.val(b);
-      if ( val == Val3::_0 ) {
-	p_list_array[b * 2 + 0].push_back(i);
-      }
-      else if ( val == Val3::_1 ) {
-	p_list_array[b * 2 + 1].push_back(i);
-      }
-    }
-  }
-
-  // greedy に極大両立集合を作る．
-  vector<int> mcset;
-  mcset.reserve(n);
-  greedy_mcset(nb, p_list_array, mcset);
-
-  vector<vector<int>> mcset_list;
-  mcset_list.push_back(mcset);
-
-  // タブーサーチを用いて極大集合を列挙する．
-  tabu_mcset(nb, p_list_array, mcset, mcset_list);
-}
-
-void
-diff_p_list(vector<int>& p_list1,
-	    const vector<int>& p_list2)
-{
-  int rpos1 = 0;
-  int wpos1 = 0;
-  int rpos2 = 0;
-  int n1 = p_list1.size();
-  int n2 = p_list2.size();
-  while ( rpos1 < n1 && rpos2 < n2 ) {
-    int v1 = p_list1[rpos1];
-    int v2 = p_list2[rpos2];
-    if ( v1 < v2 ) {
-      p_list1[wpos1] = v1;
-      ++ rpos1;
-      ++ wpos1;
-    }
-    else if ( v1 > v2 ) {
-      ++ rpos2;
-    }
-    else {
-      ++ rpos1;
-      ++ rpos2;
-    }
-  }
-  for ( ; rpos1 < n1; ++ rpos1 ) {
-    int v1 = p_list1[rpos1];
-    p_list1[wpos1] = v1;
-    ++ wpos1;
-  }
-  if ( wpos1 < n1 ) {
-    p_list1.erase(p_list1.begin() + wpos1, p_list1.end());
-  }
-}
-
-// @brief greedy に極大両立集合を作る．
-void
-MinPatMgr::greedy_mcset(int nb,
-			const vector<vector<int>>& p_list_array,
-			vector<int>& mcset)
-{
-  // p_list_array をコピーする．
-  vector<vector<int>> tmp_p_list_array(p_list_array);
-
-  vector<int> tmp_bits;
-  tmp_bits.reserve(nb);
-  for ( int b: Range(nb) ) {
-    if ( tmp_p_list_array[b * 2 + 0].empty() &&
-	 tmp_p_list_array[b * 2 + 1].empty() ) {
-      // どちらもブロックする要素がなくなったビットはスキップする．
-      continue;
-    }
-    tmp_bits.push_back(b);
-  }
-
-  while ( !tmp_bits.empty() ) {
-    // 要素数が最小のビット位置＋値を求める．
-    int min_i = -1;
-    int min_num = 0;
-    for ( int b: tmp_bits ) {
-      for ( int val: { 0, 1 } ) {
-	int i = b * 2 + val;
-	int n = tmp_p_list_array[i].size();
-	if ( min_i == -1 || min_num > n ) {
-	  min_num = n;
-	  min_i = i;
-	}
-      }
-    }
-
-    ASSERT_COND( min_i != -1 );
-    mcset.push_back(min_i);
-
-    // min_i でブロックされた要素を tmp_p_list_array から削除する．
-    int min_bit = min_i / 2;
-    int min_val = 1 - (min_i % 2);
-    const vector<int>& p_list = tmp_p_list_array[min_i ^ 1];
-    int wpos = 0;
-    for ( int b: tmp_bits ) {
-      if ( b == min_bit ) {
-	continue;
-      }
-      for ( int val: { 0, 1 } ) {
-	int i = b * 2 + val;
-	vector<int>& p_list1 = tmp_p_list_array[b * 2 + val];
-	diff_p_list(p_list1, p_list);
-      }
-      if ( tmp_p_list_array[b * 2 + 0].empty() &&
-	   tmp_p_list_array[b * 2 + 1].empty() ) {
-	// どちらもブロックする要素がなくなったビットはスキップする．
-	continue;
-      }
-      tmp_bits[wpos] = b;
-      ++ wpos;
-    }
-  }
-}
-
-int
-select_elem(const vector<int>& mcset,
-	    const vector<vector<int>>& p_list_array)
-{
-  // 削除すると候補の要素数が増えるビット位置を探す．
-  return -1;
-}
-
-// @brief tabu-search を用いて極大集合を列挙する．
-void
-MinPatMgr::tabu_mcset(int nb,
-		      const vector<vector<int>>& p_list_array,
-		      vector<int>& mcset,
-		      vector<vector<int>>& mcset_list)
-{
-  int limit = 10000;
-  for ( int count: Range(limit) ) {
-    // mcset から要素を一つ選ぶ
-    int i = select_elem(mcset, p_list_array);
-    // mcset から i を削除する．
-    delete_elem(mcset, i);
-    // タブーリストに i を加える．
-
-    // tmp_p_list_array を作り直す．
-
-    // mcset を極大にする．
-  }
+  TvMerger merger(tv_list);
+  merger.gen_mcset(new_tv_list);
 }
 
 // @brief 彩色問題でパタン圧縮を行う．

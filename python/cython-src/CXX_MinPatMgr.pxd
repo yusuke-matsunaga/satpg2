@@ -24,6 +24,9 @@ cdef extern from "MinPatMgr.h" namespace "nsYm::nsSatpg" :
                              FaultType fault_type,
                              const string& red_algorithm)
         @staticmethod
+        void gen_mcsets(const vector[TestVector]& tv_list,
+                        vector[TestVector]& new_tv_list)
+        @staticmethod
         int coloring(const vector[const TpgFault*]& fault_list,
                      const vector[TestVector]& tv_list,
                      const TpgNetwork& network,

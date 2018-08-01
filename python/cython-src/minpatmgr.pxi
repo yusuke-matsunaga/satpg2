@@ -14,7 +14,6 @@ from CXX_TestVector cimport TestVector as CXX_TestVector
 from CXX_FaultType cimport FaultType as CXX_FaultType
 
 cdef class MinPatMgr :
-    cdef CXX_MinPatMgr _this
 
     ### @brief 故障リストの縮約を行う．
     @staticmethod
@@ -31,6 +30,21 @@ cdef class MinPatMgr :
             c_fault_list[i] = fault._thisptr
         CXX_MinPatMgr.fault_reduction(c_fault_list, network._this, c_fault_type, c_alg)
         return [ to_TpgFault(c_fault) for c_fault in c_fault_list ]
+
+    ### @brief 極大両立集合を求める．
+    @staticmethod
+    def gen_mcsets(tv_list) :
+        cdef vector[CXX_TestVector] c_tv_list
+        cdef vector[CXX_TestVector] c_new_tv_list
+        cdef TestVector tv
+        cdef CXX_TestVector c_tv
+        cdef int nv = len(tv_list)
+        c_tv_list.resize(nv)
+        for i in range(nv) :
+            tv = tv_list[i]
+            c_tv_list[i] = tv._this
+        CXX_MinPatMgr.gen_mcsets(c_tv_list, c_new_tv_list)
+        return [ to_TestVector(c_tv) for c_tv in c_new_tv_list ]
 
     ### @brief 彩色問題を用いて問題を解く．
     @staticmethod

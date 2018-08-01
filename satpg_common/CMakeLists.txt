@@ -112,6 +112,7 @@ set (minpat_SOURCES
   minpat/FaultReducer.cc
   minpat/UndetChecker.cc
   minpat/DomChecker.cc
+  minpat/TvMerger.cc
   )
 
 set (sa_SOURCES
