@@ -205,22 +205,8 @@ DtpgFFR::gen_core_expr(const TpgFault* fault,
 
   SatBool3 sat_res = solve(assumptions);
   if ( sat_res == SatBool3::True ) {
-    NodeValList mand_cond;
-    {
-      NodeValList suf_cond = get_sufficient_condition(fault);
-      // suf_cond の要素を1つづつ否定してみて充足するか調べる．
-      // 充足不能の場合，その割り当ては必要割り当てとなる．
-      for ( auto nv: suf_cond ) {
-	SatLiteral lit = conv_to_literal(nv);
-	vector<SatLiteral> assumptions1(assumptions);
-	assumptions1.push_back(~lit);
-	SatBool3 tmp_res = check(assumptions1);
-	if ( tmp_res == SatBool3::False ) {
-	  mand_cond.add(nv);
-	}
-      }
-    }
-    mand_cond.merge(ffr_cond);
+    NodeValList suf_cond = get_sufficient_condition(fault);
+    NodeValList mand_cond = get_mandatory_condition(fault, suf_cond);
     SatVarId cvar = solver().new_variable();
     SatLiteral clit(cvar);
     Expr expr1 = get_sufficient_conditions(fault);

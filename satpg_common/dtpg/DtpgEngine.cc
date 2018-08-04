@@ -576,6 +576,34 @@ DtpgEngine::get_sufficient_conditions(const TpgFault* fault)
   return extract_all(ffr_root, mGvarMap, mFvarMap, mSatModel);
 }
 
+// @brief 必要条件を取り出す．
+// @param[in] fault 対象の故障
+// @param[in] suf_cond 十分条件
+// @return 必要条件を返す．
+NodeValList
+DtpgEngine::get_mandatory_condition(const TpgFault* fault,
+				    const NodeValList& suf_cond)
+{
+  NodeValList mand_cond;
+  NodeValList ffr_cond = ffr_propagate_condition(fault, fault_type());
+  vector<SatLiteral> assumptions;
+  conv_to_assumptions(ffr_cond, assumptions);
+  for ( auto nv: suf_cond ) {
+    SatLiteral lit = conv_to_literal(nv);
+    vector<SatLiteral> assumptions1(assumptions);
+    assumptions1.push_back(~lit);
+    SatBool3 tmp_res = check(assumptions1);
+    if ( tmp_res == SatBool3::False ) {
+      mand_cond.add(nv);
+      assumptions.push_back(lit);
+    }
+  }
+  // ffr_cond も mandatory_condition に加える．
+  mand_cond.merge(ffr_cond);
+
+  return mand_cond;
+}
+
 // @brief SATソルバに論理式の否定を追加する．
 // @param[in] expr 対象の論理式
 // @param[in] clit 制御用のリテラル

@@ -149,6 +149,7 @@ FaultReducer::init(const vector<const TpgFault*>& fault_list)
     // FFR ごとに検出可能な故障をもとめる．
     DtpgFFR dtpg(mNetwork, mFaultType, ffr, just_type);
     vector<const TpgFault*> tmp_fault_list;
+    vector<NodeValList> mand_cond_list;
     for ( auto fault: ffr.fault_list() ) {
       if ( mDelMark[fault->id()] ) {
 	// すでに対象外だった．
@@ -160,8 +161,11 @@ FaultReducer::init(const vector<const TpgFault*>& fault_list)
       SatBool3 sat_res = dtpg.solve(assumptions);
       if ( sat_res == SatBool3::True ) {
 	tmp_fault_list.push_back(fault);
-	// テストパタンを求めておく．
 	NodeValList suf_cond = dtpg.get_sufficient_condition(fault);
+	// 必要割り当てを求めておく．
+	NodeValList mand_cond = dtpg.get_mandatory_condition(fault, suf_cond);
+	mand_cond_list.push_back(mand_cond);
+	// テストパタンを求めておく．
 	suf_cond.merge(ffr_cond);
 	TestVector testvect = dtpg.backtrace(fault, suf_cond);
 	testvect.fix_x_from_random(randgen);
@@ -173,15 +177,15 @@ FaultReducer::init(const vector<const TpgFault*>& fault_list)
     int nf = tmp_fault_list.size();
     for ( auto i1: Range(nf) ) {
       auto fault1 = tmp_fault_list[i1];
-      const NodeValList ffr_cond1 = ffr_propagate_condition(fault1, mFaultType);
-      // ffr_cond1 を否定した節を加える．
+      const NodeValList& mand_cond1 = mand_cond_list[i1];
+      // mand_cond1 を否定した節を加える．
       // 制御変数は clit1
       SatVarId cvar1 = dtpg.new_variable();
       SatLiteral clit1(cvar1);
       vector<SatLiteral> tmp_lits;
-      tmp_lits.reserve(ffr_cond1.size() + 1);
+      tmp_lits.reserve(mand_cond1.size() + 1);
       tmp_lits.push_back(~clit1);
-      for ( auto nv: ffr_cond1 ) {
+      for ( auto nv: mand_cond1 ) {
 	SatLiteral lit1 = dtpg.conv_to_literal(nv);
 	tmp_lits.push_back(~lit1);
       }
@@ -195,10 +199,10 @@ FaultReducer::init(const vector<const TpgFault*>& fault_list)
 	if ( mDelMark[fault2->id()] ) {
 	  continue;
 	}
-	const NodeValList ffr_cond2 = ffr_propagate_condition(fault2, mFaultType);
+	const NodeValList& mand_cond2 = mand_cond_list[i2];
 	vector<SatLiteral> assumptions;
-	assumptions.reserve(ffr_cond2.size() + 1);
-	dtpg.conv_to_assumptions(ffr_cond2, assumptions);
+	assumptions.reserve(mand_cond2.size() + 1);
+	dtpg.conv_to_assumptions(mand_cond2, assumptions);
 	assumptions.push_back(clit1);
 	SatBool3 sat_res = dtpg.check(assumptions);
 	if ( sat_res == SatBool3::False ) {
