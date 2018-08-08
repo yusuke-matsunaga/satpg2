@@ -62,7 +62,6 @@ UndetChecker::UndetChecker(const TpgNetwork& network,
   mPrevTfiList.reserve(network.node_num());
   mTfoList.reserve(network.node_num());
   mOutputList.reserve(network.ppo_num());
-  mFvarMap.init(network.node_num());
 
   // 変数割り当て
   prepare_vars();
@@ -305,11 +304,23 @@ UndetChecker::conv_to_literal(NodeVal node_val)
   bool inv = !node_val.val(); // 0 の時が inv = true
   SatVarId vid;
   if ( node_val.time() == 0 ) {
+#if 1
+    if ( !has_hvar(node) ) {
+      return kSatLiteralX;
+    }
+#else
     make_prev_cnf(node);
+#endif
     vid = hvar(node);
   }
   else {
+#if 1
+    if ( !has_gvar(node) ) {
+      return kSatLiteralX;
+    }
+#else
     make_good_cnf(node);
+#endif
     vid = gvar(node);
   }
   return SatLiteral(vid, inv);
@@ -327,7 +338,9 @@ UndetChecker::conv_to_assumptions(const NodeValList& assign_list,
   assumptions.reserve(n + n0);
   for ( auto nv: assign_list ) {
     auto lit = conv_to_literal(nv);
-    assumptions.push_back(lit);
+    if ( lit != kSatLiteralX ) {
+      assumptions.push_back(lit);
+    }
   }
 }
 

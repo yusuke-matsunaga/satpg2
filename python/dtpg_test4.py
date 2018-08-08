@@ -47,7 +47,8 @@ def dtpg1(file_name, fault_type) :
 
     ndet, nunt, nabt = dtpg.ffr_mode(False)
 
-    fault_list = MinPatMgr.fault_reduction(dtpg.fault_list, network, fault_type, 'red1,red2')
+    #fault_list = MinPatMgr.fault_reduction(dtpg.fault_list, network, fault_type, 'red1,red2')
+    fault_list = MinPatMgr.fault_reduction(dtpg.fault_list, network, fault_type, 'red2')
 
     end = time.process_time()
     cpu_time = end - start

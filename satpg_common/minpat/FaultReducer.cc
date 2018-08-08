@@ -132,7 +132,9 @@ void
 FaultReducer::init(const vector<const TpgFault*>& fault_list)
 {
   if ( mDebug ) {
-    cout << "# of initial faults: " << fault_list.size() << endl;
+    cout << "# of initial faults:                   " << fault_list.size() << endl;
+    mTimer.reset();
+    mTimer.start();
   }
 
   // fault_list に含まれていない故障の mDelMark を true にする．
@@ -233,7 +235,9 @@ FaultReducer::init(const vector<const TpgFault*>& fault_list)
   mMatrix = matgen.generate();
 
   if ( mDebug ) {
-    cout << "after FFR dominance reduction: " << mFaultList.size() << endl;
+    mTimer.stop();
+    cout << "after FFR dominance reduction:         " << mFaultList.size() << endl;
+    cout << "CPU time:                              " << mTimer.time() << endl;
   }
 }
 
@@ -241,8 +245,10 @@ FaultReducer::init(const vector<const TpgFault*>& fault_list)
 void
 FaultReducer::dom_reduction1()
 {
-  StopWatch timer;
-  timer.start();
+  if ( mDebug ) {
+    mTimer.reset();
+    mTimer.start();
+  }
 
   int check_num = 0;
   int success_num = 0;
@@ -252,8 +258,8 @@ FaultReducer::dom_reduction1()
     // fault2 が fault1 を支配している時
     // fault2 に含まれる列は必ず fault1 にも含まれなければならない．
     vector<bool> col_mark(mMatrix.col_size(), false);
-    int i1 = mRowIdMap[fault1->id()];
-    for ( auto col: mMatrix.row_list(i1) ) {
+    int row1 = mRowIdMap[fault1->id()];
+    for ( auto col: mMatrix.row_list(row1) ) {
       ASSERT_COND( col >= 0 && col < col_mark.size() );
       col_mark[col] = true;
     }
@@ -266,8 +272,8 @@ FaultReducer::dom_reduction1()
 	continue;
       }
       bool not_covered = false;
-      int i2 = mRowIdMap[fault2->id()];
-      for ( auto col: mMatrix.row_list(i2) ) {
+      int row2 = mRowIdMap[fault2->id()];
+      for ( auto col: mMatrix.row_list(row2) ) {
 	ASSERT_COND( col >= 0 && col < col_mark.size() );
 	if ( !col_mark[col] ) {
 	  not_covered = true;
@@ -289,8 +295,8 @@ FaultReducer::dom_reduction1()
     }
   }
 
-  timer.stop();
   if ( mDebug ) {
+    mTimer.stop();
     int n = 0;
     for ( auto fault: mFaultList ) {
       if ( !mDelMark[fault->id()] ) {
@@ -298,9 +304,9 @@ FaultReducer::dom_reduction1()
       }
     }
     cout << "after semi-global dominance reduction: " << n << endl
-	 << "# of total checks:                     " << check_num << endl
-	 << "# of total successes:                  " << success_num << endl
-	 << "CPU time:                              " << timer.time() << endl;
+	 << "    # of total checks:                 " << check_num << endl
+	 << "    # of total successes:              " << success_num << endl
+	 << "CPU time:                              " << mTimer.time() << endl;
   }
 }
 
@@ -308,8 +314,10 @@ FaultReducer::dom_reduction1()
 void
 FaultReducer::dom_reduction2()
 {
-  StopWatch timer;
-  timer.start();
+  if ( mDebug ) {
+    mTimer.reset();
+    mTimer.start();
+  }
 
   int check_num = 0;
   int dom_num = 0;
@@ -321,8 +329,8 @@ FaultReducer::dom_reduction2()
     // fault2 が fault1 を支配している時
     // fault2 に含まれる列は必ず fault1 にも含まれなければならない．
     vector<bool> col_mark(mMatrix.col_size(), false);
-    int i1 = mRowIdMap[fault1->id()];
-    for ( auto col: mMatrix.row_list(i1) ) {
+    int row1 = mRowIdMap[fault1->id()];
+    for ( auto col: mMatrix.row_list(row1) ) {
       col_mark[col] = true;
     }
     for ( auto& ffr2: mNetwork.ffr_list() ) {
@@ -334,10 +342,9 @@ FaultReducer::dom_reduction2()
 	if ( mDelMark[fault2->id()] ) {
 	  continue;
 	}
-
 	bool not_covered = false;
-	int i2 = mRowIdMap[fault2->id()];
-	for ( auto col: mMatrix.row_list(i2) ) {
+	int row2 = mRowIdMap[fault2->id()];
+	for ( auto col: mMatrix.row_list(row2) ) {
 	  if ( !col_mark[col] ) {
 	    not_covered = true;
 	    break;
@@ -369,19 +376,19 @@ FaultReducer::dom_reduction2()
     }
   }
 
-  timer.stop();
   if ( mDebug ) {
+    mTimer.stop();
     int n = 0;
     for ( auto fault: mFaultList ) {
       if ( !mDelMark[fault->id()] ) {
 	++ n;
       }
     }
-    cout << "after global dominance reduction: " << n << endl;
-    cout << "# of total checkes:   " << check_num << endl
-	 << "# of total successes: " << success_num << endl
-	 << "# of DomCheckers:     " << dom_num << endl
-	 << "CPU time:             " << timer.time() << endl;
+    cout << "after global dominance reduction:      " << n << endl;
+    cout << "    # of total checkes:                " << check_num << endl
+	 << "    # of total successes:              " << success_num << endl
+	 << "    # of DomCheckers:                  " << dom_num << endl
+	 << "CPU time:                              " << mTimer.time() << endl;
   }
 }
 

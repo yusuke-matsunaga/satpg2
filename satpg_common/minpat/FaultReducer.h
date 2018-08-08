@@ -11,6 +11,7 @@
 #include "satpg.h"
 #include "ym/McMatrix.h"
 #include "ym/SatSolverType.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -108,6 +109,9 @@ private:
 
   // 被覆行列
   McMatrix mMatrix;
+
+  // 計時を行うオブジェクト
+  StopWatch mTimer;
 
 };
 
