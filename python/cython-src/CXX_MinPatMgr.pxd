@@ -6,6 +6,7 @@
 ### Copyright (C) 2018 Yusuke Matsunaga
 ### All rights reserved.
 
+from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from CXX_TpgFault cimport TpgFault
@@ -22,7 +23,8 @@ cdef extern from "MinPatMgr.h" namespace "nsYm::nsSatpg" :
         void fault_reduction(const vector[const TpgFault*]& fault_list,
                              const TpgNetwork& network,
                              FaultType fault_type,
-                             const string& red_algorithm)
+                             const string& red_algorithm,
+                             bool debug)
         @staticmethod
         void gen_mcsets(const vector[TestVector]& tv_list,
                         vector[TestVector]& new_tv_list)

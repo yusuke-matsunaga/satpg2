@@ -43,7 +43,8 @@ public:
   fault_reduction(vector<const TpgFault*>& fault_list,
 		  const TpgNetwork& network,
 		  FaultType fault_type,
-		  const string& algorithm);
+		  const string& algorithm,
+		  bool debug);
 
   /// @brief 極大両立集合を求める．
   static

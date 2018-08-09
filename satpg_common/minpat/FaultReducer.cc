@@ -109,6 +109,7 @@ FaultReducer::fault_reduction(vector<const TpgFault*>& fault_list,
   // algorithm に従って縮約を行う．
   for ( auto opt_pair: opt_list ) {
     auto alg = opt_pair.first;
+    auto opt = opt_pair.second;
     if ( alg == "red1" ) {
       dom_reduction1();
     }

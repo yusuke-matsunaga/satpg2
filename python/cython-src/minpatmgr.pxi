@@ -17,7 +17,7 @@ cdef class MinPatMgr :
 
     ### @brief 故障リストの縮約を行う．
     @staticmethod
-    def fault_reduction(fault_list, TpgNetwork network, fault_type, red_algorithm) :
+    def fault_reduction(fault_list, TpgNetwork network, fault_type, red_algorithm, debug = False) :
         cdef vector[const CXX_TpgFault*] c_fault_list
         cdef CXX_FaultType c_fault_type = from_FaultType(fault_type)
         cdef string c_alg = red_algorithm.encode('UTF-8')
@@ -28,7 +28,7 @@ cdef class MinPatMgr :
         for i in range(nf) :
             fault = fault_list[i]
             c_fault_list[i] = fault._thisptr
-        CXX_MinPatMgr.fault_reduction(c_fault_list, network._this, c_fault_type, c_alg)
+        CXX_MinPatMgr.fault_reduction(c_fault_list, network._this, c_fault_type, c_alg, debug)
         return [ to_TpgFault(c_fault) for c_fault in c_fault_list ]
 
     ### @brief 極大両立集合を求める．

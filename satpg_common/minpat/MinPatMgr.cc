@@ -213,11 +213,12 @@ void
 MinPatMgr::fault_reduction(vector<const TpgFault*>& fault_list,
 			   const TpgNetwork& network,
 			   FaultType fault_type,
-			   const string& algorithm)
+			   const string& algorithm,
+			   bool debug)
 {
   if ( algorithm != string() ) {
     FaultReducer reducer(network, fault_type);
-    //reducer.set_debug(true);
+    reducer.set_debug(debug);
     reducer.fault_reduction(fault_list, algorithm);
   }
 }
