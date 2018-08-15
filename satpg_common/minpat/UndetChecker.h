@@ -17,6 +17,7 @@
 #include "DtpgResult.h"
 #include "DtpgStats.h"
 #include "FaultType.h"
+#include "GateEnc.h"
 
 #include "ym/ym_sat.h"
 #include "ym/SatBool3.h"
@@ -305,6 +306,15 @@ private:
 
   // 故障値を表す変数のマップ
   VidMap mFvarMap;
+
+  // 正常回路用の符号器
+  GateEnc mGvalEnc;
+
+  // 1時刻前の正常回路用の符号器
+  GateEnc mHvalEnc;
+
+  // 故障回路用の符号器
+  GateEnc mFvalEnc;
 
   // 時間計測を行なうかどうかの制御フラグ
   bool mTimerEnable;

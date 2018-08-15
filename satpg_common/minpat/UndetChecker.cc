@@ -12,7 +12,6 @@
 #include "TpgFault.h"
 #include "TpgDff.h"
 #include "GateType.h"
-#include "GateEnc.h"
 #include "FaultyGateEnc.h"
 #include "Val3.h"
 #include "NodeValList.h"
@@ -55,6 +54,9 @@ UndetChecker::UndetChecker(const TpgNetwork& network,
   mHvarMap(network.node_num()),
   mGvarMap(network.node_num()),
   mFvarMap(network.node_num()),
+  mGvalEnc(mSolver, mGvarMap),
+  mHvalEnc(mSolver, mHvarMap),
+  mFvalEnc(mSolver, mFvarMap),
   mTimerEnable(true)
 {
   mRoot = fault->tpg_onode();
@@ -229,9 +231,8 @@ UndetChecker::gen_good_cnf()
   //////////////////////////////////////////////////////////////////////
   // 正常回路の CNF を生成
   //////////////////////////////////////////////////////////////////////
-  GateEnc gval_enc(mSolver, mGvarMap);
   for ( auto node: mTfiList ) {
-    gval_enc.make_cnf(node);
+    mGvalEnc.make_cnf(node);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "Node#" << node->id() << ": gvar("
@@ -253,9 +254,8 @@ UndetChecker::gen_good_cnf()
     mSolver.add_eq_rel(olit, ilit);
   }
 
-  GateEnc hval_enc(mSolver, mHvarMap);
   for ( auto node: mPrevTfiList ) {
-    hval_enc.make_cnf(node);
+    mHvalEnc.make_cnf(node);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "Node#" << node->id() << ": hvar("
@@ -279,10 +279,9 @@ UndetChecker::gen_faulty_cnf()
   FaultyGateEnc fenc2(mSolver, mFvarMap, mFault);
   fenc2.make_cnf();
 
-  GateEnc fval_enc(mSolver, mFvarMap);
   for ( auto node: mTfoList ) {
     if ( node == mRoot ) continue;
-    fval_enc.make_cnf(node);
+    mFvalEnc.make_cnf(node);
 
     if ( debug_dtpg ) {
       DEBUG_OUT << "Node#" << node->id() << ": fvar("
@@ -306,23 +305,23 @@ UndetChecker::conv_to_literal(NodeVal node_val)
   bool inv = !node_val.val(); // 0 の時が inv = true
   SatVarId vid;
   if ( node_val.time() == 0 ) {
-#if 1
     if ( !has_hvar(node) ) {
+#if 1
       return kSatLiteralX;
-    }
 #else
-    make_prev_cnf(node);
+      make_prev_cnf(node);
 #endif
+    }
     vid = hvar(node);
   }
   else {
-#if 1
     if ( !has_gvar(node) ) {
+#if 1
       return kSatLiteralX;
-    }
 #else
-    make_good_cnf(node);
+      make_good_cnf(node);
 #endif
+    }
     vid = gvar(node);
   }
   return SatLiteral(vid, inv);
@@ -340,10 +339,14 @@ UndetChecker::conv_to_assumptions(const NodeValList& assign_list,
   assumptions.reserve(n + n0);
   for ( auto nv: assign_list ) {
     auto lit = conv_to_literal(nv);
-    if ( lit == kSatLiteralX ) {
+    if ( lit != kSatLiteralX ) {
+      assumptions.push_back(lit);
+    }
+#if 0
+    else {
       return false;
     }
-    assumptions.push_back(lit);
+#endif
   }
   return true;
 }
@@ -401,8 +404,7 @@ UndetChecker::make_good_cnf(const TpgNode* node)
     make_good_cnf(inode);
   }
 
-  GateEnc gval_enc(mSolver, mGvarMap);
-  gval_enc.make_cnf(node);
+  mGvalEnc.make_cnf(node);
 }
 
 // @brief 1時刻前の正常回路の CNF を作る．
@@ -419,8 +421,7 @@ UndetChecker::make_prev_cnf(const TpgNode* node)
     make_prev_cnf(inode);
   }
 
-  GateEnc hval_enc(mSolver, mHvarMap);
-  hval_enc.make_cnf(node);
+  mHvalEnc.make_cnf(node);
 }
 
 END_NAMESPACE_YM_SATPG
