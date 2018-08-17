@@ -10,6 +10,7 @@
 
 #include "satpg.h"
 #include "Fsim.h"
+#include "NodeValList.h"
 #include "TestVector.h"
 #include "ym/McMatrix.h"
 #include "ym/SatSolverType.h"
@@ -67,11 +68,13 @@ private:
   /// @brief 内部のデータ構造を初期化する．
   /// @param[in] fi_list 故障情報のリスト
   void
-  init(const vector<const TpgFault*>& fault_list);
+  init(const vector<const TpgFault*>& fault_list,
+       bool need_mand_cond);
 
   /// @brief 故障シミュレーションを行って支配故障の候補を作る．
+  /// @param[in] loop_limit 変化がなくなってから繰り返すループ数
   void
-  make_dom_candidate();
+  make_dom_candidate(int loop_limit);
 
   /// @brief 一回の故障シミュレーションを行う．
   /// @retval true 支配故障のリストに変化があった．
@@ -92,6 +95,11 @@ private:
   void
   dom_reduction2();
 
+  /// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
+  /// @param[inout] fi_list 故障情報のリスト
+  void
+  dom_reduction3();
+
   /// @brief mFaultList 中の mDeleted マークが付いていない故障数を数える．
   int
   count_faults() const;
@@ -110,6 +118,12 @@ private:
 
     // 故障シミュレーションの検出パタン
     PackedVal mPat;
+
+    // 十分条件
+    NodeValList mSuffCond;
+
+    // 必要条件
+    NodeValList mMandCond;
 
     // この故障が支配している故障の候補リスト
     vector<const TpgFault*> mDomCandList;

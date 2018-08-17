@@ -266,7 +266,8 @@ Analyzer::dom_reduction1(vector<FaultInfo*>& fi_list)
       }
 
       ++ check_num;
-      SatBool3 res = undet_checker.check(fault2);
+      NodeValList ffr_cond = ffr_propagate_condition(fault2, mFaultType);
+      SatBool3 res = undet_checker.check(ffr_cond);
       if ( res == SatBool3::False ) {
 	++ success_num;
 	// fault2 が検出可能の条件のもとで fault が検出不能となることはない．
@@ -528,7 +529,8 @@ Analyzer::init(int loop_limit)
 	      continue;
 	    }
 	  }
-	  SatBool3 res = undet_checker.check(fault2);
+	  NodeValList ffr_cond = ffr_propagate_condition(fault2, mFaultType);
+	  SatBool3 res = undet_checker.check(ffr_cond);
 	  if ( res == SatBool3::False ) {
 	    // fault2 が検出可能の条件のもとで fault が検出不能となることはない．
 	    // fault2 が fault を支配している．

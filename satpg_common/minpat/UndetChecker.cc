@@ -92,15 +92,13 @@ UndetChecker::~UndetChecker()
 }
 
 // @brief テスト生成を行なう．
-// @param[in] fault 故障
+// @param[in] cond 条件
 // @return 結果を返す．
 SatBool3
-UndetChecker::check(const TpgFault* fault)
+UndetChecker::check(const NodeValList& cond)
 {
-  NodeValList ffr_cond = ffr_propagate_condition(fault, mFaultType);
-
   vector<SatLiteral> assumptions;
-  if ( !conv_to_assumptions(ffr_cond, assumptions) ) {
+  if ( !conv_to_assumptions(cond, assumptions) ) {
     return SatBool3::X;
   }
 
@@ -306,7 +304,7 @@ UndetChecker::conv_to_literal(NodeVal node_val)
   SatVarId vid;
   if ( node_val.time() == 0 ) {
     if ( !has_hvar(node) ) {
-#if 1
+#if 0
       return kSatLiteralX;
 #else
       make_prev_cnf(node);
@@ -316,7 +314,7 @@ UndetChecker::conv_to_literal(NodeVal node_val)
   }
   else {
     if ( !has_gvar(node) ) {
-#if 1
+#if 0
       return kSatLiteralX;
 #else
       make_good_cnf(node);

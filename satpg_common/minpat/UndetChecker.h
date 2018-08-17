@@ -59,10 +59,10 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief テスト生成を行なう．
-  /// @param[in] fault 故障
+  /// @param[in] cond 条件
   /// @return 結果を返す．
   SatBool3
-  check(const TpgFault* fault);
+  check(const NodeValList& cond);
 
   /// @brief 統計情報を得る．
   const DtpgStats&
