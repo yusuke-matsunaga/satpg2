@@ -456,6 +456,9 @@ FaultReducer::dom_reduction1()
 	continue;
       }
 
+      if ( !undet_checker.has_gvar(fault2->tpg_onode()) ) {
+	continue;
+      }
       // fault1 が fault2 の mDomCandList に含まれるか調べる．
       bool found = false;
       for ( auto fault3: fi2.mDomCandList ) {
@@ -601,7 +604,17 @@ FaultReducer::dom_reduction3()
 	  }
 	}
 	if ( found ) {
+	  fault2_list.push_back(fault2);
+	}
+
+      }
+      if ( fault2_list.empty() ) {
+	continue;
+      }
+      for ( auto fault2: fault2_list ) {
+	if ( undet_checker.has_gvar(fault2->tpg_onode()) ) {
 	  ++ u_check_num;
+	  auto& fi2 = mFaultInfoArray[fault2->id()];
 	  SatBool3 res = undet_checker.check(fi2.mMandCond);
 	  if ( res == SatBool3::False ) {
 	    ++ u_success_num;
@@ -612,15 +625,12 @@ FaultReducer::dom_reduction3()
 	    vector<const TpgFault*>().swap(fi1.mDomCandList);
 	    break;
 	  }
-	  fault2_list.push_back(fault2);
 	}
       }
       if ( fi1.mDeleted ) {
 	break;
       }
-      if ( fault2_list.empty() ) {
-	continue;
-      }
+
       ++ dom_num;
       DomChecker dom_checker(mNetwork, mFaultType, ffr2.root(), fault1, mSolverType);
       for ( auto fault2: fault2_list ) {
