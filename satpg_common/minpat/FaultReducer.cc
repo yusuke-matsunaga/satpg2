@@ -133,6 +133,9 @@ FaultReducer::fault_reduction(vector<const TpgFault*>& fault_list,
     else if ( alg == "red3" ) {
       dom_reduction3();
     }
+    else if ( alg == "red4" ) {
+      dom_reduction4();
+    }
   }
 
   // mDeleted のついていない故障を fault_list に入れる．
@@ -625,6 +628,107 @@ FaultReducer::dom_reduction3()
 	    vector<const TpgFault*>().swap(fi1.mDomCandList);
 	    break;
 	  }
+	}
+      }
+      if ( fi1.mDeleted ) {
+	break;
+      }
+
+      ++ dom_num;
+      DomChecker dom_checker(mNetwork, mFaultType, ffr2.root(), fault1, mSolverType);
+      for ( auto fault2: fault2_list ) {
+	++ check_num;
+	SatBool3 res = dom_checker.check_detectable(fault2);
+	if ( res == SatBool3::False ) {
+	  ++ success_num;
+	  // fault2 が検出可能の条件のもとで fault1 が検出不能となることはない．
+	  // fault2 が fault1 を支配している．
+	  fi1.mDeleted = true;
+	  // 不要となったベクタの領域を解放するハックコード
+	  vector<const TpgFault*>().swap(fi1.mDomCandList);
+	  break;
+	}
+      }
+      if ( fi1.mDeleted ) {
+	break;
+      }
+    }
+  }
+
+  if ( mDebug ) {
+    mTimer.stop();
+    int n = count_faults();
+    cout << "after global dominance reduction:      " << n << endl;
+    cout << "    # of total checkes(1):             " << check_num << endl
+	 << "    # of total successes(1):           " << success_num << endl
+	 << "    # of total checkes(2):             " << u_check_num << endl
+	 << "    # of total successes(2):           " << u_success_num << endl
+	 << "    # of DomCheckers:                  " << dom_num << endl
+	 << "CPU time:                              " << mTimer.time() << endl;
+  }
+}
+
+// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
+void
+FaultReducer::dom_reduction4()
+{
+  if ( mDebug ) {
+    mTimer.reset();
+    mTimer.start();
+  }
+
+  int check_num = 0;
+  int dom_num = 0;
+  int success_num = 0;
+  int u_check_num = 0;
+  int u_success_num = 0;
+  for ( auto fault1: mFaultList ) {
+    auto& fi1 = mFaultInfoArray[fault1->id()];
+    if ( fi1.mDeleted ) {
+      continue;
+    }
+    UndetChecker undet_checker(mNetwork, mFaultType, fault1, mSolverType);
+    for ( auto& ffr2: mNetwork.ffr_list() ) {
+      if ( ffr2.root() == fault1->tpg_onode()->ffr_root() ) {
+	continue;
+      }
+      if ( !undet_checker.has_gvar(ffr2.root()) ) {
+	continue;
+      }
+      vector<const TpgFault*> fault2_list;
+      for ( auto fault2: ffr2.fault_list() ) {
+	auto& fi2 = mFaultInfoArray[fault2->id()];
+	if ( fi2.mDeleted ) {
+	  continue;
+	}
+	bool found = false;
+	for ( auto fault3: fi2.mDomCandList ) {
+	  if ( fault3 == fault1 ) {
+	    found = true;
+	    break;
+	  }
+	}
+	if ( found ) {
+	  fault2_list.push_back(fault2);
+	}
+
+      }
+      if ( fault2_list.empty() ) {
+	continue;
+      }
+      for ( auto fault2: fault2_list ) {
+	++ u_check_num;
+	auto& fi2 = mFaultInfoArray[fault2->id()];
+	NodeValList ffr_cond = ffr_propagate_condition(fault2, mFaultType);
+	SatBool3 res = undet_checker.check(ffr_cond);
+	if ( res == SatBool3::False ) {
+	  ++ u_success_num;
+	  // fault2 が検出可能の条件のもとで fault1 が検出不能となることはない．
+	  // fault2 が fault1 を支配している．
+	  fi1.mDeleted = true;
+	  // 不要となったベクタの領域を解放するハックコード
+	  vector<const TpgFault*>().swap(fi1.mDomCandList);
+	  break;
 	}
       }
       if ( fi1.mDeleted ) {

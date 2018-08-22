@@ -100,6 +100,11 @@ private:
   void
   dom_reduction3();
 
+  /// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
+  /// @param[inout] fi_list 故障情報のリスト
+  void
+  dom_reduction4();
+
   /// @brief mFaultList 中の mDeleted マークが付いていない故障数を数える．
   int
   count_faults() const;
