@@ -14,12 +14,11 @@ foreach ( dir
     "satpg_common"
     "ym-bnet"
     "ym-cell"
+    "ym-combopt"
     "ym-common"
     "ym-logic"
-    "ym-mincov"
     "ym-sat"
     "ym-tclpp"
-    "ym-udgraph"
     )
   list ( APPEND YM_DOXY_SRCS "${PROJECT_SOURCE_DIR}/${dir}/include" )
 endforeach ()
