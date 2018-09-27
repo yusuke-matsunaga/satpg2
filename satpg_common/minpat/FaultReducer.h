@@ -88,7 +88,7 @@ private:
 
   /// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
   void
-  dom_reduction1();
+  dom_reduction1(bool simple);
 
   /// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
   /// @param[inout] fi_list 故障情報のリスト
@@ -98,12 +98,7 @@ private:
   /// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
   /// @param[inout] fi_list 故障情報のリスト
   void
-  dom_reduction3();
-
-  /// @brief 異なる FFR 間の支配故障の簡易チェックを行う．
-  /// @param[inout] fi_list 故障情報のリスト
-  void
-  dom_reduction4();
+  dom_reduction3(bool simple);
 
   /// @brief mFaultList 中の mDeleted マークが付いていない故障数を数える．
   int
@@ -123,6 +118,9 @@ private:
 
     // 故障シミュレーションの検出パタン
     PackedVal mPat;
+
+    // FFR 内の伝搬条件
+    NodeValList mFFRCond;
 
     // 十分条件
     NodeValList mSuffCond;
