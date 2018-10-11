@@ -55,11 +55,11 @@ ReadBlif::cmd_proc(TclObjVector& objv)
   }
 
   AtpgMsgHandler mh;
-  MsgMgr::reg_handler(&mh);
+  MsgMgr::attach_handler(&mh);
 
   bool stat = _network().read_blif(ex_filename);
 
-  MsgMgr::unreg_handler(&mh);
+  MsgMgr::detach_handler(&mh);
 
   if ( stat ) {
     after_set_network();
@@ -111,11 +111,11 @@ ReadIscas89::cmd_proc(TclObjVector& objv)
   }
 
   AtpgMsgHandler mh;
-  MsgMgr::reg_handler(&mh);
+  MsgMgr::attach_handler(&mh);
 
   bool stat2 = _network().read_iscas89(ex_filename);
 
-  MsgMgr::unreg_handler(&mh);
+  MsgMgr::detach_handler(&mh);
 
   if ( stat2 ) {
     after_set_network();
