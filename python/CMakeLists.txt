@@ -4,10 +4,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories (
-  ${PROJECT_SOURCE_DIR}/ym-base/cython-src
-  ${PROJECT_SOURCE_DIR}/ym-sat/cython-src
-  ${PROJECT_SOURCE_DIR}/ym-cell/cython-src
-  ${PROJECT_SOURCE_DIR}/ym-combopt/python/cython-src
+  ${YM_SUBMODULE_CYTHON_LIST}
   )
 
 
@@ -42,6 +39,7 @@ set_source_files_properties (
 #  module ターゲットの設定
 # ===================================================================
 
+list ( REMOVE_ITEM YM_SUBMODULE_LIST "$<TARGET_OBJECTS:ym_tclpp>" )
 cython_add_module ( satpg_core
   ${CYTHON_SOURCES}
   $<TARGET_OBJECTS:satpg_common>
@@ -49,12 +47,7 @@ cython_add_module ( satpg_core
   $<TARGET_OBJECTS:satpg_fsimsa3>
   $<TARGET_OBJECTS:satpg_fsimtd2>
   $<TARGET_OBJECTS:satpg_fsimtd3>
-  $<TARGET_OBJECTS:ym_base>
-  $<TARGET_OBJECTS:ym_logic>
-  $<TARGET_OBJECTS:ym_cell>
-  $<TARGET_OBJECTS:ym_bnet>
-  $<TARGET_OBJECTS:ym_combopt>
-  $<TARGET_OBJECTS:ym_sat>
+  ${YM_SUBMODULE_OBJ_LIST}
   )
 
 target_compile_options ( satpg_core
@@ -82,12 +75,7 @@ cython_add_module ( satpg_core_d
   $<TARGET_OBJECTS:satpg_fsimsa3_d>
   $<TARGET_OBJECTS:satpg_fsimtd2_d>
   $<TARGET_OBJECTS:satpg_fsimtd3_d>
-  $<TARGET_OBJECTS:ym_base_d>
-  $<TARGET_OBJECTS:ym_logic_d>
-  $<TARGET_OBJECTS:ym_cell_d>
-  $<TARGET_OBJECTS:ym_bnet_d>
-  $<TARGET_OBJECTS:ym_combopt_d>
-  $<TARGET_OBJECTS:ym_sat_d>
+  ${YM_SUBMODULE_OBJ_D_LIST}
   )
 
 target_compile_options ( satpg_core_d

@@ -44,13 +44,7 @@ add_executable(atpg_tclsh
   $<TARGET_OBJECTS:satpg_fsimsa3>
   $<TARGET_OBJECTS:satpg_fsimtd2>
   $<TARGET_OBJECTS:satpg_fsimtd3>
-  $<TARGET_OBJECTS:ym_base_a>
-  $<TARGET_OBJECTS:ym_logic_a>
-  $<TARGET_OBJECTS:ym_cell_a>
-  $<TARGET_OBJECTS:ym_bnet_a>
-  $<TARGET_OBJECTS:ym_sat_a>
-  $<TARGET_OBJECTS:ym_combopt_a>
-  $<TARGET_OBJECTS:ym_tclpp_a>
+  ${YM_SUBMODULE_OBJ_A_LIST}
   )
 
 target_compile_options (atpg_tclsh
@@ -84,13 +78,7 @@ add_executable(atpg_tclsh_p
   $<TARGET_OBJECTS:satpg_fsimsa3_p>
   $<TARGET_OBJECTS:satpg_fsimtd2_p>
   $<TARGET_OBJECTS:satpg_fsimtd3_p>
-  $<TARGET_OBJECTS:ym_base_p>
-  $<TARGET_OBJECTS:ym_logic_p>
-  $<TARGET_OBJECTS:ym_cell_p>
-  $<TARGET_OBJECTS:ym_bnet_p>
-  $<TARGET_OBJECTS:ym_sat_p>
-  $<TARGET_OBJECTS:ym_combopt_p>
-  $<TARGET_OBJECTS:ym_tclpp_p>
+  ${YM_SUBMODULE_OBJ_P_LIST}
   )
 
 target_compile_options (atpg_tclsh_p
@@ -124,13 +112,7 @@ add_executable(atpg_tclsh_d
   $<TARGET_OBJECTS:satpg_fsimsa3_ad>
   $<TARGET_OBJECTS:satpg_fsimtd2_ad>
   $<TARGET_OBJECTS:satpg_fsimtd3_ad>
-  $<TARGET_OBJECTS:ym_base_ad>
-  $<TARGET_OBJECTS:ym_logic_ad>
-  $<TARGET_OBJECTS:ym_cell_ad>
-  $<TARGET_OBJECTS:ym_bnet_ad>
-  $<TARGET_OBJECTS:ym_sat_ad>
-  $<TARGET_OBJECTS:ym_combopt_ad>
-  $<TARGET_OBJECTS:ym_tclpp_ad>
+  ${YM_SUBMODULE_OBJ_AD_LIST}
   )
 
 target_compile_options (atpg_tclsh_d
