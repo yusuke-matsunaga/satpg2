@@ -20,7 +20,7 @@
 #include "Justifier.h"
 
 #include "ym/Expr.h"
-#include "ym/ym_sat.h"
+#include "ym/sat.h"
 #include "ym/SatBool3.h"
 #include "ym/SatLiteral.h"
 #include "ym/SatSolver.h"

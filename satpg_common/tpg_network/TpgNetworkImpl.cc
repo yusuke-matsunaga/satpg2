@@ -479,7 +479,7 @@ TpgNetworkImpl::set(const BnNetwork& network)
     // ファンインのノードを取ってくる．
     vector<TpgNode*> fanin_array;
     fanin_array.reserve(src_node->fanin_num());
-    for ( auto iid: src_node->fanin_list() ) {
+    for ( auto iid: src_node->fanin_id_list() ) {
       fanin_array.push_back(node_map.get(iid));
     }
     int nfo = src_node->fanout_num();
@@ -498,7 +498,7 @@ TpgNetworkImpl::set(const BnNetwork& network)
     int id = output_map[i];
     const BnNode* src_node = network.node(id);
     ASSERT_COND( src_node->is_output() );
-    TpgNode* inode = node_map.get(src_node->fanin());
+    TpgNode* inode = node_map.get(src_node->fanin_id(0));
     string buf = "*";
     buf += src_node->name();
     TpgNode* node = make_output_node(i, buf, inode);
@@ -514,7 +514,7 @@ TpgNetworkImpl::set(const BnNetwork& network)
     const BnDff* src_dff = network.dff(i);
     const BnNode* src_node = network.node(src_dff->input());
 
-    TpgNode* inode = node_map.get(src_node->fanin());
+    TpgNode* inode = node_map.get(src_node->fanin_id(0));
     string dff_name = src_dff->name();
     string input_name = dff_name + ".input";
     TpgDff* dff = &mDffArray[i];
@@ -526,7 +526,7 @@ TpgNetworkImpl::set(const BnNetwork& network)
 
     // クロック端子を作る．
     const BnNode* src_clock = network.node(src_dff->clock());
-    TpgNode* clock_fanin = node_map.get(src_clock->fanin());
+    TpgNode* clock_fanin = node_map.get(src_clock->fanin_id(0));
     string clock_name = dff_name + ".clock";
     TpgNode* clock = make_dff_clock_node(dff, clock_name, clock_fanin);
     connection_list.push_back(make_pair(clock_fanin->id(), clock->id()));
@@ -535,7 +535,7 @@ TpgNetworkImpl::set(const BnNetwork& network)
     // クリア端子を作る．
     if ( src_dff->clear() != kBnNullId ) {
       const BnNode* src_clear = network.node(src_dff->clear());
-      TpgNode* clear_fanin = node_map.get(src_clear->fanin());
+      TpgNode* clear_fanin = node_map.get(src_clear->fanin_id(0));
       string clear_name = dff_name + ".clear";
       TpgNode* clear = make_dff_clear_node(dff, clear_name, clear_fanin);
       connection_list.push_back(make_pair(clear_fanin->id(), clear->id()));
@@ -545,7 +545,7 @@ TpgNetworkImpl::set(const BnNetwork& network)
     // プリセット端子を作る．
     if ( src_dff->preset() != kBnNullId ) {
       const BnNode* src_preset = network.node(src_dff->preset());
-      TpgNode* preset_fanin = node_map.get(src_preset->fanin());
+      TpgNode* preset_fanin = node_map.get(src_preset->fanin_id(0));
       string preset_name = dff_name + ".preset";
       TpgNode* preset = make_dff_preset_node(dff, preset_name, preset_fanin);
       connection_list.push_back(make_pair(preset_fanin->id(), preset->id()));

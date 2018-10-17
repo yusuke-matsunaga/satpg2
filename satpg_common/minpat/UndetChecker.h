@@ -19,7 +19,7 @@
 #include "FaultType.h"
 #include "GateEnc.h"
 
-#include "ym/ym_sat.h"
+#include "ym/sat.h"
 #include "ym/SatBool3.h"
 #include "ym/SatLiteral.h"
 #include "ym/SatSolver.h"
