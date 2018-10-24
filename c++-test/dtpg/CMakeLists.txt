@@ -3,7 +3,6 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ${PROJECT_SOURCE_DIR}/satpg_common/tpg_network
   )
 
 
@@ -21,8 +20,9 @@ include_directories(
 #  テスト用のターゲットの設定
 # ===================================================================
 
-ym_add_gtest ( TpgNodeTest
-  TpgNodeTest.cc
+ym_add_gtest ( satpg_dtpg_test
+  dtpg_test.cc
+  DtpgTest.cc
   $<TARGET_OBJECTS:satpg_common_ad>
   $<TARGET_OBJECTS:satpg_fsimsa2_ad>
   $<TARGET_OBJECTS:satpg_fsimsa3_ad>
@@ -34,4 +34,5 @@ ym_add_gtest ( TpgNodeTest
   $<TARGET_OBJECTS:ym_bnet_ad>
   $<TARGET_OBJECTS:ym_sat_ad>
   $<TARGET_OBJECTS:ym_combopt_ad>
+  DEFINITIONS "-DDATAPATH=\"${CMAKE_CURRENT_SOURCE_DIR}/data/\""
   )

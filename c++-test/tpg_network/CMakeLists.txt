@@ -3,8 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ../satpg_common/tpg_network
-  ${GTEST_INCLUDE_DIR}
+  ${PROJECT_SOURCE_DIR}/c++-src/tpg_network
   )
 
 
@@ -12,19 +11,18 @@ include_directories(
 # サブディレクトリの設定
 # ===================================================================
 
-add_subdirectory( testvector )
-add_subdirectory( tpg_network )
-add_subdirectory( sa_fsim2 )
-add_subdirectory( sa_fsim3 )
-add_subdirectory( dtpg )
+
+# ===================================================================
+#  ソースファイルの設定
+# ===================================================================
 
 
 # ===================================================================
-# テストターゲットの定義
+#  テスト用のターゲットの設定
 # ===================================================================
 
-ym_add_gtest(Val3Test
-  Val3Test.cc
+ym_add_gtest ( TpgNodeTest
+  TpgNodeTest.cc
   $<TARGET_OBJECTS:satpg_common_ad>
   $<TARGET_OBJECTS:satpg_fsimsa2_ad>
   $<TARGET_OBJECTS:satpg_fsimsa3_ad>

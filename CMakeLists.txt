@@ -100,7 +100,7 @@ ym_init_submodules (
 # インクルードパスの設定
 # ===================================================================
 include_directories (
-  ${PROJECT_SOURCE_DIR}/satpg_common/include
+  ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_BINARY_DIR}
   ${YM_SUBMODULE_INCLUDE_LIST}
   )
@@ -114,26 +114,28 @@ foreach ( dir ${YM_SUBMODULE_LIST} )
   add_subdirectory ( ${dir} )
 endforeach ()
 
+add_subdirectory ( c++-src )
+add_subdirectory ( c++-test )
+add_subdirectory ( cython-src )
+add_subdirectory ( atpg_tclsh )
+add_subdirectory ( python )
+
 add_subdirectory ( tests/fsimtest )
 add_subdirectory ( tests/dtpgtest )
 add_subdirectory ( tests/tpgnetworktest )
-#add_subdirectory ( tests )
-add_subdirectory ( gtest )
-add_subdirectory ( satpg_common )
-add_subdirectory ( atpg_tclsh )
-add_subdirectory ( python )
 
 if ( DOXYGEN_FOUND )
   # doxygen の対象となるヘッダファイル(のパタン)を YM_DOXY_SRCS に入れる．
   set ( YM_DOXY_SRCS )
   foreach ( dir
-      "${PROJECT_BINARY_DIR}"
-      "${PROJECT_SOURCE_DIR}/doxygen-src"
+      "${PROJECT_BINARY_DIR}/ym_config.h"
+      "${PROJECT_BINARY_DIR}/version_config.h"
+      "${PROJECT_SOURCE_DIR}/dox-src"
+      "${PROJECT_SOURCE_DIR}/include"
       )
     list ( APPEND YM_DOXY_SRCS ${dir} )
   endforeach()
   foreach ( dir
-      "satpg_common"
       ${YM_SUBMODULE_LIST}
       )
     list ( APPEND YM_DOXY_SRCS "${PROJECT_SOURCE_DIR}/${dir}/include" )

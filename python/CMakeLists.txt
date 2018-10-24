@@ -4,7 +4,6 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories (
-  ${YM_SUBMODULE_CYTHON_LIST}
   )
 
 
@@ -17,7 +16,6 @@ include_directories (
 # サブディレクトリの設定
 # ===================================================================
 
-add_subdirectory ( cython-src )
 add_subdirectory ( debug )
 
 
@@ -26,7 +24,7 @@ add_subdirectory ( debug )
 # ===================================================================
 
 set ( CYTHON_SOURCES
-  cython-src/satpg_core.pyx
+  ${PROJECT_SOURCE_DIR}/cython-src/satpg_core.pyx
   )
 
 set_source_files_properties (

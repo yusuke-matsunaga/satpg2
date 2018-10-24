@@ -3,7 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ${PROJECT_SOURCE_DIR}/satpg_common/fsim
+  ${PROJECT_SOURCE_DIR}/c++-src/fsim
   )
 
 
@@ -21,13 +21,9 @@ include_directories(
 #  テスト用のターゲットの設定
 # ===================================================================
 
-ym_add_gtest ( SaFsim2SimNodeTest
+add_executable ( TdFsim2SimNodeTest
   SimNodeTest.cc
   $<TARGET_OBJECTS:satpg_common_ad>
-  $<TARGET_OBJECTS:satpg_fsimsa2_ad>
-  $<TARGET_OBJECTS:satpg_fsimsa3_ad>
-  $<TARGET_OBJECTS:satpg_fsimtd2_ad>
-  $<TARGET_OBJECTS:satpg_fsimtd3_ad>
   $<TARGET_OBJECTS:ym_base_ad>
   $<TARGET_OBJECTS:ym_logic_ad>
   $<TARGET_OBJECTS:ym_cell_ad>
@@ -36,6 +32,16 @@ ym_add_gtest ( SaFsim2SimNodeTest
   $<TARGET_OBJECTS:ym_combopt_ad>
   )
 
-target_compile_definitions ( SaFsim2SimNodeTest
-  PRIVATE "-DFSIM_VAL2" "-DFSIM_SA"
+target_compile_options ( TdFsim2SimNodeTest
+  PRIVATE "-g"
+  )
+
+target_link_libraries ( TdFsim2SimNodeTest
+  ${YM_LIB_DEPENDS}
+  pthread
+  ${GTEST_BOTH_LIBRARIES}
+  )
+
+add_test ( TdFsim2Test
+  TdFsim2SimNodeTest
   )

@@ -3,7 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ../../tests/dtpgtest
+  ${PROJECT_SOURCE_DIR}/c++-src/fsim
   )
 
 
@@ -21,9 +21,8 @@ include_directories(
 #  テスト用のターゲットの設定
 # ===================================================================
 
-ym_add_gtest ( DtpgTest
-  DtpgTest.cc
-  ../../tests/dtpgtest/DtpgTest.cc
+ym_add_gtest ( SaFsim2SimNodeTest
+  SimNodeTest.cc
   $<TARGET_OBJECTS:satpg_common_ad>
   $<TARGET_OBJECTS:satpg_fsimsa2_ad>
   $<TARGET_OBJECTS:satpg_fsimsa3_ad>
@@ -35,5 +34,8 @@ ym_add_gtest ( DtpgTest
   $<TARGET_OBJECTS:ym_bnet_ad>
   $<TARGET_OBJECTS:ym_sat_ad>
   $<TARGET_OBJECTS:ym_combopt_ad>
-  DEFINITIONS "-DDATAPATH=\"${CMAKE_CURRENT_SOURCE_DIR}/data/\""
+  )
+
+target_compile_definitions ( SaFsim2SimNodeTest
+  PRIVATE "-DFSIM_VAL2" "-DFSIM_SA"
   )

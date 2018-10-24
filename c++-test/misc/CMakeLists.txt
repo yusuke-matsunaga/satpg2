@@ -2,9 +2,6 @@
 # ===================================================================
 # インクルードパスの設定
 # ===================================================================
-include_directories(
-  ${PROJECT_SOURCE_DIR}/satpg_common/fsim
-  )
 
 
 # ===================================================================
@@ -13,16 +10,11 @@ include_directories(
 
 
 # ===================================================================
-#  ソースファイルの設定
+# テストターゲットの定義
 # ===================================================================
 
-
-# ===================================================================
-#  テスト用のターゲットの設定
-# ===================================================================
-
-ym_add_gtest ( SaFsim3SimNodeTest
-  SimNodeTest.cc
+ym_add_gtest(Val3Test
+  Val3Test.cc
   $<TARGET_OBJECTS:satpg_common_ad>
   $<TARGET_OBJECTS:satpg_fsimsa2_ad>
   $<TARGET_OBJECTS:satpg_fsimsa3_ad>
@@ -34,8 +26,4 @@ ym_add_gtest ( SaFsim3SimNodeTest
   $<TARGET_OBJECTS:ym_bnet_ad>
   $<TARGET_OBJECTS:ym_sat_ad>
   $<TARGET_OBJECTS:ym_combopt_ad>
-  )
-
-target_compile_definitions ( SaFsim3SimNodeTest
-  PRIVATE "-DFSIM_VAL3" "FSIM_SA"
   )
