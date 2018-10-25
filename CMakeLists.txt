@@ -129,7 +129,7 @@ if ( DOXYGEN_FOUND )
   set ( YM_DOXY_SRCS )
   foreach ( dir
       "${PROJECT_BINARY_DIR}/ym_config.h"
-      "${PROJECT_BINARY_DIR}/version_config.h"
+      "${PROJECT_BINARY_DIR}/satpg.h"
       "${PROJECT_SOURCE_DIR}/dox-src"
       "${PROJECT_SOURCE_DIR}/include"
       )
