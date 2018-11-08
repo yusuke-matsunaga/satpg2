@@ -49,7 +49,7 @@ public:
 	     FaultType fault_type,
 	     const TpgNode* root,
 	     const string& just_type,
-	     const SatSolverType& solver_type = SatSolverType());
+	     const SatSolverType& solver_type = SatSolverType("ymsat2"));
 
   /// @brief デストラクタ
   ~DtpgEngine();

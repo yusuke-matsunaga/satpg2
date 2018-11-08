@@ -140,6 +140,7 @@ private:
 
 
 DtpgTestWithParam::DtpgTestWithParam() :
+  mSolverType("ymsat2"),
   mDtpgTest(nullptr)
 {
 }

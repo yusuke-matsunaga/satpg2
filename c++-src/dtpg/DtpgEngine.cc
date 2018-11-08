@@ -160,6 +160,9 @@ DtpgEngine::prepare_vars()
     SatVarId fvar = mSolver.new_variable();
     SatVarId dvar = mSolver.new_variable();
 
+    mSolver.freeze_literal(SatLiteral(gvar));
+    mSolver.freeze_literal(SatLiteral(fvar));
+
     mGvarMap.set_vid(node, gvar);
     mFvarMap.set_vid(node, fvar);
     mDvarMap.set_vid(node, dvar);
@@ -175,6 +178,8 @@ DtpgEngine::prepare_vars()
   for ( auto node: mTfiList ) {
     SatVarId gvar = mSolver.new_variable();
 
+    mSolver.freeze_literal(SatLiteral(gvar));
+
     mGvarMap.set_vid(node, gvar);
     mFvarMap.set_vid(node, gvar);
 
@@ -187,6 +192,8 @@ DtpgEngine::prepare_vars()
   // TFI2 の部分に変数を割り当てる．
   for ( auto node: mTfi2List ) {
     SatVarId hvar = mSolver.new_variable();
+
+    mSolver.freeze_literal(SatLiteral(hvar));
 
     mHvarMap.set_vid(node, hvar);
 

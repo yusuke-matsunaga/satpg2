@@ -35,7 +35,7 @@ public:
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
   StructEnc(const TpgNetwork& network,
 	    FaultType fault_type,
-	    const SatSolverType& solver_type = SatSolverType());
+	    const SatSolverType& solver_type = SatSolverType("ymsat2"));
 
   /// @brief デストラクタ
   ~StructEnc();
@@ -546,6 +546,7 @@ StructEnc::set_new_var(const TpgNode* node,
 		       int time)
 {
   SatVarId var = mSolver.new_variable();
+  mSolver.freeze_literal(SatLiteral(var));
   _set_var(node, time, var);
 }
 

@@ -188,10 +188,13 @@ DtpgMFFC::gen_mffc_cnf()
   // 各FFRの根にXORゲートを挿入した故障回路を作る．
   // そのXORをコントロールする入力変数を作る．
   for ( int i = 0; i < mElemArray.size(); ++ i ) {
-    mElemVarArray[i] = solver().new_variable();
+    SatVarId cvar = solver().new_variable();
+    mElemVarArray[i] = cvar;
+
+    solver().freeze_literal(SatLiteral(cvar));
 
     if ( debug_mffc ) {
-      DEBUG_OUT << "cvar(Elem#" << i << ") = " << mElemVarArray[i] << endl;
+      DEBUG_OUT << "cvar(Elem#" << i << ") = " << cvar << endl;
     }
   }
 
